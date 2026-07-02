@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>추천 시간 — 회의 잡기 · Toss PD Challenge 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/screen.css" />
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ===== 데스크톱 전용: 설계 근거 패널 ===== -->
+  <aside class="rationale" aria-label="설계 근거">
+    <p class="rationale-eyebrow">설계 근거</p>
+    <h1 class="rationale-title">막다른 길을<br/>거래로 바꿉니다</h1>
+    <ol class="rationale-list">
+      <li><b>단일 추천.</b> 빈 시간을 나열하지 않고 하나를 책임지고 제시해요. 고민을 줄이는 도구가 고민을 늘리면 안 되니까요.</li>
+      <li><b>투명하되, 누구의 잘못도 아니게.</b> 못 오는 사람을 숨기지 않지만 "선택 참석이라 괜찮다"로 프레이밍해요.</li>
+      <li><b>전원이 안 될 때가 기본 시나리오.</b> 시스템이 "30분 조정" 거래를 만들어 손에 쥐여줘요.</li>
+    </ol>
+    <p class="rationale-note">설계 해상도 375×812 · 모바일 네이티브<br/>심사용 데스크톱 셸 포함 반응형</p>
+  </aside>
+
+  <!-- ===== 폰 프레임 (데스크톱) / 풀블리드 (모바일) ===== -->
+  <div class="device">
+    <main class="screen" aria-label="추천 시간 화면">
+
+      <!-- 헤더 -->
+      <header class="nav">
+        <button class="nav-back" aria-label="뒤로 가기">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="nav-title">추천 시간</span>
+      </header>
+
+      <div class="content">
+
+        <!-- 페이지 타이틀 -->
+        <section class="intro enter" style="--d:0ms">
+          <h2 class="intro-title">이 시간이 가장 좋아요</h2>
+          <p class="intro-sub">꼭 오셔야 하는 분들 기준으로 골랐어요</p>
+        </section>
+
+        <!-- ===== 히어로 카드: 단일 추천 ===== -->
+        <section class="hero enter" style="--d:60ms" aria-labelledby="hero-time">
+          <div class="hero-head">
+            <span id="hero-time" class="hero-time">목요일 오전 10시</span>
+            <span class="badge badge-green">추천</span>
+          </div>
+
+          <!-- 아바타 시각화: 참석의 무게가 한눈에 -->
+          <div class="people" role="img" aria-label="꼭 오셔야 하는 4명 모두 가능, 선택 참석 최도윤 가능, 강수아 외근으로 불참">
+            <div class="person pop" style="--d:180ms">
+              <span class="avatar ring-green">김</span><span class="tick" aria-hidden="true">✓</span>
+              <span class="person-name">김민준</span>
+            </div>
+            <div class="person pop" style="--d:240ms">
+              <span class="avatar ring-green">이</span><span class="tick" aria-hidden="true">✓</span>
+              <span class="person-name">이서연</span>
+            </div>
+            <div class="person pop" style="--d:300ms">
+              <span class="avatar ring-green">박</span><span class="tick" aria-hidden="true">✓</span>
+              <span class="person-name">박지후</span>
+            </div>
+            <div class="person pop" style="--d:360ms">
+              <span class="avatar ring-green">정</span><span class="tick" aria-hidden="true">✓</span>
+              <span class="person-name">정하은</span>
+            </div>
+            <div class="person pop" style="--d:420ms">
+              <span class="avatar ring-blue">최</span><span class="tick tick-blue" aria-hidden="true">✓</span>
+              <span class="person-name">최도윤</span>
+            </div>
+            <div class="person pop is-away" style="--d:480ms">
+              <span class="avatar ring-dash">강</span>
+              <span class="person-name">강수아</span>
+            </div>
+          </div>
+
+          <!-- 근거 요약 (왜 1순위인가) -->
+          <ul class="facts">
+            <li class="fact">
+              <span class="fact-label">꼭 오셔야 하는 4명</span>
+              <span class="fact-value value-green">모두 가능</span>
+            </li>
+            <li class="fact">
+              <span class="fact-label">선택 참석 2명</span>
+              <span class="fact-value">최도윤님 가능</span>
+            </li>
+            <li class="fact">
+              <span class="fact-label">피하고 싶은 시간</span>
+              <span class="fact-value value-green">없음</span>
+            </li>
+          </ul>
+
+          <p class="hero-why">선택 참석이 한 분 더 올 수 있고, 피하고 싶은 시간이 없어서 가장 좋아요.</p>
+
+          <div class="notice">
+            <svg class="notice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <p>강수아님은 <b>선택 참석</b>이라, 외근이어도 회의는 그대로 진행돼요.</p>
+          </div>
+
+          <button class="btn btn-primary" type="button">목요일 오전 10시로 잡기</button>
+        </section>
+
+        <!-- ===== 거래 카드: 전원이 모이려면 ===== -->
+        <section class="trade enter" style="--d:140ms" aria-labelledby="trade-title">
+          <span class="eyebrow">전원이 모이려면</span>
+          <h3 id="trade-title" class="trade-time">화요일 오전 11시면 6명 모두 와요</h3>
+          <p class="trade-body">박지후님 일정과 <b class="em-blue">30분만</b> 겹쳐요. 그 회의를 조금만 옮기면 전원이 모일 수 있어요.</p>
+          <button class="btn btn-ghost-blue" type="button">박지후님께 30분 조정 부탁하기</button>
+        </section>
+
+        <!-- ===== 차선 ===== -->
+        <section class="alts enter" style="--d:220ms">
+          <p class="alts-head">다른 시간도 볼게요</p>
+          <button class="alt" type="button">
+            <span class="alt-main">
+              <span class="alt-time">수요일 오후 3시</span>
+              <span class="alt-sub">꼭 4명 가능 · 선택 0명</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="alt" type="button">
+            <span class="alt-main">
+              <span class="alt-time">금요일 오후 4시</span>
+              <span class="alt-sub">꼭 3명 가능 · 이서연님 외근</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="js/interactions.js"></script>
+</body>
+</html>
