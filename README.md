@@ -9,10 +9,26 @@
 
 ```bash
 # 로컬에서 열기 — 빌드 없음, 정적 파일
+open prototype.html      # 단일 파일 (Claude Code 작업본)
+# 또는 분리 버전
 open index.html
-# 또는 간단한 서버
-python3 -m http.server 8000
 ```
+
+## Claude Code로 계속 작업하기
+
+이 저장소는 **`prototype.html` 한 파일**만 편집하면 됩니다 (전 화면·CSS·JS 인라인).
+
+```bash
+cd toss-pd-challenge
+claude          # Claude Code 실행
+# 예: "p-recommend 화면 거래 카드 문구를 더 부드럽게 바꿔줘"
+#     "p-tap 화면에 '다 괜찮아요' 원탭 버튼 추가해줘"
+```
+
+- 작업 컨텍스트·설계 원칙: `CLAUDE.md` (Claude Code가 자동 참조)
+- 화면은 `id="p-xxx"`로 지시하면 정확히 찾아갑니다.
+- `css/`·`js/` 분리 버전도 남겨뒀지만, 실제 작업본은 `prototype.html`.
+
 
 ## 해상도 결정
 
