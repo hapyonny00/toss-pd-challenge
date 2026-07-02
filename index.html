@@ -108,6 +108,7 @@
         <header class="nav"><button class="nav-back" data-nav="p-home" aria-label="뒤로">‹</button><span class="nav-title">시간 모으는 중</span></header>
         <div class="content">
           <h2 class="intro-title">동료들 시간을 모으고 있어요</h2>
+          <span class="deadline">📅 다음 주까지 · 4일 남았어요</span>
           <div class="callout callout-blue">
             <b>캘린더는 자동으로 확인했어요</b>
             <p>일정 제목은 안 보고, 비어 있는지만 확인했어요. 이제 각자 선호만 받는 중이에요.</p>
@@ -125,7 +126,7 @@
           <div class="callout">
             <p><b>꼭 오셔야 하는 4분은 이미 다 답했어요.</b> 두 분을 더 기다리지 않고 지금 정해도 돼요.</p>
           </div>
-          <button class="btn btn-primary" data-nav="p-recommend">지금 시간 보기</button>
+          <button class="btn btn-primary" data-nav="p-recommend">추천 시간 보기</button>
           <button class="btn btn-ghost" data-nav="p-tap">동료 응답 화면 보기 (데모)</button>
         </div>
       </main>
@@ -139,8 +140,11 @@
           <button class="tslot" data-slot><b>수요일 오후 2시</b><span class="tstate">✓ 괜찮아요</span></button>
           <button class="tslot" data-slot><b>목요일 오전 10시</b><span class="tstate">✓ 괜찮아요</span></button>
           <button class="tslot" data-slot><b>금요일 오후 4시</b><span class="tstate">✓ 괜찮아요</span></button>
-          <button class="link-line">셋 다 안 맞으면, 되는 시간 알려주기</button>
-          <button class="btn btn-primary" data-nav="p-collecting">보내기</button>
+          <button class="link-line" id="freeform-toggle">셋 다 안 맞으면, 되는 시간 알려주기</button>
+          <div class="freeform" id="freeform">
+            <input class="search" type="text" placeholder="예) 화요일 오전엔 언제든 좋아요" />
+          </div>
+          <button class="btn btn-primary" data-nav="p-collecting" data-toast="응답을 보냈어요. 10초 만에 끝!">보내기</button>
         </div>
       </main>
 
@@ -196,7 +200,7 @@
           <p class="sec-head">이렇게 보낼게요</p>
           <div class="msgbox">지후님, 화요일 11시 회의를 <b>30분만</b> 뒤로 옮겨주실 수 있을까요? 그러면 6명이 다 모일 수 있어요. 어려우면 목요일 10시로 진행할게요! <span class="edit">✎</span></div>
           <p class="hint">👆 박지후님은 <b>'옮길게요 / 어려워요'</b>만 누르면 돼요</p>
-          <button class="btn btn-primary" data-nav="p-waiting">부탁 보내기</button>
+          <button class="btn btn-primary" data-nav="p-waiting" data-toast="박지후님께 부탁을 보냈어요">부탁 보내기</button>
           <button class="btn btn-ghost" data-nav="p-confirmed">그냥 목요일 10시로 할게요</button>
         </div>
       </main>
@@ -215,8 +219,8 @@
           </div>
           <div class="msgbox dim"><i>보낸 부탁</i>"지후님, 화요일 11시 회의를 30분만 뒤로 옮겨주실 수 있을까요? 어려우면 그대로 진행할게요!"</div>
           <p class="hint center">급하지 않으면 그냥 기다려도 괜찮아요</p>
-          <button class="btn btn-ghost">🔔 박지후님께 다시 알림</button>
-          <button class="btn btn-ghost" data-nav="p-rescheduled">✓ 이대로 5명으로 확정</button>
+          <button class="btn btn-ghost" id="remind-btn">🔔 박지후님께 다시 알림</button>
+          <button class="btn btn-ghost" data-nav="p-rescheduled" data-toast="5명으로 확정했어요">✓ 기다리지 않고 5명으로 확정</button>
         </div>
       </main>
 
@@ -254,6 +258,7 @@
           <button class="alt radio" data-pick="4명이 와요 · 지금보다 1명 줄어요"><span class="alt-main"><span class="alt-time">수요일 오후 3시</span><span class="alt-sub">꼭 4명 가능 · 선택 0명</span></span><span class="rad"></span></button>
           <button class="alt radio" data-pick="3명이 와요 · 지금보다 2명 줄어요"><span class="alt-main"><span class="alt-time">금요일 오후 4시</span><span class="alt-sub">꼭 3명 가능 · 이서연님 외근</span></span><span class="rad"></span></button>
           <button class="alt radio" data-pick="6명 전원이 와요 · 박지후님 30분 조정이 필요해요"><span class="alt-main"><span class="alt-time">화요일 오전 11시</span><span class="alt-sub em-blue">6명 전원 · 박지후님 조정 시</span></span><span class="rad"></span></button>
+          <input class="search reason" type="text" placeholder="바꾸는 이유 (선택) · 동료에게 같이 전해요" />
           <div class="callout" id="impact"><p>바꿀 시간을 고르면, 누구에게 알림이 다시 가는지 알려드려요</p></div>
           <button class="btn btn-primary is-dim" id="resched-cta" data-nav="p-rescheduled">바꿀 시간을 골라요</button>
           <button class="btn btn-ghost" data-nav="p-confirmed">역시 그대로 둘게요</button>
@@ -282,6 +287,7 @@
       </main>
 
     </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </div>
 </div>
 

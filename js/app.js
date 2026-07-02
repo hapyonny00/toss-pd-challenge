@@ -102,9 +102,25 @@
     if (push !== false) history.replaceState(null, "", "#" + id);
   }
 
+  /* ---------- 토스트: 행동의 결과를 즉시 말해주기 ---------- */
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+
   document.addEventListener("click", function (e) {
     var nav = e.target.closest("[data-nav]");
-    if (nav) { show(nav.getAttribute("data-nav")); return; }
+    if (nav) {
+      show(nav.getAttribute("data-nav"));
+      var t = nav.getAttribute("data-toast");
+      if (t) toast(t);
+      return;
+    }
 
     /* 필수/선택 토글 */
     var tog = e.target.closest("[data-toggle]");
@@ -135,6 +151,23 @@
       return;
     }
 
+    /* 다시 알림: 한 번 보내면 잠가서 채근 방지 */
+    if (e.target.closest("#remind-btn")) {
+      var rb = document.getElementById("remind-btn");
+      rb.textContent = "✓ 알림을 보냈어요";
+      rb.classList.add("is-sent");
+      toast("박지후님께 다시 알렸어요");
+      return;
+    }
+
+    /* 셋 다 안 맞을 때: 되는 시간 직접 알려주기 */
+    if (e.target.closest("#freeform-toggle")) {
+      var ff = document.getElementById("freeform");
+      ff.classList.toggle("open");
+      if (ff.classList.contains("open")) ff.querySelector("input").focus();
+      return;
+    }
+
     /* 시간 바꾸기 라디오 */
     var pick = e.target.closest("[data-pick]");
     if (pick) {
@@ -148,6 +181,18 @@
       return;
     }
   });
+
+  /* ---------- 주소록 실시간 검색 ---------- */
+  var searchInput = document.querySelector("#p-add .search");
+  if (searchInput) {
+    searchInput.addEventListener("input", function () {
+      var q = this.value.trim().toLowerCase();
+      document.querySelectorAll("#p-add .prow").forEach(function (row) {
+        var name = row.querySelector(".pinfo").textContent.toLowerCase();
+        row.style.display = name.indexOf(q) > -1 ? "" : "none";
+      });
+    });
+  }
 
   /* 해시 진입 지원 */
   var initial = location.hash ? location.hash.slice(1) : "p-home";
