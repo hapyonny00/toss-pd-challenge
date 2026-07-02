@@ -27,6 +27,7 @@ css/tokens.css      TDS 문법 디자인 토큰 (피그마 Variables 원본)
 css/screen.css      화면 스타일 — 5단 타이포 위계 · 강조 리듬 · 모션
 js/app.js           해시 라우터 + 화면별 근거 패널 동기화 + 인터랙션
 docs/FIGMA_TOKENS.md  피그마 이식 가이드
+docs/UX_WRITING.md    UX 라이팅 시스템 (원칙 5 + 화면별 적용표)
 ```
 
 ## 조형 원칙 3줄
