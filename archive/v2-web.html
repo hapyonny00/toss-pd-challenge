@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  회의 잡기 — Toss PD Challenge 2026  ·  웹 퍼스트 반응형 (v2)
+  ============================================================
+  회사 일정 조율의 스타팅 포인트는 웹. 원티드 디자인 시스템(WDS)의
+  실제 프로덕션 시맨틱 토큰으로 재설계했습니다. 로고는 토스.
+
+  구조 (이 파일 안에서 검색해서 이동하세요):
+    [style: 디자인 토큰]  → :root — WDS semantic 토큰 (wanted.co.kr 프로덕션 CSS 원본)
+    [style: 컴포넌트]     → GNB · 카드 · 버튼 · 리스트 · 캘린더
+    <main class="page" id="p-xxx"> → 화면 11개
+        p-home / p-create / p-add / p-collecting / p-tap
+        p-recommend / p-ask / p-waiting / p-confirmed
+        p-reschedule / p-rescheduled
+    [script: 라우터]      → data-nav 해시 라우팅 + 설계 노트 동기화
+    [script: 캘린더]      → 다음 주 날짜 계산 · Google/Outlook/ICS 실동작
+
+  반응형: <768 모바일 풀블리드 / ≥1024 본문 640 + 설계 노트 300
+  ============================================================
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>회의 잡기 — Toss PD Challenge 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<!-- ===== [style: 디자인 토큰] — WDS semantic (원티드 프로덕션 원본) ===== -->
+<style>
+:root {
+  /* Atomic / Cool Neutral (WDS) */
+  --cn-10: #171719; --cn-20: #292A2D; --cn-30: #46474C;
+  --cn-40: #5A5C63; --cn-50: #70737C; --cn-60: #878A93;
+  --cn-70: #989BA2; --cn-80: #AEB0B6; --cn-90: #C2C4C8;
+  --cn-95: #DBDCDF; --cn-97: #EAEBEC; --cn-98: #F4F4F5; --cn-99: #F7F7F8;
+
+  /* Atomic / Blue (WDS primary) */
+  --blue-40: #0054D1; --blue-45: #005EEB; --blue-50: #0066FF;
+  --blue-60: #3385FF; --blue-90: #C9DEFE; --blue-95: #EAF2FE; --blue-99: #F7FBFF;
+
+  /* Semantic (light) */
+  --label-normal: #171719;
+  --label-neutral: rgba(46, 47, 51, 0.88);
+  --label-alternative: rgba(55, 56, 60, 0.61);
+  --label-assistive: rgba(55, 56, 60, 0.28);
+  --bg-normal: #FFFFFF;
+  --bg-alternative: #F7F7F8;
+  --line-normal: rgba(112, 115, 124, 0.22);
+  --line-alternative: rgba(112, 115, 124, 0.08);
+  --interaction-disable: #F4F4F5;
+
+  /* Status (WDS) */
+  --status-positive: #00BF40; --positive-bg: #F2FFF6;
+  --status-cautionary: #FF9200; --cautionary-bg: #FFF4E5;
+  --status-negative: #FF4242; --negative-bg: #FEECEC;
+
+  /* Primary */
+  --primary: var(--blue-50);
+  --primary-pressed: var(--blue-45);
+  --primary-tint: var(--blue-95);
+  --primary-pale: var(--blue-99);
+
+  /* Brand — 로고 전용 */
+  --toss-blue: #0064FF;
+
+  /* Typography */
+  --font: "Wanted Sans Variable", "Wanted Sans", "Pretendard Variable",
+    Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+
+  /* Radius · Elevation · Motion */
+  --radius-s: 8px; --radius-m: 12px; --radius-l: 16px; --radius-full: 999px;
+  --shadow-card: 0 1px 2px rgba(23, 23, 25, 0.04);
+  --shadow-hero: 0 8px 24px rgba(23, 23, 25, 0.08), 0 1px 3px rgba(23, 23, 25, 0.05);
+  --shadow-strong: 0 12px 32px rgba(23, 23, 25, 0.16);
+  --motion-quick: 150ms cubic-bezier(0.3, 0, 0.2, 1);
+  --motion-enter: 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+</style>
+
+<!-- ===== [style: 컴포넌트] ===== -->
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scrollbar-gutter: stable; }
+
+body {
+  font-family: var(--font);
+  color: var(--label-normal);
+  background: var(--bg-alternative);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+button { font-family: inherit; }
+input { font-family: inherit; }
+
+/* ---------- GNB ---------- */
+.gnb {
+  position: sticky; top: 0; z-index: 20;
+  height: 60px;
+  background: var(--bg-normal);
+  border-bottom: 1px solid var(--line-alternative);
+  display: flex; align-items: center;
+  padding: 0 20px;
+}
+.gnb-inner {
+  width: 100%; max-width: 1040px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px;
+}
+.logo {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.045em;
+  color: var(--toss-blue); line-height: 1;
+}
+.gnb-div { width: 1px; height: 16px; background: var(--line-normal); }
+.gnb-prod { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.gnb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.gnb-badge {
+  font-size: 12px; font-weight: 600; color: var(--label-alternative);
+  border: 1px solid var(--line-normal); border-radius: var(--radius-full);
+  padding: 5px 11px; white-space: nowrap;
+}
+
+/* ---------- 레이아웃: 본문 + 설계 노트 ---------- */
+.wrap {
+  max-width: 1040px; margin: 0 auto;
+  padding: 24px 20px 72px;
+}
+.flow { max-width: 640px; margin: 0 auto; }
+.rail { display: none; }
+
+@media (min-width: 1024px) {
+  .wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 640px) 300px;
+    gap: 64px;
+    justify-content: center;
+    padding-top: 40px;
+  }
+  .flow { margin: 0; }
+  .rail { display: block; }
+  .rail-inner { position: sticky; top: 92px; }
+  .rail-eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--primary); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rail-title { font-size: 22px; font-weight: 800; line-height: 1.35; letter-spacing: -0.02em; margin-bottom: 20px; }
+  .rail-list { list-style: none; display: grid; gap: 14px; counter-reset: r; }
+  .rail-list li {
+    counter-increment: r; position: relative; padding-left: 32px;
+    font-size: 13.5px; line-height: 1.65; color: var(--label-neutral);
+  }
+  .rail-list li b { color: var(--label-normal); }
+  .rail-list li::before {
+    content: counter(r);
+    position: absolute; left: 0; top: 1px;
+    width: 21px; height: 21px; display: grid; place-items: center;
+    background: var(--primary-tint); color: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: 11.5px; font-weight: 700;
+  }
+  .rail-note {
+    margin-top: 28px; padding-top: 16px;
+    border-top: 1px solid var(--line-normal);
+    font-size: 12px; line-height: 1.7; color: var(--label-alternative);
+  }
+}
+
+/* ---------- 페이지 전환 ---------- */
+.page[hidden] { display: none; }
+.page-in { animation: pagein 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes pagein { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- 화면 상단 ---------- */
+.crumb {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-size: 13.5px; font-weight: 600; color: var(--label-alternative);
+  padding: 6px 8px 6px 0; margin-bottom: 6px;
+  border-radius: var(--radius-s);
+}
+.crumb:hover { color: var(--label-neutral); }
+.crumb:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.crumb::before { content: "‹"; font-size: 18px; font-weight: 400; line-height: 1; }
+
+.intro { margin: 4px 0 24px; }
+.intro-title {
+  font-size: 26px; font-weight: 800; line-height: 1.3; letter-spacing: -0.02em;
+}
+.intro-sub { margin-top: 6px; font-size: 15px; color: var(--label-alternative); line-height: 1.55; }
+
+.sec-head {
+  font-size: 13px; font-weight: 700; color: var(--label-alternative);
+  margin: 24px 0 10px;
+}
+
+/* ---------- 카드 공통 ---------- */
+.card {
+  background: var(--bg-normal);
+  border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------- 홈 카드 ---------- */
+.mcard {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; background: var(--bg-normal);
+  border: 1px solid var(--line-alternative); border-radius: var(--radius-l);
+  padding: 18px 20px; margin-bottom: 10px;
+  text-align: left; cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--motion-quick), box-shadow var(--motion-quick), transform var(--motion-quick);
+}
+.mcard:hover { border-color: var(--line-normal); box-shadow: var(--shadow-hero); }
+.mcard:active { transform: scale(0.995); }
+.mcard:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mcard-hi { border-color: rgba(0, 102, 255, 0.35); }
+.mcard-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mcard-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mcard-time { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.mcard-sub { font-size: 13px; color: var(--label-alternative); }
+
+/* ---------- 배지 · 칩 ---------- */
+.badge {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.01em;
+  padding: 4px 10px; border-radius: var(--radius-full); white-space: nowrap;
+}
+.badge-green { background: var(--positive-bg); color: var(--status-positive); }
+.badge-blue { background: var(--primary-tint); color: var(--primary); }
+.badge-grey { background: var(--cn-98); color: var(--label-alternative); }
+.badge-orange { background: var(--cautionary-bg); color: var(--status-cautionary); }
+
+.deadline {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--cautionary-bg); color: var(--status-cautionary);
+  font-size: 13px; font-weight: 700;
+  padding: 6px 12px; border-radius: var(--radius-full);
+  margin-bottom: 16px;
+}
+
+.chiprow { display: flex; gap: 8px; margin: 20px 0 24px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-normal); border: 1px solid var(--line-normal);
+  border-radius: var(--radius-full); padding: 9px 14px;
+  font-size: 13.5px; font-weight: 600; color: var(--label-neutral);
+}
+
+/* ---------- 버튼 ---------- */
+.btn {
+  width: 100%; border: none; cursor: pointer;
+  font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em;
+  border-radius: var(--radius-m);
+  transition: transform var(--motion-quick), background var(--motion-quick),
+    border-color var(--motion-quick), color var(--motion-quick);
+}
+.btn:active { transform: scale(0.985); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn-primary { height: 52px; background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-pressed); }
+.btn-ghost-blue {
+  height: 48px; background: var(--bg-normal); color: var(--primary);
+  border: 1px solid rgba(0, 102, 255, 0.35);
+}
+.btn-ghost-blue:hover { background: var(--primary-tint); }
+.btn-ghost {
+  height: 48px; background: var(--bg-normal); color: var(--label-neutral);
+  border: 1px solid var(--line-normal); margin-top: 8px;
+}
+.btn-ghost:hover { border-color: var(--cn-80); }
+.btn.is-dim { opacity: 0.4; }
+.btn.is-sent {
+  background: var(--bg-normal); color: var(--status-positive);
+  border: 1px solid var(--positive-bg); pointer-events: none;
+}
+.btn-row { display: flex; gap: 8px; margin-top: 8px; }
+.btn.half { flex: 1; margin-top: 0; font-size: 14px; }
+
+.link-line {
+  display: block; width: 100%; margin-top: 10px;
+  background: none; border: none;
+  font-size: 13.5px; color: var(--label-alternative);
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+  padding: 8px; text-align: center;
+}
+.link-line:hover { color: var(--label-neutral); }
+
+/* ---------- 아바타 ---------- */
+.avatar {
+  width: 40px; height: 40px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--cn-98); color: var(--label-neutral);
+  font-size: 14px; font-weight: 600;
+  border-radius: var(--radius-full);
+}
+.avatar.sm { width: 30px; height: 30px; font-size: 12px; }
+.avatar.lg { width: 56px; height: 56px; font-size: 18px; }
+.avatar-me { background: var(--primary-tint); color: var(--primary); }
+
+/* ---------- 사람 리스트 ---------- */
+.plist { background: var(--bg-normal); border: 1px solid var(--line-alternative); border-radius: var(--radius-l); padding: 0 18px; box-shadow: var(--shadow-card); }
+.prow {
+  width: 100%; display: flex; align-items: center; gap: 14px;
+  padding: 13px 0; border-bottom: 1px solid var(--line-alternative);
+  background: none; border-left: none; border-right: none; border-top: none;
+  text-align: left; cursor: default;
+}
+.plist .prow:last-child { border-bottom: none; }
+button.prow { cursor: pointer; }
+button.prow:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--radius-s); }
+.pinfo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pinfo b { font-size: 14.5px; font-weight: 600; }
+.pinfo i { font-style: normal; font-size: 12.5px; color: var(--label-alternative); }
+.pill {
+  font-size: 12.5px; font-weight: 600;
+  padding: 7px 12px; border-radius: var(--radius-full);
+  border: 1px solid transparent; cursor: pointer;
+  transition: background var(--motion-quick);
+}
+.pill.must { background: var(--primary-tint); color: var(--primary); }
+.pill.opt { background: none; color: var(--label-alternative); border-color: var(--line-normal); }
+.pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.add-line {
+  width: 100%; height: 46px; margin-top: 10px;
+  border: 1.5px dashed var(--cn-90); background: none;
+  border-radius: var(--radius-m);
+  font-size: 14px; font-weight: 600; color: var(--label-alternative); cursor: pointer;
+}
+.add-line:hover { border-color: var(--cn-70); color: var(--label-neutral); }
+
+.me-note {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-normal); border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-s);
+  padding: 8px 12px; margin-top: 14px;
+  font-size: 12.5px; color: var(--label-alternative);
+}
+
+/* ---------- 검색 · 입력 ---------- */
+.search {
+  width: 100%; height: 46px;
+  border: 1px solid var(--line-normal); border-radius: var(--radius-m);
+  padding: 0 16px; font-size: 14px;
+  background: var(--bg-normal); color: var(--label-normal);
+  margin-top: 8px;
+}
+.search::placeholder { color: var(--label-assistive); }
+.search:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.chk {
+  width: 24px; height: 24px; border-radius: var(--radius-full);
+  display: grid; place-items: center; font-size: 13px; font-weight: 800;
+  border: 1.5px solid var(--cn-90); color: transparent; flex-shrink: 0;
+  transition: background var(--motion-quick);
+}
+.prow.sel .chk { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* ---------- 콜아웃 · 힌트 ---------- */
+.callout {
+  background: var(--bg-normal); border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-m);
+  padding: 13px 16px; margin: 12px 0;
+}
+.callout i { display: block; font-style: normal; font-size: 12px; color: var(--label-alternative); margin-bottom: 2px; }
+.callout b { font-size: 13.5px; font-weight: 700; }
+.callout p { font-size: 13px; line-height: 1.6; color: var(--label-alternative); margin-top: 2px; }
+.callout-blue { background: var(--primary-pale); border-color: rgba(0, 102, 255, 0.18); }
+.callout-blue b { color: var(--blue-45); }
+.callout-blue p { color: var(--blue-45); opacity: 0.85; }
+
+.hint { font-size: 13px; color: var(--label-alternative); line-height: 1.6; margin: 10px 0 18px; }
+.hint.center { text-align: center; }
+.hint b { color: var(--label-neutral); }
+
+/* ---------- 진행 ---------- */
+.prog-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--label-alternative); margin-top: 18px; }
+.prog-row b { color: var(--label-normal); }
+.prog { height: 6px; background: var(--cn-97); border-radius: 3px; overflow: hidden; margin: 8px 0 16px; }
+.prog i { display: block; height: 100%; width: 66%; background: var(--primary); border-radius: 3px; }
+.tag-must, .tag-opt { font-style: normal; font-size: 11px; font-weight: 700; margin-left: 2px; }
+.tag-must { color: var(--primary); }
+.tag-opt { color: var(--label-assistive); }
+.stat { font-size: 12.5px; font-weight: 600; color: var(--label-assistive); white-space: nowrap; }
+.stat-done { color: var(--status-positive); }
+
+/* ---------- 히어로 (추천) ---------- */
+.hero {
+  background: var(--bg-normal);
+  border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-l);
+  padding: 24px;
+  box-shadow: var(--shadow-hero);
+}
+.hero-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hero-time { font-size: 28px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
+.hero-date { width: 100%; font-size: 13px; color: var(--label-alternative); margin-top: 2px; }
+.people { display: flex; justify-content: space-between; margin: 22px 0 16px; max-width: 420px; }
+.person { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 48px; }
+.ring-green { box-shadow: 0 0 0 2px var(--bg-normal), 0 0 0 4px var(--status-positive); }
+.ring-blue { box-shadow: 0 0 0 2px var(--bg-normal), 0 0 0 4px var(--primary); }
+.ring-dash { border: 1.5px dashed var(--cn-90); color: var(--label-assistive); background: var(--cn-99); }
+.tick {
+  position: absolute; top: -2px; right: 0;
+  width: 16px; height: 16px; display: grid; place-items: center;
+  background: var(--status-positive); color: #fff;
+  font-size: 10px; font-weight: 800;
+  border-radius: var(--radius-full); border: 2px solid var(--bg-normal);
+}
+.tick-blue { background: var(--primary); }
+.person-name { font-size: 11.5px; color: var(--label-alternative); }
+.is-away .person-name { color: var(--label-assistive); }
+
+.facts { list-style: none; border-top: 1px solid var(--line-alternative); }
+.fact {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--line-alternative);
+}
+.fact.last { border-bottom: none; }
+.fact-label { font-size: 13.5px; color: var(--label-alternative); }
+.fact-value { font-size: 13.5px; font-weight: 600; text-align: right; }
+.value-green { color: var(--status-positive); }
+.fact-ico { font-size: 15px; margin-right: 4px; }
+.fact-label.wide { flex: 1; color: var(--label-neutral); font-weight: 500; }
+.fact.warn em { display: block; font-style: normal; font-size: 11.5px; color: var(--status-cautionary); margin-top: 2px; }
+
+.hero-why { margin-top: 12px; font-size: 13.5px; line-height: 1.6; color: var(--label-alternative); }
+.notice {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: var(--cn-99); border-radius: var(--radius-m);
+  padding: 12px 14px; margin: 16px 0;
+}
+.notice p { font-size: 12.5px; line-height: 1.6; color: var(--label-alternative); }
+.notice b { color: var(--label-neutral); }
+
+/* ---------- 거래 카드 ---------- */
+.trade {
+  margin-top: 16px;
+  background: linear-gradient(180deg, var(--primary-tint), var(--primary-pale));
+  border: 1px solid rgba(0, 102, 255, 0.14);
+  border-radius: var(--radius-l);
+  padding: 24px;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--primary); background: var(--bg-normal);
+  padding: 4px 11px; border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+.trade-time { font-size: 18px; font-weight: 700; line-height: 1.4; letter-spacing: -0.01em; }
+.trade-body { margin: 8px 0 16px; font-size: 13.5px; line-height: 1.65; color: var(--label-neutral); }
+.em-blue { color: var(--blue-45); font-weight: 700; }
+
+/* ---------- 차선 ---------- */
+.alts { margin-top: 28px; }
+.alts-head { font-size: 13px; color: var(--label-alternative); margin-bottom: 8px; }
+.alt {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; background: var(--bg-normal);
+  border: 1px solid var(--line-alternative); border-radius: var(--radius-m);
+  padding: 13px 16px; margin-bottom: 8px;
+  text-align: left; cursor: pointer;
+  transition: border-color var(--motion-quick), transform var(--motion-quick);
+}
+.alt:hover { border-color: var(--line-normal); }
+.alt:active { transform: scale(0.995); }
+.alt:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.alt-main { display: flex; flex-direction: column; gap: 2px; }
+.alt-time { font-size: 15px; font-weight: 600; }
+.alt-sub { font-size: 12.5px; color: var(--label-alternative); }
+.alt-sub.em-blue { color: var(--blue-45); }
+.chev { color: var(--label-assistive); font-size: 18px; }
+.alt.radio.on { border: 2px solid var(--primary); padding: 12px 15px; }
+.rad {
+  width: 20px; height: 20px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--cn-90); flex-shrink: 0;
+  transition: border var(--motion-quick);
+}
+.alt.radio.on .rad { border: 6px solid var(--primary); }
+
+/* ---------- 대필 메시지 ---------- */
+.from-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 14px; }
+.from-text { font-size: 13.5px; color: var(--label-alternative); }
+.msgbox {
+  position: relative; background: var(--bg-normal);
+  border: 1px solid var(--line-alternative); border-radius: var(--radius-m);
+  padding: 14px 16px; font-size: 14px; line-height: 1.7;
+  color: var(--label-neutral); margin-bottom: 12px;
+  box-shadow: var(--shadow-card);
+}
+.msgbox b { font-weight: 700; color: var(--label-normal); }
+.msgbox i { display: block; font-style: normal; font-size: 11.5px; color: var(--label-alternative); margin-bottom: 4px; }
+.msgbox.dim { color: var(--label-alternative); box-shadow: none; }
+.msgbox .edit { position: absolute; top: 12px; right: 14px; color: var(--label-assistive); font-size: 13px; }
+
+/* ---------- 시간 슬롯 (응답자) ---------- */
+.tslot {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-normal); border: 1px solid var(--line-normal);
+  border-radius: var(--radius-m); padding: 16px 18px;
+  margin-bottom: 8px; cursor: pointer;
+  transition: border-color var(--motion-quick), background var(--motion-quick);
+}
+.tslot:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tslot b { font-size: 15px; font-weight: 600; }
+.tslot small { display: block; font-size: 12px; font-weight: 500; color: var(--label-alternative); margin-top: 2px; }
+.tstate { font-size: 13px; font-weight: 600; color: var(--status-positive); white-space: nowrap; }
+.tslot.bad { background: var(--negative-bg); border-color: rgba(255, 66, 66, 0.35); }
+.tslot.bad b, .tslot.bad .tstate, .tslot.bad small { color: var(--status-negative); }
+.freeform { display: none; margin: 8px 0 12px; }
+.freeform.open { display: block; }
+.freeform .search { margin-top: 0; }
+
+/* ---------- 대기 ---------- */
+.center-top { padding-top: 8px; text-align: center; }
+.center-top .intro { margin-bottom: 20px; }
+.wait-ava { position: relative; width: 56px; margin: 8px auto 14px; }
+.wait-dot {
+  position: absolute; right: -6px; bottom: -4px; font-size: 14px;
+  background: var(--cautionary-bg); border-radius: var(--radius-full);
+  width: 24px; height: 24px; display: grid; place-items: center;
+  border: 2px solid var(--bg-alternative);
+}
+.card-flat {
+  background: var(--bg-normal); border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-m); padding: 6px 18px; margin: 18px 0;
+  text-align: left; box-shadow: var(--shadow-card);
+}
+.card-flat-title { display: block; font-size: 13.5px; font-weight: 700; padding: 10px 0 4px; }
+
+/* ---------- 확정 ---------- */
+.done-ico {
+  width: 56px; height: 56px; margin: 8px auto 14px;
+  display: grid; place-items: center; font-size: 24px; font-weight: 800;
+  color: var(--status-positive); background: var(--positive-bg); border-radius: var(--radius-full);
+}
+.done-title { font-size: 24px; font-weight: 800; text-align: center; letter-spacing: -0.02em; }
+.done-sub { font-size: 15.5px; color: var(--label-alternative); text-align: center; margin-top: 5px; }
+.ava-strip { display: flex; align-items: center; margin: 16px 0 4px; }
+.avatar.ov { margin-left: -7px; border: 2px solid var(--bg-normal); }
+.avatar.ov:first-child { margin-left: 0; }
+.strip-label { font-size: 13px; color: var(--label-alternative); margin-left: 10px; }
+
+/* ============================================================
+   캘린더 — 이벤트 카드 · 주간 뷰 · 내 캘린더에 담기
+   ============================================================ */
+
+/* 이벤트 카드: 캘린더에 들어간 모습 그대로 */
+.event {
+  position: relative;
+  background: var(--bg-normal);
+  border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-hero);
+  padding: 20px 20px 20px 24px;
+  margin: 22px 0 0;
+  overflow: hidden;
+  text-align: left;
+}
+.event::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; background: var(--primary);
+}
+.event-top { display: flex; align-items: center; gap: 8px; }
+.event-title {
+  flex: 1; min-width: 0;
+  border: none; background: none;
+  font-family: inherit; font-size: 17px; font-weight: 700; letter-spacing: -0.01em;
+  color: var(--label-normal);
+  padding: 2px 4px; margin-left: -4px;
+  border-radius: 6px;
+}
+.event-title:hover { background: var(--cn-99); }
+.event-title:focus { outline: 2px solid var(--primary); background: var(--bg-normal); }
+.event-edit-hint { font-size: 11.5px; color: var(--label-assistive); white-space: nowrap; }
+.event-rows { list-style: none; margin-top: 14px; display: grid; gap: 10px; }
+.event-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--label-neutral); }
+.event-row .ico { width: 18px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.event-row b { font-weight: 600; color: var(--label-normal); }
+.event-row .sub { display: block; font-size: 12px; color: var(--label-alternative); margin-top: 1px; }
+.auto-badge {
+  font-size: 11px; font-weight: 700; color: var(--status-positive);
+  background: var(--positive-bg); border-radius: var(--radius-full);
+  padding: 2px 8px; margin-left: 6px; vertical-align: 1px;
+}
+.event-link { color: var(--primary); font-weight: 600; text-decoration: none; }
+.event-link:hover { text-decoration: underline; }
+
+/* 알림 칩 */
+.alarm-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.alarm-chip {
+  font-size: 12px; font-weight: 600; color: var(--label-alternative);
+  background: none; border: 1px solid var(--line-normal);
+  border-radius: var(--radius-full); padding: 4px 10px; cursor: pointer;
+  transition: background var(--motion-quick), color var(--motion-quick);
+}
+.alarm-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.alarm-chip.on { background: var(--primary-tint); border-color: transparent; color: var(--primary); font-weight: 700; }
+
+/* 주간 뷰 — 이벤트가 다음 주에 자리 잡는 모습 */
+.week-wrap { margin: 14px 0 4px; text-align: left; }
+.week-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.week-title { font-size: 13px; font-weight: 700; color: var(--label-alternative); }
+.week-range { font-size: 12px; color: var(--label-assistive); }
+.week {
+  display: grid; grid-template-columns: 28px repeat(5, 1fr); gap: 6px;
+  background: var(--bg-normal); border: 1px solid var(--line-alternative);
+  border-radius: var(--radius-l); padding: 14px 14px 16px;
+  box-shadow: var(--shadow-card);
+}
+.waxis { position: relative; height: 144px; margin-top: 34px; }
+.waxis span {
+  position: absolute; right: 4px; transform: translateY(-50%);
+  font-size: 10px; color: var(--label-assistive);
+}
+.wday { text-align: center; }
+.wday-name { font-size: 11.5px; font-weight: 600; color: var(--label-alternative); }
+.wday-date { font-size: 13px; font-weight: 700; margin-top: 1px; }
+.wday.today .wday-date { color: var(--primary); }
+.wcol {
+  position: relative; height: 144px; margin-top: 8px;
+  background: var(--cn-99); border-radius: 8px;
+}
+.wblock {
+  position: absolute; left: 3px; right: 3px;
+  border-radius: 5px; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; white-space: nowrap;
+}
+.wblock.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0, 102, 255, 0.35); }
+.wblock.ghost { background: var(--primary-tint); color: var(--primary); opacity: 0.7; }
+.wblock.gone { background: var(--cn-97); color: var(--label-assistive); text-decoration: line-through; }
+.wblock.drop { animation: drop 640ms cubic-bezier(0.2, 1.4, 0.4, 1) both; animation-delay: 240ms; }
+@keyframes drop {
+  from { opacity: 0; transform: translateY(-26px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 내 캘린더에 담기 */
+.caladd { margin: 18px 0 4px; text-align: left; }
+.caladd-head { font-size: 13px; font-weight: 700; color: var(--label-alternative); margin-bottom: 8px; }
+.caladd-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.calbtn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--bg-normal); border: 1px solid var(--line-normal);
+  border-radius: var(--radius-m); padding: 13px 8px;
+  font-size: 12.5px; font-weight: 600; color: var(--label-neutral);
+  cursor: pointer;
+  transition: border-color var(--motion-quick), box-shadow var(--motion-quick), transform var(--motion-quick);
+}
+.calbtn:hover { border-color: var(--cn-80); box-shadow: var(--shadow-card); }
+.calbtn:active { transform: scale(0.98); }
+.calbtn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.calbtn .cico {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff;
+}
+.cico-g { background: #FFF; border: 1px solid var(--line-normal); }
+.cico-o { background: #0F6CBD; }
+.cico-a { background: var(--cn-10); color: #fff; }
+.caladd-hint { font-size: 12px; color: var(--label-assistive); margin-top: 8px; line-height: 1.6; }
+
+/* ---------- 토스트 ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 36px; z-index: 60;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--cn-20); color: #fff;
+  font-size: 13.5px; font-weight: 600;
+  padding: 12px 20px; border-radius: var(--radius-full);
+  box-shadow: var(--shadow-strong);
+  opacity: 0; pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap; max-width: calc(100vw - 40px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- 모션 ---------- */
+.enter { opacity: 0; transform: translateY(10px); animation: rise var(--motion-enter) forwards; animation-delay: var(--d, 0ms); }
+@keyframes rise { to { opacity: 1; transform: none; } }
+.pop { opacity: 0; transform: scale(0.7); animation: pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; animation-delay: var(--d, 0ms); }
+@keyframes pop { to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .enter, .pop, .page-in, .wblock.drop { animation: none !important; opacity: 1; transform: none; }
+  .btn, .alt, .mcard, .calbtn { transition: none; }
+}
+
+/* ---------- 모바일 ---------- */
+@media (max-width: 767px) {
+  .gnb { height: 56px; padding: 0 16px; }
+  .gnb-badge { display: none; }
+  .wrap { padding: 16px 16px 56px; }
+  .intro-title { font-size: 22px; }
+  .hero, .trade, .event { padding: 20px 18px; }
+  .hero-time { font-size: 24px; }
+  .people { max-width: none; }
+  .caladd-row { grid-template-columns: 1fr; }
+  .calbtn { flex-direction: row; justify-content: flex-start; padding: 12px 14px; }
+  .done-title { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== GNB ===== -->
+<header class="gnb">
+  <div class="gnb-inner">
+    <span class="logo" aria-label="토스">toss</span>
+    <span class="gnb-div" aria-hidden="true"></span>
+    <span class="gnb-prod">회의 잡기</span>
+    <div class="gnb-right">
+      <span class="gnb-badge">PD Challenge 2026</span>
+      <span class="avatar sm avatar-me" aria-label="내 프로필">화</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="flow" id="screen">
+
+    <!-- ============ 홈 ============ -->
+    <main class="page" id="p-home" data-title="홈 — 회의 목록">
+      <div class="intro">
+        <h1 class="intro-title">내 회의</h1>
+        <p class="intro-sub">확정하면 모두의 캘린더에 자동으로 들어가요</p>
+      </div>
+      <p class="sec-head">다가오는 회의</p>
+      <button class="mcard mcard-hi" data-nav="p-confirmed">
+        <span class="mcard-main">
+          <span class="mcard-row"><b class="mcard-time">목요일 오전 10시</b><span class="badge badge-blue">방금 잡았어요</span></span>
+          <span class="mcard-sub"><span data-when="thu-short"></span> · 1시간 · 5명 · 10층 회의실 A</span>
+        </span>
+        <span class="badge badge-green">확정</span>
+      </button>
+      <p class="sec-head">조율하는 중</p>
+      <button class="mcard" data-nav="p-collecting">
+        <span class="mcard-main">
+          <span class="mcard-row"><b class="mcard-time">시간을 모으고 있어요</b></span>
+          <span class="mcard-sub">6명 중 4명이 답했어요 · 곧 정할 수 있어요</span>
+        </span>
+        <span class="badge badge-grey">4 / 6</span>
+      </button>
+      <button class="mcard" data-nav="p-tap">
+        <span class="mcard-main">
+          <span class="mcard-row"><b class="mcard-time">이서연님의 회의</b></span>
+          <span class="mcard-sub">시간을 골라주세요 · 10초면 돼요</span>
+        </span>
+        <span class="badge badge-orange">답할 차례</span>
+      </button>
+      <button class="btn btn-primary" style="margin-top:20px" data-nav="p-create">＋ 새 회의 잡기</button>
+    </main>
+
+    <!-- ============ 회의 만들기 ============ -->
+    <main class="page" id="p-create" data-title="회의 만들기" hidden>
+      <button class="crumb" data-nav="p-home">회의 목록</button>
+      <div class="intro">
+        <h1 class="intro-title">누가 모여야 하나요?</h1>
+        <p class="intro-sub">다음 주 안에 1시간, 같이 모일 사람을 골라요</p>
+      </div>
+      <div class="me-note"><span class="avatar avatar-me sm">화</span> 나(김화연)는 자동으로 들어가요</div>
+      <p class="sec-head">함께할 사람 · 6명</p>
+      <div class="plist">
+        <div class="prow"><span class="avatar">김</span><span class="pinfo"><b>김민준</b><i>팀장</i></span><button class="pill must" data-toggle>꼭 와야 해요 ⇄</button></div>
+        <div class="prow"><span class="avatar">이</span><span class="pinfo"><b>이서연</b><i>기획 PM</i></span><button class="pill must" data-toggle>꼭 와야 해요 ⇄</button></div>
+        <div class="prow"><span class="avatar">박</span><span class="pinfo"><b>박지후</b><i>개발</i></span><button class="pill must" data-toggle>꼭 와야 해요 ⇄</button></div>
+        <div class="prow"><span class="avatar">정</span><span class="pinfo"><b>정하은</b><i>디자인</i></span><button class="pill must" data-toggle>꼭 와야 해요 ⇄</button></div>
+        <div class="prow"><span class="avatar">최</span><span class="pinfo"><b>최도윤</b><i>마케팅</i></span><button class="pill opt" data-toggle>안 와도 돼요 ⇄</button></div>
+        <div class="prow"><span class="avatar">강</span><span class="pinfo"><b>강수아</b><i>데이터</i></span><button class="pill opt" data-toggle>안 와도 돼요 ⇄</button></div>
+      </div>
+      <button class="add-line" data-nav="p-add">＋ 동료 추가</button>
+      <div class="chiprow">
+        <span class="chip">🕐 1시간 ›</span><span class="chip">📅 다음 주까지 ›</span>
+      </div>
+      <button class="btn btn-primary" data-nav="p-collecting">동료 시간 확인하기</button>
+    </main>
+
+    <!-- ============ 동료 추가 ============ -->
+    <main class="page" id="p-add" data-title="동료 추가" hidden>
+      <button class="crumb" data-nav="p-create">회의 만들기</button>
+      <div class="intro">
+        <h1 class="intro-title">동료 추가</h1>
+        <p class="intro-sub">이름이나 팀으로 찾을 수 있어요</p>
+      </div>
+      <input class="search" id="add-search" type="text" placeholder="🔍  이름이나 팀으로 찾기" />
+      <p class="sec-head">우리 팀</p>
+      <div class="plist">
+        <button class="prow sel" data-check><span class="avatar">김</span><span class="pinfo"><b>김민준</b><i>팀장</i></span><span class="chk">✓</span></button>
+        <button class="prow sel" data-check><span class="avatar">이</span><span class="pinfo"><b>이서연</b><i>기획 PM</i></span><span class="chk">✓</span></button>
+        <button class="prow sel" data-check><span class="avatar">박</span><span class="pinfo"><b>박지후</b><i>개발</i></span><span class="chk">✓</span></button>
+        <button class="prow sel" data-check><span class="avatar">정</span><span class="pinfo"><b>정하은</b><i>디자인</i></span><span class="chk">✓</span></button>
+        <button class="prow" data-check><span class="avatar">한</span><span class="pinfo"><b>한도경</b><i>개발</i></span><span class="chk">✓</span></button>
+      </div>
+      <p class="sec-head">최근 함께 일한 사람</p>
+      <div class="plist">
+        <button class="prow sel" data-check><span class="avatar">최</span><span class="pinfo"><b>최도윤</b><i>마케팅</i></span><span class="chk">✓</span></button>
+        <button class="prow sel" data-check><span class="avatar">강</span><span class="pinfo"><b>강수아</b><i>데이터</i></span><span class="chk">✓</span></button>
+        <button class="prow" data-check><span class="avatar">윤</span><span class="pinfo"><b>윤재호</b><i>영업</i></span><span class="chk">✓</span></button>
+      </div>
+      <button class="btn btn-primary" id="add-cta" style="margin-top:20px" data-nav="p-create">6명으로 계속하기</button>
+    </main>
+
+    <!-- ============ 시간 모으는 중 (주최자) ============ -->
+    <main class="page" id="p-collecting" data-title="시간 모으는 중" hidden>
+      <button class="crumb" data-nav="p-home">회의 목록</button>
+      <div class="intro">
+        <h1 class="intro-title">동료들 시간을 모으고 있어요</h1>
+      </div>
+      <span class="deadline">📅 다음 주까지 · 4일 남았어요</span>
+      <div class="callout callout-blue">
+        <b>캘린더는 자동으로 확인했어요</b>
+        <p>일정 제목은 안 보고, 비어 있는지만 봤어요. 지금은 각자 선호만 받고 있어요.</p>
+      </div>
+      <div class="prog-row"><span>답한 사람</span><b>4 / 6</b></div>
+      <div class="prog"><i></i></div>
+      <div class="plist">
+        <div class="prow"><span class="avatar">김</span><span class="pinfo"><b>김민준 <em class="tag-must">꼭</em></b></span><span class="stat stat-done">✓ 답했어요</span></div>
+        <div class="prow"><span class="avatar">이</span><span class="pinfo"><b>이서연 <em class="tag-must">꼭</em></b></span><span class="stat stat-done">✓ 답했어요</span></div>
+        <div class="prow"><span class="avatar">박</span><span class="pinfo"><b>박지후 <em class="tag-must">꼭</em></b></span><span class="stat stat-done">✓ 답했어요</span></div>
+        <div class="prow"><span class="avatar">정</span><span class="pinfo"><b>정하은 <em class="tag-must">꼭</em></b></span><span class="stat stat-done">✓ 답했어요</span></div>
+        <div class="prow"><span class="avatar">최</span><span class="pinfo"><b>최도윤 <em class="tag-opt">선택</em></b></span><span class="stat">기다리는 중</span></div>
+        <div class="prow"><span class="avatar">강</span><span class="pinfo"><b>강수아 <em class="tag-opt">선택</em></b></span><span class="stat">기다리는 중</span></div>
+      </div>
+      <div class="callout">
+        <p><b>꼭 와야 하는 4명은 이미 다 답했어요.</b> 두 명을 더 기다리지 않고 지금 정해도 돼요.</p>
+      </div>
+      <button class="btn btn-primary" data-nav="p-recommend">추천 시간 보기</button>
+      <button class="btn btn-ghost" data-nav="p-tap">동료 응답 화면 보기 (데모)</button>
+    </main>
+
+    <!-- ============ 동료 10초 탭 (응답자) ============ -->
+    <main class="page" id="p-tap" data-title="동료 응답 — 10초 탭" hidden>
+      <div class="from-row"><span class="avatar avatar-me sm">화</span><span class="from-text">김화연님이 회의 시간을 찾고 있어요</span></div>
+      <div class="intro">
+        <h1 class="intro-title">안 되는 시간만 알려주세요</h1>
+        <p class="intro-sub">모두 비어 있는 시간이에요 · 다 괜찮으면 그대로 보내요</p>
+      </div>
+      <button class="tslot" data-slot><span><b>수요일 오후 2시</b><small data-when="wed-short"></small></span><span class="tstate">✓ 괜찮아요</span></button>
+      <button class="tslot" data-slot><span><b>목요일 오전 10시</b><small data-when="thu-short"></small></span><span class="tstate">✓ 괜찮아요</span></button>
+      <button class="tslot" data-slot><span><b>금요일 오후 4시</b><small data-when="fri-short"></small></span><span class="tstate">✓ 괜찮아요</span></button>
+      <button class="link-line" id="freeform-toggle">셋 다 안 맞으면, 되는 시간 알려주기</button>
+      <div class="freeform" id="freeform">
+        <input class="search" type="text" placeholder="예) 화요일 오전엔 언제든 좋아요" />
+      </div>
+      <button class="btn btn-primary" data-nav="p-collecting" data-toast="답을 보냈어요. 10초 만에 끝!">보내기</button>
+    </main>
+
+    <!-- ============ 추천 + 거래 (히어로) ============ -->
+    <main class="page" id="p-recommend" data-title="추천 + 거래" hidden>
+      <button class="crumb" data-nav="p-collecting">시간 모으는 중</button>
+      <div class="intro">
+        <h1 class="intro-title">이 시간이 가장 좋아요</h1>
+        <p class="intro-sub">꼭 와야 하는 4명 기준으로 골랐어요</p>
+      </div>
+
+      <section class="hero">
+        <div class="hero-head">
+          <span class="hero-time">목요일 오전 10시</span>
+          <span class="badge badge-green">추천</span>
+          <span class="hero-date" data-when="thu-long"></span>
+        </div>
+        <div class="people">
+          <div class="person pop" style="--d:120ms"><span class="avatar ring-green">김</span><span class="tick">✓</span><span class="person-name">김민준</span></div>
+          <div class="person pop" style="--d:180ms"><span class="avatar ring-green">이</span><span class="tick">✓</span><span class="person-name">이서연</span></div>
+          <div class="person pop" style="--d:240ms"><span class="avatar ring-green">박</span><span class="tick">✓</span><span class="person-name">박지후</span></div>
+          <div class="person pop" style="--d:300ms"><span class="avatar ring-green">정</span><span class="tick">✓</span><span class="person-name">정하은</span></div>
+          <div class="person pop" style="--d:360ms"><span class="avatar ring-blue">최</span><span class="tick tick-blue">✓</span><span class="person-name">최도윤</span></div>
+          <div class="person pop is-away" style="--d:420ms"><span class="avatar ring-dash">강</span><span class="person-name">강수아</span></div>
+        </div>
+        <ul class="facts">
+          <li class="fact"><span class="fact-label">꼭 와야 하는 4명</span><span class="fact-value value-green">모두 가능</span></li>
+          <li class="fact"><span class="fact-label">선택 참석 2명</span><span class="fact-value">최도윤님 가능</span></li>
+          <li class="fact"><span class="fact-label">피하고 싶은 시간</span><span class="fact-value value-green">없음</span></li>
+        </ul>
+        <p class="hero-why">선택 참석이 한 명 더 올 수 있고, 피하고 싶은 시간이 없어서 가장 좋아요.</p>
+        <div class="notice"><p>강수아님은 <b>선택 참석</b>이라, 외근이어도 회의는 그대로 진행돼요.</p></div>
+        <button class="btn btn-primary" data-nav="p-confirmed">목요일 오전 10시로 잡기</button>
+      </section>
+
+      <section class="trade">
+        <span class="eyebrow">전원이 모이려면</span>
+        <h3 class="trade-time">화요일 오전 11시면 6명 모두 와요</h3>
+        <p class="trade-body">박지후님 일정과 <b class="em-blue">30분만</b> 겹쳐요. 그 회의를 조금만 옮기면 전원이 모여요.</p>
+        <button class="btn btn-ghost-blue" data-nav="p-ask">박지후님에게 30분 조정 부탁하기</button>
+      </section>
+
+      <section class="alts">
+        <p class="alts-head">다른 시간도 있어요</p>
+        <button class="alt"><span class="alt-main"><span class="alt-time">수요일 오후 3시</span><span class="alt-sub">꼭 4명 가능 · 선택 0명</span></span><span class="chev">›</span></button>
+        <button class="alt"><span class="alt-main"><span class="alt-time">금요일 오후 4시</span><span class="alt-sub">꼭 3명 가능 · 이서연님 외근</span></span><span class="chev">›</span></button>
+      </section>
+    </main>
+
+    <!-- ============ 조정 부탁 ============ -->
+    <main class="page" id="p-ask" data-title="조정 부탁하기" hidden>
+      <button class="crumb" data-nav="p-recommend">추천 시간</button>
+      <div class="intro">
+        <h1 class="intro-title">박지후님에게 부탁할게요</h1>
+        <p class="intro-sub">전원이 모이는 유일한 방법이에요</p>
+      </div>
+      <div class="callout callout-blue"><b>화요일 오전 11시 · 6명 모두 가능</b><p>박지후님 다른 회의와 30분 겹쳐요</p></div>
+      <p class="sec-head">이렇게 보낼게요</p>
+      <div class="msgbox">지후님, 화요일 11시 회의를 <b>30분만</b> 뒤로 옮겨주실 수 있을까요? 그러면 6명이 다 모일 수 있어요. 어려우면 목요일 10시로 진행할게요! <span class="edit">✎</span></div>
+      <p class="hint">👆 박지후님은 <b>'옮길게요 / 어려워요'</b>만 누르면 돼요</p>
+      <button class="btn btn-primary" data-nav="p-waiting" data-toast="박지후님에게 부탁을 보냈어요">부탁 보내기</button>
+      <button class="btn btn-ghost" data-nav="p-confirmed">그냥 목요일 10시로 할게요</button>
+    </main>
+
+    <!-- ============ 조정 대기 ============ -->
+    <main class="page" id="p-waiting" data-title="조정 응답 대기" hidden>
+      <button class="crumb" data-nav="p-recommend">추천 시간</button>
+      <div class="center-top">
+        <div class="wait-ava"><span class="avatar lg">박</span><span class="wait-dot">🕐</span></div>
+        <div class="intro">
+          <h1 class="intro-title">박지후님 답을 기다리고 있어요</h1>
+          <p class="intro-sub">30분 조정을 부탁했어요 · 어제 오후 3시 · 읽음</p>
+        </div>
+        <div class="card-flat">
+          <b class="card-flat-title">어느 쪽이든 회의는 화요일 11시예요</b>
+          <div class="fact"><span class="fact-label">옮기면</span><span class="fact-value value-green">6명 전원이 모여요</span></div>
+          <div class="fact last"><span class="fact-label">안 옮겨도</span><span class="fact-value">5명으로 그대로 진행돼요</span></div>
+        </div>
+        <div class="msgbox dim"><i>보낸 부탁</i>"지후님, 화요일 11시 회의를 30분만 뒤로 옮겨주실 수 있을까요? 어려우면 그대로 진행할게요!"</div>
+        <p class="hint center">급하지 않으면 그냥 기다려도 괜찮아요</p>
+        <button class="btn btn-ghost" id="remind-btn">🔔 박지후님에게 다시 알림</button>
+        <button class="btn btn-ghost" data-nav="p-rescheduled" data-toast="5명으로 확정했어요">✓ 기다리지 않고 5명으로 확정</button>
+      </div>
+    </main>
+
+    <!-- ============ 확정 — 캘린더 자동 등록 ============ -->
+    <main class="page" id="p-confirmed" data-title="확정 — 캘린더 등록" hidden>
+      <div class="center-top">
+        <div class="done-ico">✓</div>
+        <h1 class="done-title">회의가 잡혔어요</h1>
+        <p class="done-sub"><span data-when="thu-long"></span> · 1시간</p>
+        <p class="hint center" style="margin-top:8px">6명 캘린더에 자동으로 넣었어요 · 다들 알림을 받았어요</p>
+
+        <!-- 이벤트 카드: 캘린더에 들어간 모습 그대로 -->
+        <section class="event" aria-label="캘린더에 등록한 회의">
+          <div class="event-top">
+            <input class="event-title" id="event-title" type="text" value="디자인 리뷰 · 6명" aria-label="회의 제목 (누르면 바로 고칠 수 있어요)" />
+            <span class="event-edit-hint">✎ 눌러서 고치기</span>
+          </div>
+          <ul class="event-rows">
+            <li class="event-row"><span class="ico">🕐</span><span><b data-when="thu-long"></b><span class="sub">오전 10:00 – 11:00</span></span></li>
+            <li class="event-row"><span class="ico">🏢</span><span><b>10층 회의실 A</b> · 6인실<span class="auto-badge">자동 예약</span></span></li>
+            <li class="event-row"><span class="ico">🎥</span><span><a class="event-link" href="#" onclick="return false">meet.toss.im/design-review</a><span class="sub">멀리 있는 사람은 여기로 들어와요</span></span></li>
+            <li class="event-row"><span class="ico">🔔</span>
+              <span class="alarm-row" role="group" aria-label="알림 시각">
+                <button class="alarm-chip on" data-alarm="10">10분 전</button>
+                <button class="alarm-chip" data-alarm="30">30분 전</button>
+                <button class="alarm-chip" data-alarm="60">1시간 전</button>
+              </span>
+            </li>
+          </ul>
+          <div class="ava-strip">
+            <span class="avatar sm ov">김</span><span class="avatar sm ov">이</span><span class="avatar sm ov">박</span><span class="avatar sm ov">정</span><span class="avatar sm ov">최</span>
+            <span class="strip-label">5명이 함께해요</span>
+          </div>
+          <p class="hint" style="margin:6px 0 0">강수아님은 선택 참석이라 이번엔 빠졌어요</p>
+        </section>
+
+        <!-- 주간 뷰: 이벤트가 다음 주에 자리 잡는 모습 -->
+        <div class="week-wrap">
+          <div class="week-head"><span class="week-title">다음 주</span><span class="week-range" data-when="range"></span></div>
+          <div class="week" id="week-confirmed" aria-hidden="true"></div>
+        </div>
+
+        <!-- 내 캘린더에도 담기: 실동작 -->
+        <div class="caladd">
+          <p class="caladd-head">개인 캘린더에도 담을래요?</p>
+          <div class="caladd-row">
+            <button class="calbtn" data-cal="google"><span class="cico cico-g" style="color:#0066FF">G</span>Google 캘린더</button>
+            <button class="calbtn" data-cal="outlook"><span class="cico cico-o">O</span>Outlook</button>
+            <button class="calbtn" data-cal="apple"><span class="cico cico-a"></span>Apple 캘린더</button>
+          </div>
+          <p class="caladd-hint">회사 캘린더에는 이미 들어가 있어요. 시간이 바뀌면 캘린더도 자동으로 바뀌어요.</p>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:14px" data-nav="p-home">완료</button>
+        <button class="link-line" data-nav="p-reschedule">시간을 바꿔야 하면 여기서 바꿔요</button>
+      </div>
+    </main>
+
+    <!-- ============ 시간 바꾸기 ============ -->
+    <main class="page" id="p-reschedule" data-title="시간 바꾸기" hidden>
+      <button class="crumb" data-nav="p-confirmed">확정한 회의</button>
+      <div class="callout"><i>지금 확정한 시간</i><b>목요일 오전 10시 · 5명</b></div>
+      <div class="intro">
+        <h1 class="intro-title">언제로 바꿀까요?</h1>
+        <p class="intro-sub">캘린더를 이미 알고 있어서, 바로 고를 수 있어요</p>
+      </div>
+      <button class="alt radio" data-pick="4명이 와요 · 지금보다 1명 줄어요"><span class="alt-main"><span class="alt-time">수요일 오후 3시</span><span class="alt-sub">꼭 4명 가능 · 선택 0명</span></span><span class="rad"></span></button>
+      <button class="alt radio" data-pick="3명이 와요 · 지금보다 2명 줄어요"><span class="alt-main"><span class="alt-time">금요일 오후 4시</span><span class="alt-sub">꼭 3명 가능 · 이서연님 외근</span></span><span class="rad"></span></button>
+      <button class="alt radio" data-pick="6명 전원이 와요 · 박지후님 30분 조정이 필요해요"><span class="alt-main"><span class="alt-time">화요일 오전 11시</span><span class="alt-sub em-blue">6명 전원 · 박지후님 조정하면</span></span><span class="rad"></span></button>
+      <input class="search" style="margin-top:12px" type="text" placeholder="바꾸는 이유 (선택) · 동료에게 같이 전해요" />
+      <div class="callout" id="impact"><p>바꿀 시간을 고르면, 누구에게 알림이 다시 가는지 알려드려요</p></div>
+      <button class="btn btn-primary is-dim" id="resched-cta" data-nav="p-rescheduled">바꿀 시간을 골라요</button>
+      <button class="btn btn-ghost" data-nav="p-confirmed">역시 그대로 둘게요</button>
+    </main>
+
+    <!-- ============ 변경 확정 (화요일 · 조건부) ============ -->
+    <main class="page" id="p-rescheduled" data-title="변경 확정 — 캘린더 자동 수정" hidden>
+      <div class="center-top">
+        <div class="done-ico">📅</div>
+        <h1 class="done-title">시간을 바꿨어요</h1>
+        <p class="done-sub"><span data-when="tue-long"></span> · 1시간</p>
+        <p class="hint center" style="margin-top:6px"><s>목요일 오전 10시</s> 에서 바꿨어요</p>
+        <div class="card-flat">
+          <div class="fact"><span class="fact-ico">📅</span><span class="fact-label wide">캘린더를 새 시간으로 바꿨어요</span></div>
+          <div class="fact"><span class="fact-ico">🏢</span><span class="fact-label wide">회의실도 다시 잡았어요 · 11층 회의실 B</span></div>
+          <div class="fact"><span class="fact-ico">🔔</span><span class="fact-label wide">5명에게 변경 알림을 보냈어요</span></div>
+          <div class="fact last warn"><span class="fact-ico">🕐</span><span class="fact-label wide">박지후님에게 30분 조정을 부탁했어요<br /><em>답을 기다리는 중</em></span></div>
+        </div>
+
+        <!-- 주간 뷰: 옮겨간 자리 -->
+        <div class="week-wrap">
+          <div class="week-head"><span class="week-title">다음 주</span><span class="week-range" data-when="range"></span></div>
+          <div class="week" id="week-rescheduled" aria-hidden="true"></div>
+        </div>
+
+        <div class="callout callout-blue"><p><b>박지후님이 조정하면 6명 전원이 모여요.</b> 강수아님도 이번엔 함께할 수 있어요.</p></div>
+
+        <div class="caladd">
+          <p class="caladd-head">개인 캘린더에도 담을래요?</p>
+          <div class="caladd-row">
+            <button class="calbtn" data-cal="google"><span class="cico cico-g" style="color:#0066FF">G</span>Google 캘린더</button>
+            <button class="calbtn" data-cal="outlook"><span class="cico cico-o">O</span>Outlook</button>
+            <button class="calbtn" data-cal="apple"><span class="cico cico-a"></span>Apple 캘린더</button>
+          </div>
+          <p class="caladd-hint">아까 담았어도 괜찮아요. 새 시간으로 바꿔서 담겨요.</p>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:14px" data-nav="p-home">완료</button>
+        <div class="btn-row">
+          <button class="btn btn-ghost half" data-nav="p-waiting">🕐 박지후님 답 기다리기</button>
+          <button class="btn btn-ghost half" data-toast="회의 링크를 복사했어요">↗ 공유</button>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ===== 설계 노트 (데스크톱 레일) ===== -->
+  <aside class="rail" aria-label="설계 노트">
+    <div class="rail-inner">
+      <p class="rail-eyebrow">설계 노트</p>
+      <h2 class="rail-title" id="r-title">일정 조율의 고통은<br />죄책감입니다</h2>
+      <div class="rail-list" id="r-body" role="list"></div>
+      <p class="rail-note">웹 퍼스트 반응형 · 375 – 1440<br />원티드 디자인 시스템(WDS) 시맨틱 토큰 · Wanted Sans<br />화면을 눌러 전체 플로우를 걸어보세요</p>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ===== [script: 라우터 · 캘린더 · 인터랙션] ===== -->
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     화면별 설계 노트 (데스크톱 레일)
+     ============================================================ */
+  var RATIONALE = {
+    "p-home": {
+      t: "일정 조율의 고통은<br/>죄책감입니다",
+      b: ["<b>회의는 제목이 아니라 시간으로</b> 식별돼요. 만들 때 제목을 안 받은 절제가 여기서 보상받아요.",
+          "<b>'답할 차례'까지 홈에.</b> 조율은 양방향이라, 응답자 경험까지 닫아야 문제 전체가 풀려요.",
+          "확정 카드에 <b>회의실까지</b> 보여요. 조율의 끝은 목록이 아니라 캘린더라는 걸 홈에서부터 말해요."]
+    },
+    "p-create": {
+      t: "묻지 말고<br/>아는 걸 써요",
+      b: ["첫 질문은 제목이 아니라 <b>'누가'</b>. 이 과업의 제약은 전부 사람에게 붙어 있어요.",
+          "<b>꼭 / 안 와도 돼요</b> 한 번의 탭이, 나중에 '누굴 포기할지'라는 최악의 결정을 대신해요.",
+          "기간·길이는 칩으로 접어요. 기본값(1시간·다음 주)이 과제 조건 그 자체라서요."]
+    },
+    "p-add": {
+      t: "주소록은<br/>검색보다 추천",
+      b: ["<b>우리 팀 + 최근 함께 일한 사람</b>이 먼저. 조직도 트리 탐색은 마지막 수단이에요.",
+          "이미 고른 사람은 체크된 채로 열려요. 화면 간 <b>상태가 이어져야</b> 신뢰가 생겨요."]
+    },
+    "p-collecting": {
+      t: "기다림에도<br/>정보를 줘요",
+      b: ["<b>'일정 제목은 안 봤어요'</b> — 캘린더 자동 확인의 프라이버시 불안을 선제적으로 해소해요.",
+          "꼭 와야 하는 4명이 다 답한 순간, <b>'지금 정해도 돼요'</b>라는 출구를 열어요. 전원 응답은 조건이 아니에요.",
+          "마감(4일)을 칩으로 시각화 — 조율이 늘어지는 것 자체가 이 과업의 숨은 비용이에요."]
+    },
+    "p-tap": {
+      t: "응답자의 10초가<br/>전체를 결정해요",
+      b: ["<b>안 되는 시간만</b> 표시하는 네거티브 선택. 기본값이 '다 괜찮아요'라 최소 행동은 탭 한 번이에요.",
+          "그래도 안 맞으면 <b>되는 시간을 말할 출구</b>가 있어요. 막다른 길 금지 원칙이에요.",
+          "보내는 순간 토스트로 <b>'10초 만에 끝'</b> — 응답 비용이 낮다는 학습이 다음 조율을 빠르게 해요."]
+    },
+    "p-recommend": {
+      t: "판단의 무게를<br/>시스템이 져요",
+      b: ["후보 나열이 아니라 <b>단일 추천</b>. 비교하는 순간 '누굴 포기할지'가 주최자 몫이 돼요.",
+          "아바타가 차오르는 모션은 장식이 아니라 <b>'누가 오는가'라는 근거</b> 그 자체예요.",
+          "전원 참석은 <b>거래(30분 조정)</b>로 제안해요. 최선과 이상 사이의 간극을 시스템이 협상해요."]
+    },
+    "p-ask": {
+      t: "미안한 말은<br/>시스템이 대신 써요",
+      b: ["조정 부탁 메시지를 <b>대필</b>해요. '어려우면 그대로 진행할게요'라는 출구까지 담아서요.",
+          "받는 사람은 <b>버튼 두 개</b>만 눌러요. 부탁의 비용을 양쪽 모두에게서 줄여요."]
+    },
+    "p-waiting": {
+      t: "대기는 불안이<br/>아니어야 해요",
+      b: ["<b>'어느 쪽이든 화요일 11시'</b> — 답이 어떻게 오든 결과가 정해져 있음을 먼저 말해요.",
+          "'급하지 않으면 기다려도 괜찮아요' — <b>행동을 강요하지 않는 대기</b>가 신뢰를 만들어요.",
+          "그래도 5명 확정이라는 <b>출구</b>는 항상 열려 있어요."]
+    },
+    "p-confirmed": {
+      t: "가장 편한 등록은<br/>등록이 없는 것",
+      b: ["확정 = 등록. <b>6명 캘린더·회의실·화상 링크·알림</b>까지 시스템이 이미 끝냈고, 화면은 그 결과를 보여줘요.",
+          "이벤트 카드는 <b>캘린더에 들어간 모습 그대로</b>예요. 제목만 자동 생성이라, 누르면 바로 고칠 수 있어요.",
+          "주간 뷰에 이벤트가 <b>내려앉는 모먼트</b> — '조율이 끝났다'를 시간이 아니라 공간으로 확인시켜요.",
+          "개인 캘린더(Google·Outlook·Apple)는 <b>실제로 동작</b>해요. 회사 밖 내 삶과도 이어져야 진짜 등록이에요."]
+    },
+    "p-reschedule": {
+      t: "변경은 처음보다<br/>쉬워야 해요",
+      b: ["캘린더 상태를 이미 아니까 <b>대안을 즉시</b> 보여줘요. 재조율을 처음부터 다시 시키지 않아요.",
+          "각 대안에 <b>손해를 정직하게</b> 붙여요 — '지금보다 1명 줄어요'. 신뢰는 정확함에서 와요.",
+          "이유 입력은 선택. 쓰면 동료에게 <b>같이 전해줘요</b>."]
+    },
+    "p-rescheduled": {
+      t: "바뀐 것도<br/>시스템이 수습해요",
+      b: ["캘린더 수정 · 회의실 재예약 · 변경 알림 · 조정 부탁까지 <b>후속 작업 전부</b>를 시스템이 처리했다고 보고해요.",
+          "박지후님 답이 남았다는 <b>조건부 상태</b>를 숨기지 않아요. 과장하지 않는 확정이에요.",
+          "주간 뷰에서 <b>이전 자리는 지워지고 새 자리가 켜져요</b> — 변경이 공간으로 읽혀요."]
+    }
+  };
+
+  /* ============================================================
+     캘린더 엔진 — 다음 주 날짜 계산 · Google/Outlook/ICS 실동작
+     ============================================================ */
+  var DAYS_KO = ["월", "화", "수", "목", "금"];
+
+  function nextWeekday(monOffset) { // 0=다음 주 월요일
+    var now = new Date();
+    var dow = (now.getDay() + 6) % 7; // 월=0
+    var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (7 - dow) + monOffset);
+    return d;
+  }
+  function at(d, h, m) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m || 0); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function stampLocal(d) {
+    return "" + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+      "T" + pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  }
+  function isoLocal(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
+      "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":00";
+  }
+  function fmtShort(d) { return (d.getMonth() + 1) + "월 " + d.getDate() + "일"; }
+  function fmtLong(d, label) { return fmtShort(d) + " " + label; }
+
+  var MON = nextWeekday(0);
+  var SLOT = {
+    tue: { day: 1, h: 11, label: "화요일 오전 11시", room: "11층 회의실 B" },
+    wed: { day: 2, h: 14, label: "수요일 오후 2시", room: "" },
+    thu: { day: 3, h: 10, label: "목요일 오전 10시", room: "10층 회의실 A" },
+    fri: { day: 4, h: 16, label: "금요일 오후 4시", room: "" }
+  };
+  function slotDate(key) { return at(nextWeekday(SLOT[key].day), SLOT[key].h); }
+
+  /* 화면 안의 날짜 표기 채우기 */
+  var whenText = {
+    "thu-short": fmtShort(slotDate("thu")) + " (목)",
+    "wed-short": fmtShort(slotDate("wed")) + " (수)",
+    "fri-short": fmtShort(slotDate("fri")) + " (금)",
+    "thu-long": fmtLong(slotDate("thu"), "목요일"),
+    "tue-long": fmtLong(slotDate("tue"), "화요일"),
+    "range": fmtShort(nextWeekday(0)) + " – " + fmtShort(nextWeekday(4))
+  };
+  document.querySelectorAll("[data-when]").forEach(function (el) {
+    var t = whenText[el.getAttribute("data-when")];
+    if (t) el.textContent = t;
+  });
+
+  /* 알림(분) 상태 */
+  var alarmMin = 10;
+
+  function currentEvent(kind) { // kind: "thu" | "tue"
+    var titleInput = document.getElementById("event-title");
+    var title = (titleInput && titleInput.value.trim()) || "디자인 리뷰 · 6명";
+    var start = slotDate(kind);
+    var end = new Date(start.getTime() + 60 * 60 * 1000);
+    return {
+      title: title,
+      start: start, end: end,
+      room: SLOT[kind].room,
+      desc: "토스 회의 잡기로 잡은 회의예요.\\n화상 참여: https://meet.toss.im/design-review"
+    };
+  }
+
+  function openGoogle(ev) {
+    var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent(ev.title) +
+      "&dates=" + stampLocal(ev.start) + "/" + stampLocal(ev.end) +
+      "&ctz=Asia/Seoul" +
+      "&location=" + encodeURIComponent(ev.room) +
+      "&details=" + encodeURIComponent(ev.desc);
+    window.open(url, "_blank", "noopener");
+  }
+  function openOutlook(ev) {
+    var url = "https://outlook.office.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent" +
+      "&subject=" + encodeURIComponent(ev.title) +
+      "&startdt=" + encodeURIComponent(isoLocal(ev.start)) +
+      "&enddt=" + encodeURIComponent(isoLocal(ev.end)) +
+      "&location=" + encodeURIComponent(ev.room) +
+      "&body=" + encodeURIComponent(ev.desc);
+    window.open(url, "_blank", "noopener");
+  }
+  function downloadICS(ev) {
+    var ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//toss meeting//KR", "CALSCALE:GREGORIAN",
+      "BEGIN:VEVENT",
+      "UID:" + Date.now() + "@meeting.toss.im",
+      "DTSTAMP:" + stampLocal(new Date()) + "Z",
+      "DTSTART;TZID=Asia/Seoul:" + stampLocal(ev.start),
+      "DTEND;TZID=Asia/Seoul:" + stampLocal(ev.end),
+      "SUMMARY:" + ev.title,
+      "LOCATION:" + ev.room,
+      "DESCRIPTION:" + ev.desc.replace(/\\n/g, "\\\\n"),
+      "BEGIN:VALARM",
+      "TRIGGER:-PT" + alarmMin + "M",
+      "ACTION:DISPLAY",
+      "DESCRIPTION:곧 회의가 시작돼요",
+      "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR"
+    ].join("\r\n");
+    var blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "회의.ics";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+  }
+
+  document.querySelectorAll("[data-cal]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.closest("#p-rescheduled") ? "tue" : "thu";
+      var ev = currentEvent(kind);
+      var which = btn.getAttribute("data-cal");
+      if (which === "google") { openGoogle(ev); toast("Google 캘린더를 열었어요"); }
+      else if (which === "outlook") { openOutlook(ev); toast("Outlook을 열었어요"); }
+      else { downloadICS(ev); toast("캘린더 파일을 받았어요 · 열면 바로 담겨요"); }
+    });
+  });
+
+  document.querySelectorAll(".alarm-chip").forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      document.querySelectorAll(".alarm-chip").forEach(function (c) { c.classList.remove("on"); });
+      chip.classList.add("on");
+      alarmMin = parseInt(chip.getAttribute("data-alarm"), 10);
+      toast("알림을 " + chip.textContent + "으로 바꿨어요");
+    });
+  });
+
+  /* ============================================================
+     주간 뷰 렌더 — 9시–18시, 1시간 = 16px
+     ============================================================ */
+  var H0 = 9, H1 = 18, PPH = 16; // px per hour
+  function renderWeek(el, blocks) {
+    if (!el) return;
+    var today = new Date();
+    var html = "<div class='waxis'>" +
+      [9, 12, 15, 18].map(function (h) {
+        return "<span style='top:" + ((h - H0) * PPH) + "px'>" + h + "</span>";
+      }).join("") + "</div>";
+    for (var i = 0; i < 5; i++) {
+      var d = nextWeekday(i);
+      var isToday = d.toDateString() === today.toDateString();
+      var inner = "";
+      blocks.forEach(function (b) {
+        if (b.day !== i) return;
+        var top = (b.h - H0) * PPH;
+        inner += "<div class='wblock " + b.cls + "' style='top:" + top + "px;height:" + PPH + "px'>" + (b.label || "") + "</div>";
+      });
+      html += "<div class='wday" + (isToday ? " today" : "") + "'>" +
+        "<div class='wday-name'>" + DAYS_KO[i] + "</div>" +
+        "<div class='wday-date'>" + d.getDate() + "</div>" +
+        "<div class='wcol'>" + inner + "</div></div>";
+    }
+    el.innerHTML = html;
+  }
+  function renderWeeks() {
+    renderWeek(document.getElementById("week-confirmed"), [
+      { day: 2, h: 14, cls: "ghost" },
+      { day: 3, h: 10, cls: "active drop", label: "10–11" },
+      { day: 4, h: 16, cls: "ghost" }
+    ]);
+    renderWeek(document.getElementById("week-rescheduled"), [
+      { day: 1, h: 11, cls: "active drop", label: "11–12" },
+      { day: 3, h: 10, cls: "gone", label: "10–11" }
+    ]);
+  }
+
+  /* ============================================================
+     라우터 — data-nav 해시 라우팅
+     ============================================================ */
+  var pages = document.querySelectorAll(".page");
+  var rTitle = document.getElementById("r-title");
+  var rBody = document.getElementById("r-body");
+
+  function show(id, push) {
+    var target = document.getElementById(id);
+    if (!target) return;
+    pages.forEach(function (p) { p.hidden = true; p.classList.remove("page-in"); });
+    target.hidden = false;
+    requestAnimationFrame(function () { target.classList.add("page-in"); });
+    var r = RATIONALE[id];
+    if (r && rTitle && rBody) {
+      rTitle.innerHTML = r.t;
+      rBody.innerHTML = r.b.map(function (x) { return "<li role='listitem'>" + x + "</li>"; }).join("");
+      rBody.outerHTML = "<ul class='rail-list' id='r-body' role='list'>" + rBody.innerHTML + "</ul>";
+      rBody = document.getElementById("r-body");
+    }
+    if (id === "p-confirmed" || id === "p-rescheduled") renderWeeks();
+    if (push !== false && location.hash !== "#" + id) history.pushState(null, "", "#" + id);
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    document.title = "회의 잡기 — " + (target.getAttribute("data-title") || "");
+  }
+
+  document.addEventListener("click", function (e) {
+    var nav = e.target.closest("[data-nav]");
+    if (!nav) return;
+    var msg = nav.getAttribute("data-toast");
+    if (msg) toast(msg);
+    show(nav.getAttribute("data-nav"));
+  });
+  window.addEventListener("popstate", function () {
+    show(location.hash ? location.hash.slice(1) : "p-home", false);
+  });
+
+  /* ============================================================
+     토스트 · 화면별 인터랙션
+     ============================================================ */
+  var toastEl = document.getElementById("toast");
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2400);
+  }
+
+  /* 만들기: 꼭/선택 토글 */
+  document.querySelectorAll("[data-toggle]").forEach(function (pill) {
+    pill.addEventListener("click", function () {
+      var must = pill.classList.toggle("must");
+      pill.classList.toggle("opt", !must);
+      pill.textContent = must ? "꼭 와야 해요 ⇄" : "안 와도 돼요 ⇄";
+    });
+  });
+
+  /* 주소록: 체크 + 실시간 검색 + CTA 카운트 */
+  function updateAddCta() {
+    var n = document.querySelectorAll("#p-add .prow.sel").length;
+    var cta = document.getElementById("add-cta");
+    if (cta) cta.textContent = n + "명으로 계속하기";
+  }
+  document.querySelectorAll("[data-check]").forEach(function (row) {
+    row.addEventListener("click", function () { row.classList.toggle("sel"); updateAddCta(); });
+  });
+  var addSearch = document.getElementById("add-search");
+  if (addSearch) addSearch.addEventListener("input", function () {
+    var q = addSearch.value.trim();
+    document.querySelectorAll("#p-add .prow").forEach(function (row) {
+      row.style.display = row.textContent.indexOf(q) >= 0 ? "" : "none";
+    });
+  });
+
+  /* 응답자: 안 되는 시간 탭 + 되는 시간 입력 */
+  document.querySelectorAll("[data-slot]").forEach(function (slot) {
+    slot.addEventListener("click", function () {
+      var bad = slot.classList.toggle("bad");
+      slot.querySelector(".tstate").textContent = bad ? "✕ 안 돼요" : "✓ 괜찮아요";
+    });
+  });
+  var ffToggle = document.getElementById("freeform-toggle");
+  if (ffToggle) ffToggle.addEventListener("click", function () {
+    var ff = document.getElementById("freeform");
+    ff.classList.toggle("open");
+    if (ff.classList.contains("open")) ff.querySelector("input").focus();
+  });
+
+  /* 대기: 다시 알림 중복 방지 */
+  var remind = document.getElementById("remind-btn");
+  if (remind) remind.addEventListener("click", function () {
+    remind.classList.add("is-sent");
+    remind.textContent = "✓ 알림을 보냈어요 · 하루에 한 번만 보내요";
+    toast("박지후님에게 다시 알렸어요");
+  });
+
+  /* 시간 바꾸기: 라디오 + 영향 미리보기 + CTA 활성화 */
+  var reschedCta = document.getElementById("resched-cta");
+  document.querySelectorAll(".alt.radio").forEach(function (radio) {
+    radio.addEventListener("click", function () {
+      document.querySelectorAll(".alt.radio").forEach(function (r) { r.classList.remove("on"); });
+      radio.classList.add("on");
+      var impact = document.getElementById("impact");
+      if (impact) impact.innerHTML = "<p><b>" + radio.getAttribute("data-pick") + "</b> · 5명에게 변경 알림이 가요</p>";
+      if (reschedCta) {
+        reschedCta.classList.remove("is-dim");
+        reschedCta.textContent = radio.querySelector(".alt-time").textContent + "로 바꾸기";
+      }
+    });
+  });
+  if (reschedCta) reschedCta.addEventListener("click", function (e) {
+    if (reschedCta.classList.contains("is-dim")) {
+      e.stopPropagation(); e.preventDefault();
+      toast("먼저 바꿀 시간을 골라주세요");
+    }
+  }, true);
+
+  /* 초기 화면 */
+  show(location.hash ? location.hash.slice(1) : "p-home", false);
+})();
+</script>
+</body>
+</html>

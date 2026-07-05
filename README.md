@@ -6,51 +6,71 @@
 ## 실행
 
 ```bash
-open index.html        # 웹 퍼스트 반응형 (제출 본편)
-open prototype.html    # v1 모바일 네이티브 (아카이브)
+npm install
+npm run dev   # http://localhost:5941
 ```
 
-빌드 없음 — 정적 파일 하나입니다.
+React + Vite. 앱인토스에는 등록하지 않으므로 `create-ait-app`/`granite.config.ts`/콘솔 업로드 과정은 없고,
+**일반 웹 프로젝트**로 TDS mobile만 가져와 씁니다.
 
-## v2: 웹 퍼스트 재설계 (2026-07-04)
+## v3: 실제 TDS mobile 적용 (2026-07-04)
 
-- **왜 웹인가**: 회사 일정의 스타팅 포인트는 웹(업무 환경). 375–1440 반응형으로,
-  데스크톱은 본문 640 + 설계 노트 300의 2컬럼, 모바일은 풀블리드.
-- **디자인 시스템**: 원티드 디자인 시스템(WDS)의 **프로덕션 시맨틱 토큰**
-  (wanted.co.kr 실서비스 CSS에서 추출 — primary `#0066FF`, coolNeutral 램프,
-  label/background/line 시맨틱 알파 토큰) + **Wanted Sans Variable**. 로고는 토스(`#0064FF`).
-- **캘린더 등록 플로우 (신규)**: 확정 = 등록. 6명 캘린더·회의실·화상 링크·알림을
-  시스템이 자동으로 끝내고, 화면은 이벤트 카드(제목 인라인 수정·알림 칩)와
-  주간 뷰(이벤트 슬롯인 모먼트)로 결과를 보여줌.
-  **Google 캘린더 / Outlook / Apple(.ics) 내보내기는 실제 동작** — 다음 주 날짜를
-  동적으로 계산해 링크·ICS를 생성.
+토스가 공개한 [TDS mobile](https://tossmini-docs.toss.im/tds-mobile/start/) 패키지를 그대로 설치해 썼습니다.
+v2(순수 CSS로 TDS 문법을 흉내낸 버전)를 실제 컴포넌트로 교체한 것이 핵심 차이입니다.
 
-## Claude Code로 계속 작업하기
+- **`@toss/tds-mobile`**: Button, Badge, List/ListRow, TextButton 등 실제 프로덕션 컴포넌트.
+- **`@toss/tds-colors`**: 실제 시맨틱 컬러 토큰(grey/blue/red/orange/green 램프 + white).
+- **`TDSMobileProvider`**: 앱 최상단에서 `useUserAgent()`로 브라우저 컨텍스트를 채워 감싼다 (`src/main.tsx`).
+- 이 프로젝트는 토스 앱 웹뷰가 아니라 **일반 브라우저**에서 여는 프로토타입이라, `@toss/tds-mobile-ait`(앱인토스 전용 오버레이 확장)는 설치만 하고 실제로는 쓰지 않는다.
 
-**`index.html` 한 파일**만 편집하면 됩니다 (전 화면·CSS·JS 인라인).
+### 앱인토스 AI 바이브 코딩 가이드를 참고해 재정리한 것
 
-```bash
-cd toss-pd-challenge
-claude
-# 예: "p-confirmed 화면 이벤트 카드에 참석자 응답 상태 추가해줘"
-```
+[AI 바이브 코딩 튜토리얼](https://developers-apps-in-toss.toss.im/tutorials/ai-vibe-coding.html)의 구조(React + TypeScript + TDS, 화면 단위 폴더, AI에게 화면 id로 지시)를 따르되, **앱인토스 등록·배포 단계(`create-ait-app`, `granite.config.ts`, 콘솔 업로드, ait 빌드)는 이 프로젝트에 해당하지 않아 제외**했습니다. 이 프로젝트는 웹 프로토타입 제출물입니다.
 
-- 작업 컨텍스트·설계 원칙: `CLAUDE.md`
-- 화면은 `id="p-xxx"`로 지시하면 정확히 찾아갑니다.
+- `index.html` + `src/` 표준 Vite React 구조로 재편.
+- 화면을 `src/screens/*.tsx`로 분리, 공용 조각은 `src/components/`.
+- 캘린더 로직은 `src/lib/calendar.ts`로 순수 함수 분리 (Google/Outlook/ICS 실동작 유지).
+- 과거 v1(모바일 네이티브 HTML)·v2(웹 반응형 HTML, CSS로 TDS 문법 흉내)는 `archive/`에 보관.
 
 ## 구조
 
 ```
-index.html            v2 웹 퍼스트 반응형 (작업본 · 제출본)
-prototype.html        v1 모바일 네이티브 375 (아카이브)
-docs/SUBMISSION.md    제출 3대 질문 답안 (문제·해결·이유)
-docs/UX_WRITING.md    토스 공식 라이팅 원칙 + 제품 원칙 5 + 화면별 적용
-docs/FIGMA_TOKENS.md  피그마 이식 가이드 (v1 기준)
+src/
+  main.tsx            TDSMobileProvider(userAgent) 부트스트랩
+  App.tsx             라우터(해시) + 폰 프레임/설계 노트 셸 + 토스트
+  rationale.ts         화면별 설계 노트 (데스크톱 레일에 표시)
+  data.ts              참석자·주소록 더미 데이터
+  types.ts             ScreenProps 타입
+  lib/calendar.ts       다음 주 날짜 계산 · Google/Outlook/ICS 내보내기
+  components/
+    ui.tsx              Content/Nav/Intro/Callout 등 화면 공용 조각
+    EventCard.tsx        캘린더 이벤트 카드 (제목 인라인 수정 · 알림 칩)
+    WeekView.tsx          주간 뷰 (이벤트 슬롯인 모먼트)
+    CalendarExport.tsx    개인 캘린더 담기 버튼 3종
+  screens/
+    flow.tsx             홈 · 만들기 · 동료 추가 · 조율 중 · 동료 탭
+    decide.tsx           추천+거래(히어로) · 조정 부탁 · 조정 대기
+    confirm.tsx          확정(캘린더 등록) · 시간 바꾸기 · 변경 확정
+docs/
+  SUBMISSION.md         제출 3대 질문 답안 (문제·해결·이유)
+  UX_WRITING.md         토스 공식 라이팅 원칙 + 제품 원칙 5 + 화면별 적용
+archive/
+  v1-mobile.html        최초 모바일 네이티브 프로토타입
+  v2-web.html           WDS 토큰 흉내낸 웹 반응형 버전 (TDS 실장 전)
+```
+
+## Claude Code로 계속 작업하기
+
+작업 컨텍스트·설계 원칙: [`CLAUDE.md`](CLAUDE.md). 화면은 `src/screens/*.tsx`의 함수명(`Home`, `Confirmed` 등) 또는
+라우터 id(`p-confirmed` 등)로 지시하면 정확히 찾아갑니다.
+
+```bash
+claude
+# 예: "Confirmed 화면 이벤트 카드에 참석자 응답 상태 배지 추가해줘"
 ```
 
 ## 조형 원칙 3줄
 
 1. **시간이 주인공** — 결정 대상(시간)이 화면에서 가장 큰 타이포.
 2. **강조 리듬 3단** — 히어로(elevation) > 거래(blue 틴트) > 차선(flat). 그림자 카드는 화면당 하나.
-3. **모션은 의미 있는 곳에만** — 아바타 스태거 팝(가능 인원이 차오름), 캘린더 슬롯인(조율의 끝).
-   `prefers-reduced-motion` 존중.
+3. **모션은 의미 있는 곳에만** — 아바타 스태거 팝, 캘린더 슬롯인. `prefers-reduced-motion` 존중.
