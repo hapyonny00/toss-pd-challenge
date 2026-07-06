@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>회의 조율 — One UI 데스크톱</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --s-base:#F4F4F6; --s-1:#FFFFFF; --s-2:#ECECEE; --s-3:#E4E4E7;
+    --t-primary:#17171A; --t-secondary:#616166; --t-tertiary:#8E8E93;
+    --a-fill:#387AFF; --a-press:#2E6FF2; --a-on:#FFFFFF; --a-text:#1B57D6; --a-tint:#EAF1FF;
+    --comfy-bg:#E3F5EA; --hard-bg:#ECECEE; --burden:#FFB43A;
+    --line:#E4E4E7; --line-strong:#D4D4D8;
+    --win-shadow:0 30px 80px rgba(20,25,40,.28);
+    --fab-shadow:0 6px 16px rgba(56,122,255,.28);
+    --canvas:#DDE3EC;
+  }
+  [data-theme="dark"] {
+    --s-base:#000000; --s-1:#1B1B1D; --s-2:#242427; --s-3:#2C2C30;
+    --t-primary:#FFFFFF; --t-secondary:#B0B0B6; --t-tertiary:#8A8A90;
+    --a-fill:#3B76F5; --a-press:#2E63D8; --a-on:#FFFFFF; --a-text:#82AAFF; --a-tint:#16233D;
+    --comfy-bg:#12301F; --hard-bg:#161618; --burden:#FFB43A;
+    --line:#2C2C30; --line-strong:#3A3A40;
+    --win-shadow:0 30px 80px rgba(0,0,0,.6);
+    --fab-shadow:0 6px 16px rgba(0,0,0,.5);
+    --canvas:#0E0F13;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  body { font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+    background:var(--canvas); min-height:100vh; padding:24px; display:flex; flex-direction:column;
+    align-items:center; gap:14px; transition:background .3s; }
+  .demo-head { text-align:center; color:var(--t-secondary); }
+  .demo-head h1 { font-size:17px; font-weight:600; color:var(--t-primary); letter-spacing:-.3px; }
+  .demo-head p { font-size:12.5px; margin-top:4px; }
+
+  .win { width:min(1280px,100%); height:min(800px,calc(100vh - 96px)); min-height:600px;
+    background:var(--s-1); border-radius:24px; box-shadow:var(--win-shadow); overflow:hidden;
+    display:flex; flex-direction:column; transition:background .3s; }
+
+  /* top bar */
+  .top { height:64px; flex:none; display:flex; align-items:center; gap:14px; padding:0 22px;
+    border-bottom:1px solid var(--line); }
+  .top .today { font:inherit; font-size:13px; font-weight:600; color:var(--t-primary);
+    background:var(--s-2); border:none; padding:9px 18px; border-radius:999px; cursor:pointer; }
+  .top .arrows { display:flex; gap:2px; }
+  .top .arrows button { width:34px; height:34px; border:none; background:none; border-radius:50%;
+    font-size:16px; color:var(--t-secondary); cursor:pointer; }
+  .top .arrows button:hover { background:var(--s-2); }
+  .top h2 { font-size:20px; font-weight:700; color:var(--t-primary); letter-spacing:-.3px; }
+  .top .rng { font-size:12.5px; color:var(--t-secondary); margin-top:1px; }
+  .top .sp { flex:1; }
+  .layerchip { display:none; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+    color:var(--a-text); background:var(--a-tint); padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .layerchip.show { display:inline-flex; }
+  .layerchip .d { width:7px; height:7px; border-radius:50%; background:var(--a-fill); }
+  .theme-tog { display:flex; background:var(--s-2); border-radius:999px; padding:3px; }
+  .theme-tog button { font:inherit; font-size:12px; font-weight:600; color:var(--t-secondary);
+    border:none; background:none; padding:6px 12px; border-radius:999px; cursor:pointer; }
+  .theme-tog button.on { background:var(--s-1); color:var(--a-text); box-shadow:0 1px 4px rgba(0,0,0,.14); }
+  .av { width:36px; height:36px; border-radius:50%; background:var(--a-fill); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; }
+
+  .body { flex:1; display:flex; min-height:0; }
+
+  /* sidebar */
+  .side { width:250px; flex:none; border-right:1px solid var(--line); padding:20px 18px; overflow-y:auto; }
+  .btn-create { width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    font:inherit; font-size:15px; font-weight:700; color:var(--a-on); background:var(--a-fill);
+    border:none; border-radius:18px; padding:15px 0; cursor:pointer; box-shadow:var(--fab-shadow); transition:transform .12s,background .12s; }
+  .btn-create:active { transform:scale(.97); background:var(--a-press); }
+  .mini { margin-top:24px; }
+  .mini .mt { font-size:14px; font-weight:700; color:var(--t-primary); margin-bottom:12px; }
+  .mini table { width:100%; border-collapse:collapse; font-size:11px; text-align:center; }
+  .mini th { color:var(--t-tertiary); font-weight:600; padding:4px 0; }
+  .mini td span { display:inline-flex; width:26px; height:26px; border-radius:50%; align-items:center;
+    justify-content:center; color:var(--t-primary); }
+  .mini td.out span { color:var(--t-tertiary); }
+  .mini td.today span { background:var(--a-fill); color:#fff; font-weight:700; }
+  .mini td.sel span { background:var(--a-tint); border-radius:0; }
+  .mini td.sel.f span { border-radius:13px 0 0 13px; } .mini td.sel.l span { border-radius:0 13px 13px 0; }
+  .side-sec { margin-top:24px; }
+  .side-sec .st { font-size:12px; font-weight:700; color:var(--t-secondary); margin-bottom:10px; }
+  .cal-row { display:flex; align-items:center; gap:10px; padding:7px 0; font-size:13px; font-weight:500; color:var(--t-primary); }
+  .cal-row .cb { width:14px; height:14px; border-radius:5px; }
+  .privacy { margin-top:24px; font-size:12px; line-height:1.6; color:var(--t-secondary);
+    background:var(--s-2); border-radius:16px; padding:14px 16px; }
+
+  /* calendar center */
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; position:relative; }
+  .bigt { padding:18px 24px 10px; }
+  .bigt h3 { font-size:26px; font-weight:700; color:var(--t-primary); letter-spacing:-.4px; }
+  .bigt .sub { font-size:13px; color:var(--t-secondary); margin-top:2px; }
+  .dayhead { display:grid; grid-template-columns:52px repeat(5,1fr); padding:0 12px 8px 0; border-bottom:1px solid var(--line); }
+  .dayhead .dh { text-align:center; }
+  .dayhead .wd { font-size:11px; font-weight:700; color:var(--t-tertiary); letter-spacing:1px; }
+  .dayhead .dn { font-size:18px; font-weight:700; color:var(--t-primary); margin-top:2px; width:32px; height:32px;
+    line-height:32px; border-radius:50%; display:inline-block; }
+  .dayhead .today .dn { background:var(--a-fill); color:#fff; }
+  .gridwrap { flex:1; overflow-y:auto; padding:8px 12px 12px 0; }
+  .grid { display:grid; grid-template-columns:52px repeat(5,1fr); gap:4px; }
+  .tl { font-size:11px; color:var(--t-tertiary); text-align:right; padding-right:8px; transform:translateY(-6px); font-weight:600; }
+  .cell { height:52px; border-radius:12px; position:relative; box-shadow:inset 0 0 0 1px var(--line); }
+  .evt { position:absolute; inset:2px; border-radius:10px; background:var(--a-fill); color:#fff;
+    font-size:11px; font-weight:600; padding:5px 8px; overflow:hidden; z-index:2; line-height:1.3; }
+  .evt.span2 { height:calc(200% + 4px); }
+  .evt.final { animation:pop .42s cubic-bezier(.34,1.56,.64,1); box-shadow:0 4px 12px rgba(56,122,255,.4); }
+  @keyframes pop { from { transform:scale(.9); opacity:0; } }
+  .layered .cell.s-hard { background:var(--hard-bg); box-shadow:none; }
+  .layered .cell.s-comfy { background:var(--comfy-bg); box-shadow:none; }
+  .layered .cell.s-reco { background:var(--a-tint); box-shadow:inset 0 0 0 2px var(--a-fill); z-index:3; cursor:pointer; }
+  .rbadge { display:none; position:absolute; inset:0; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:var(--a-text); }
+  .layered .rbadge { display:flex; }
+  .wd-dot { display:none; position:absolute; top:5px; right:5px; border-radius:50%; z-index:4; }
+  .layered .wd-dot { display:block; }
+  .wd-dot.req { width:7px; height:7px; background:var(--burden); }
+  .wd-dot.opt { width:5px; height:5px; background:var(--t-tertiary); }
+  .legend { display:none; gap:14px; padding:10px 24px; font-size:11.5px; color:var(--t-secondary); flex-wrap:wrap; }
+  .layered-on .legend { display:flex; }
+  .legend i { width:11px; height:11px; border-radius:4px; display:inline-block; margin-right:5px; vertical-align:-1px; }
+
+  /* right panel */
+  .panel { width:0; flex:none; border-left:1px solid transparent; overflow:hidden;
+    transition:width .32s cubic-bezier(.22,1,.36,1); display:flex; flex-direction:column; background:var(--s-1); }
+  .panel.open { width:360px; border-left-color:var(--line); }
+  .panel-in { width:360px; flex:1; display:flex; flex-direction:column; min-height:0; }
+  .phead { flex:none; display:flex; align-items:baseline; justify-content:space-between; padding:20px 24px 12px; }
+  .phead h3 { font-size:22px; font-weight:700; color:var(--t-primary); letter-spacing:-.3px; }
+  .phead .step { font-size:12px; font-weight:600; color:var(--t-secondary); }
+  .phead .step b { color:var(--a-text); }
+  .pclose { position:absolute; top:20px; right:20px; border:none; background:none; font-size:18px; color:var(--t-secondary); cursor:pointer; }
+  .pbody { flex:1; overflow-y:auto; padding:2px 24px 16px; }
+  .pfoot { flex:none; padding:14px 24px 20px; border-top:1px solid var(--line); }
+
+  .sec { font-size:14px; font-weight:600; color:var(--t-secondary); margin:16px 0 8px; }
+  .sec:first-child { margin-top:2px; }
+  .field { width:100%; height:52px; background:var(--s-2); border:none; border-radius:26px; padding:0 20px;
+    font:inherit; font-size:15px; font-weight:600; color:var(--t-primary); }
+  .chiprow { display:flex; gap:8px; }
+  .chip { flex:1; height:42px; border-radius:999px; background:var(--s-2); color:var(--t-secondary);
+    font:inherit; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+  .chip.on { background:var(--a-tint); color:var(--a-text); }
+  .att { display:flex; align-items:center; gap:12px; padding:11px 0; }
+  .att + .att { border-top:1px solid var(--line); }
+  .att .ava { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center;
+    justify-content:center; font-size:14px; font-weight:700; color:#fff; }
+  .att .info { flex:1; min-width:0; }
+  .att .nm { font-size:15px; font-weight:500; color:var(--t-primary); }
+  .att .rl { font-size:12px; color:var(--t-secondary); }
+  .seg { display:flex; background:var(--s-2); border-radius:999px; padding:2px; flex:none; }
+  .seg button { font:inherit; font-size:11.5px; font-weight:600; color:var(--t-secondary); border:none;
+    background:none; padding:7px 11px; border-radius:999px; cursor:pointer; white-space:nowrap; }
+  .seg button.on { background:var(--s-1); color:var(--a-text); box-shadow:0 1px 4px rgba(0,0,0,.14); }
+  .seg.lock button.on { color:var(--t-tertiary); }
+  .note { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-top:14px; }
+  .btn-primary { width:100%; height:56px; border-radius:18px; background:var(--a-fill); color:var(--a-on);
+    font:inherit; font-size:16px; font-weight:600; border:none; cursor:pointer; transition:transform .15s,background .15s; }
+  .btn-primary:active { transform:scale(.985); background:var(--a-press); }
+  .btn-ghost { width:100%; height:48px; background:none; border:none; color:var(--t-secondary);
+    font:inherit; font-size:14px; font-weight:600; cursor:pointer; margin-top:4px; }
+  .btn-tonal { background:var(--a-tint); color:var(--a-text); border:none; border-radius:14px;
+    font:inherit; font-size:13px; font-weight:700; padding:12px 18px; cursor:pointer; }
+  .reco { background:var(--s-1); border:1px solid var(--line); border-radius:22px; padding:18px 20px;
+    margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+  .reco:hover { border-color:var(--a-fill); }
+  .reco .rk { font-size:11px; font-weight:700; color:var(--a-text); background:var(--a-tint); padding:4px 10px; border-radius:999px; display:inline-block; }
+  .reco .tm { font-size:19px; font-weight:700; color:var(--t-primary); margin:9px 0 5px; letter-spacing:-.3px; }
+  .reco .rs { font-size:13px; color:var(--t-secondary); line-height:1.55; }
+  .peek-note { font-size:13px; color:var(--t-secondary); line-height:1.55; margin-bottom:14px; }
+  .comp-head { font-size:18px; font-weight:700; color:var(--t-primary); line-height:1.45; margin:2px 0 6px; letter-spacing:-.3px; }
+  .comp-sub { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-bottom:16px; }
+  .comp { background:var(--s-1); border:1px solid var(--line); border-radius:22px; padding:18px 20px; margin-bottom:12px; }
+  .comp .ct { font-size:16px; font-weight:700; color:var(--t-primary); margin-bottom:6px; }
+  .comp .cd { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-bottom:14px; }
+  .msg-prev { margin-top:14px; padding:14px 16px; background:var(--s-2); border-radius:16px;
+    border-left:3px solid var(--a-fill); font-size:12.5px; line-height:1.7; color:var(--t-primary); }
+  .msg-prev .from { font-size:11px; font-weight:700; color:var(--t-secondary); margin-bottom:6px; }
+  .done { text-align:center; padding-top:20px; }
+  .done .ck { width:60px; height:60px; border-radius:50%; background:var(--a-fill); color:#fff; font-size:28px;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 18px; animation:pop .42s cubic-bezier(.34,1.56,.64,1); }
+  .done h4 { font-size:21px; font-weight:700; color:var(--t-primary); letter-spacing:-.3px; }
+  .done p { font-size:14px; color:var(--t-secondary); line-height:1.65; margin-top:10px; }
+  .done .extra { text-align:left; margin-top:16px; padding:14px 16px; background:var(--s-2); border-radius:16px;
+    font-size:12.5px; line-height:1.6; color:var(--t-primary); }
+  .toast { position:absolute; left:50%; bottom:28px; transform:translate(-50%,16px); z-index:40;
+    background:rgba(28,28,30,.94); color:#fff; font-size:13.5px; font-weight:600; padding:13px 22px;
+    border-radius:999px; opacity:0; pointer-events:none; transition:all .3s; }
+  [data-theme="dark"] .toast { background:rgba(48,48,52,.96); }
+  .toast.show { opacity:1; transform:translate(-50%,0); }
+</style>
+</head>
+<body data-theme="light" id="body">
+<div class="demo-head">
+  <h1>회의 조율 서비스 · One UI 데스크톱 웹</h1>
+  <p>모바일과 같은 정보 구조를 데스크톱으로 재배치 — 바텀시트 → 우측 패널, FAB → 사이드바 주 버튼 (SPEC §3.3)</p>
+</div>
+
+<div class="win" id="win">
+  <div class="top">
+    <button class="today">오늘</button>
+    <div class="arrows"><button>‹</button><button>›</button></div>
+    <div><h2>2026년 7월</h2><div class="rng">13일 – 17일 · 다음 주</div></div>
+    <div class="sp"></div>
+    <div class="layerchip" id="layerchip"><span class="d"></span> 팀의 시간 레이어 · 켜짐</div>
+    <div class="theme-tog" id="theme">
+      <button data-th="light" class="on">라이트</button><button data-th="dark">다크</button>
+    </div>
+    <div class="av">지</div>
+  </div>
+
+  <div class="body">
+    <aside class="side">
+      <button class="btn-create" onclick="go('step1')">＋ 회의 잡기</button>
+      <div class="mini">
+        <div class="mt">2026년 7월</div>
+        <table>
+          <tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
+          <tr><td class="out"><span>29</span></td><td class="out"><span>30</span></td><td><span>1</span></td><td><span>2</span></td><td><span>3</span></td><td><span>4</span></td><td><span>5</span></td></tr>
+          <tr><td><span>6</span></td><td class="today"><span>7</span></td><td><span>8</span></td><td><span>9</span></td><td><span>10</span></td><td><span>11</span></td><td><span>12</span></td></tr>
+          <tr><td><span>13</span></td><td class="sel f"><span>14</span></td><td class="sel"><span>15</span></td><td class="sel"><span>16</span></td><td class="sel"><span>17</span></td><td class="sel l"><span>18</span></td><td><span>19</span></td></tr>
+          <tr><td><span>20</span></td><td><span>21</span></td><td><span>22</span></td><td><span>23</span></td><td><span>24</span></td><td><span>25</span></td><td><span>26</span></td></tr>
+          <tr><td><span>27</span></td><td><span>28</span></td><td><span>29</span></td><td><span>30</span></td><td><span>31</span></td><td class="out"><span>1</span></td><td class="out"><span>2</span></td></tr>
+        </table>
+      </div>
+      <div class="side-sec">
+        <div class="st">내 캘린더</div>
+        <div class="cal-row"><span class="cb" style="background:var(--a-fill)"></span>김지민</div>
+        <div class="cal-row"><span class="cb" style="background:#22A45D"></span>프로덕트팀</div>
+        <div class="cal-row"><span class="cb" style="background:var(--t-tertiary)"></span>회사 일정</div>
+      </div>
+      <div class="privacy">팀원의 사정은 그대로 보이지 않아요.<br>'조금 어려운 시간'으로만 표시돼요.</div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="bigt"><h3>이번 주</h3><div class="sub">다음 주 · 여섯 분과 1시간</div></div>
+      <div class="legend" id="legend"></div>
+      <div class="dayhead" id="dayhead"></div>
+      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      <div class="toast" id="toast"></div>
+    </main>
+
+    <aside class="panel" id="panel"><div class="panel-in">
+      <div class="phead"><h3 id="ptitle">회의 잡기</h3><span class="step" id="pstep"><b>1</b> / 3</span></div>
+      <button class="pclose" onclick="go('home')">✕</button>
+      <div class="pbody" id="pbody"></div>
+      <div class="pfoot" id="pfoot"></div>
+    </div></aside>
+  </div>
+</div>
+
+<script>
+const DAYS=[{w:"월",d:13},{w:"화",d:14},{w:"수",d:15},{w:"목",d:16},{w:"금",d:17}];
+const HOURS=[9,10,11,12,13,14,15,16,17];
+const M=[["x","x","o","x","o.","x","o","o!","x"],["g","r1","g","x","o!","x","r3","o","x"],["x","o","r2","x","x","x","o.","x","x"],["o","x","x","x","o!","o","x","o.","x"],["x","o","o","x","x","x","x","x","o!"]];
+const MY=[{d:0,h:9,t:"위클리 스크럼"},{d:0,h:10,t:"디자인 크리틱"},{d:2,h:14,t:"스프린트 데모"},{d:3,h:10,t:"외근 · 고객사",span:2},{d:4,h:13,t:"외부 미팅"}];
+const PEOPLE=[{nm:"김지민",rl:"프로덕트 디자이너 · 나",c:"#387AFF",req:true,me:true},{nm:"박준호",rl:"개발 리드",c:"#5A8DEF",req:true},{nm:"이서연",rl:"프로덕트 오너",c:"#7C6BF0",req:true},{nm:"최민지",rl:"데이터 분석가",c:"#22A45D",req:false},{nm:"정도윤",rl:"마케터",c:"#E8927C",req:false},{nm:"한하은",rl:"CX 매니저",c:"#D9A03C",req:false}];
+const RECOS=[{rank:1,d:1,h:10,label:"화요일 오전 10시",rs:"꼭 참석할 세 분 모두 편한 시간이에요. 여섯 분 전원이 올 수 있어요."},{rank:2,d:2,h:11,label:"수요일 오전 11시",rs:"여섯 분 전원이 올 수 있어요. 부담스러운 시간이 있는 분도 없어요."},{rank:3,d:1,h:15,label:"화요일 오후 3시",rs:"전원이 올 수 있지만, 도윤 님은 바로 앞에 회의가 있어 조금 빠듯할 수 있어요."}];
+const COMPS=[{ct:"민지 님 없이 진행하면",cd:"수요일 오전 11시에 모일 수 있어요. 회의 내용은 민지 님에게 자동으로 정리해서 보내드릴게요.",btn:"이 시간으로 잡기",mode:"skip"},{ct:"화요일 오후 1시는 어때요?",cd:"준호 님이 외근 직후라 조금 힘들 수 있는 시간이에요. 양해 메시지를 대신 보내드릴까요?",btn:"메시지 보고 잡기",mode:"excuse"},{ct:"30분으로 줄이면",cd:"목요일 오후 2시에 여섯 분 모두 모일 수 있어요.",btn:"30분으로 잡기",mode:"short"}];
+
+const dayhead=document.getElementById("dayhead");
+dayhead.innerHTML=`<div></div>`+DAYS.map((x,i)=>`<div class="dh ${i===1?'today':''}"><div class="wd">${x.w}</div><div class="dn">${x.d}</div></div>`).join("");
+function fmtH(h){return h>=12?"오후 "+(h===12?12:h-12):"오전 "+h;}
+const grid=document.getElementById("grid");
+function renderGrid(){let h="";HOURS.forEach((hr,r)=>{h+=`<div class="tl">${fmtH(hr)}시</div>`;DAYS.forEach((_,d)=>{const v=M[d][r];const st=v[0]==="x"?"s-hard":v[0]==="g"?"s-comfy":v[0]==="r"?"s-reco":"s-ok";let inner="";if(v[0]==="r")inner+=`<span class="rbadge">추천 ${v[1]}</span>`;if(v.includes("!"))inner+=`<span class="wd-dot req"></span>`;if(v.includes("."))inner+=`<span class="wd-dot opt"></span>`;const ev=MY.find(e=>e.d===d&&e.h===hr);if(ev)inner+=`<div class="evt${ev.span===2?" span2":""}">${ev.t}</div>`;const click=v[0]==="r"?`onclick="pickReco(${v[1]-1})"`:"";h+=`<div class="cell s-ok ${st}" id="c-${d}-${hr}" ${click}>${inner}</div>`;});});grid.innerHTML=h;}
+renderGrid();
+
+const main=document.getElementById("main"),panel=document.getElementById("panel"),body=document.getElementById("body"),
+ ptitle=document.getElementById("ptitle"),pstep=document.getElementById("pstep"),pbody=document.getElementById("pbody"),
+ pfoot=document.getElementById("pfoot"),layerchip=document.getElementById("layerchip"),legend=document.getElementById("legend");
+legend.innerHTML=`<span><i style="background:var(--hard-bg)"></i>어려워요</span><span><i style="background:var(--s-2)"></i>가능해요</span><span><i style="background:var(--comfy-bg)"></i>모두 편해요</span><span><i style="background:var(--a-tint);box-shadow:inset 0 0 0 2px var(--a-fill)"></i>추천</span><span><i style="background:var(--burden);border-radius:50%;width:9px;height:9px"></i>조금 힘든 시간</span>`;
+
+function setLayer(on){grid.classList.toggle("layered",on);main.classList.toggle("layered-on",on);layerchip.classList.toggle("show",on);}
+let placed=null;
+function clearPlaced(){if(placed){placed.remove();placed=null;}}
+function placeEvent(d,h,t){clearPlaced();const c=document.getElementById(`c-${d}-${h}`);const el=document.createElement("div");el.className="evt final";el.textContent=t;c.appendChild(el);placed=el;}
+
+function go(stage){
+  if(stage==="home"){panel.classList.remove("open");setLayer(false);clearPlaced();return;}
+  panel.classList.add("open");
+  if(stage==="step1"){setLayer(false);clearPlaced();step1();}
+  else if(stage==="heatmap"){setLayer(true);heatmap();}
+  else if(stage==="step3"){setLayer(true);step3();}
+  else if(stage==="done"){setLayer(true);placeEvent(1,10,"팀 킥오프");doneC("화요일 오전 10시","여섯 분 모두에게 초대를 보냈어요. 지민 님 캘린더에도 등록해 뒀어요.",null);}
+  else if(stage==="edge"){setLayer(true);edge();}
+}
+function step1(){ptitle.textContent="회의 잡기";pstep.innerHTML="<b>1</b> / 3";
+  pbody.innerHTML=`<div class="sec">회의 이름</div><input class="field" value="팀 킥오프" />
+  <div class="sec">길이</div><div class="chiprow"><button class="chip">30분</button><button class="chip on">1시간</button><button class="chip">1시간 30분</button></div>
+  <div class="sec">함께할 사람</div>${PEOPLE.map((p,i)=>`<div class="att"><div class="ava" style="background:${p.c}">${p.nm[1]}</div><div class="info"><div class="nm">${p.nm}${p.me?" (나)":""}</div><div class="rl">${p.rl}</div></div><div class="seg ${p.me?'lock':''}" id="seg-${i}"><button class="${p.req?'on':''}" onclick="setReq(${i},true)">꼭 참석</button><button class="${p.req?'':'on'}" onclick="setReq(${i},false)">가능하면</button></div></div>`).join("")}
+  <div class="note">'꼭 참석'인 분들이 되는 시간부터 맞춰 드릴게요.</div>`;
+  pfoot.innerHTML=`<button class="btn-primary" onclick="go('heatmap')">되는 시간 찾기</button>`;}
+function setReq(i,v){if(PEOPLE[i].me)return;PEOPLE[i].req=v;const s=document.getElementById("seg-"+i);s.children[0].classList.toggle("on",v);s.children[1].classList.toggle("on",!v);}
+function heatmap(){ptitle.textContent="이 시간이 좋아요";pstep.innerHTML="<b>2</b> / 3";const r=RECOS[0];
+  pbody.innerHTML=`<div class="peek-note">여섯 분의 캘린더와 컨디션을 겹쳐 봤어요. 파란 칸을 바로 눌러도 돼요.</div><div class="reco" onclick="pickReco(0)"><span class="rk">추천 ${r.rank}</span><div class="tm">${r.label}</div><div class="rs">${r.rs}</div></div>`;
+  pfoot.innerHTML=`<button class="btn-primary" onclick="go('step3')">추천 더 보기</button>`;}
+function step3(){ptitle.textContent="이 시간이 좋아요";pstep.innerHTML="<b>3</b> / 3";
+  pbody.innerHTML=`<div class="peek-note">마음에 드는 시간을 하나만 골라 주세요.</div>${RECOS.map((r,i)=>`<div class="reco" onclick="pickReco(${i})"><span class="rk">추천 ${r.rank}</span><div class="tm">${r.label}</div><div class="rs">${r.rs}</div></div>`).join("")}`;
+  pfoot.innerHTML=`<button class="btn-ghost" onclick="go('edge')">만약 모두 되는 시간이 없다면?</button>`;}
+function pickReco(i){const r=RECOS[i];placeEvent(r.d,r.h,"팀 킥오프");doneC(r.label,"여섯 분 모두에게 초대를 보냈어요. 지민 님 캘린더에도 등록해 뒀어요.",null);}
+function doneC(label,sub,extra){ptitle.textContent="완료";pstep.innerHTML="<b>3</b> / 3";
+  pbody.innerHTML=`<div class="done"><div class="ck">✓</div><h4>${label}로 잡았어요</h4><p>${sub}</p>${extra?`<div class="extra">${extra}</div>`:""}</div>`;
+  pfoot.innerHTML=`<button class="btn-primary" onclick="go('home')">완료</button><button class="btn-ghost" onclick="go('step3')">다른 시간 볼게요</button>`;}
+function edge(){ptitle.textContent="다른 방법이 있어요";pstep.innerHTML="<b>2</b> / 3";
+  pbody.innerHTML=`<div class="comp-head">다음 주엔 모두 모이기 어려워요.<br>대신 이런 방법이 있어요.</div><div class="comp-sub">무엇을 얻고 무엇을 내려놓는지 함께 보여드릴게요. 결정은 지민 님이 하면 돼요.</div>${COMPS.map((c,i)=>`<div class="comp"><div class="ct">${c.ct}</div><div class="cd">${c.cd}</div><button class="btn-tonal" onclick="pickComp(${i})">${c.btn}</button></div>`).join("")}`;
+  pfoot.innerHTML=`<button class="btn-primary" onclick="toast('7월 20일 주에서 다시 찾아볼게요')">그다음 주 더 보기</button>`;}
+function pickComp(i){const c=COMPS[i];
+  if(c.mode==="skip"){placeEvent(2,11,"팀 킥오프");doneC("수요일 오전 11시","다섯 분에게 초대를 보냈어요.","민지 님에게는 회의가 끝나면 내용을 정리해서 보내드릴게요. '빠졌다'가 아니라 '따라올 수 있다'로 느끼도록요.");}
+  else if(c.mode==="excuse"){placeEvent(1,13,"팀 킥오프");ptitle.textContent="완료";pstep.innerHTML="<b>3</b> / 3";
+    pbody.innerHTML=`<div class="done" style="padding-top:8px"><div class="ck">✓</div><h4>화요일 오후 1시로 잡았어요</h4><p>여섯 분 모두에게 초대를 보냈어요.</p></div><div class="msg-prev"><div class="from">준호 님에게 보낼 메시지</div>준호님, 화요일 오후 1시가 외근 직후라 힘드실 것 같아 먼저 양해를 구합니다. 꼭 필요한 이야기만 나누고 1시간 안에 마칠게요. — 지민 드림</div>`;
+    pfoot.innerHTML=`<button class="btn-primary" onclick="go('home')">메시지 보내고 완료</button><button class="btn-ghost" onclick="go('edge')">다시 볼게요</button>`;}
+  else{placeEvent(3,14,"팀 킥오프 (30분)");doneC("목요일 오후 2시","여섯 분 모두에게 초대를 보냈어요. 짧아진 만큼 안건을 미리 공유하면 좋아요.",null);}}
+let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(tT);tT=setTimeout(()=>t.classList.remove("show"),2800);}
+
+document.querySelectorAll("#theme button").forEach(b=>b.onclick=()=>{body.setAttribute("data-theme",b.dataset.th);document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x===b));});
+const q=new URLSearchParams(location.search);
+if(q.get("theme")==="dark"){body.setAttribute("data-theme","dark");document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x.dataset.th==="dark"));}
+if(q.get("stage"))go(q.get("stage"));
+</script>
+</body>
+</html>
