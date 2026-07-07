@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>조율 투표 — 드래그&스냅 프로토타입 (One UI)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --accent: #387AFF; --accent-press: #2E6FF2;
+    --blue50: #EAF1FF; --blue100: #C9DCFF; --blue700: #1B57D6;
+    --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
+    --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
+    --red400: #F2686C;
+    --base: #F4F4F6; --s1: #FFFFFF; --s2: #ECECEE; --s3: #E4E4E7;
+    --tp: #17171A; --ts: #616166; --tm: #8E8E93;
+    --hair: #ECECEE; --dash: #B8B8BE;
+    --drop-tint: #EAF1FF;
+  }
+  [data-theme="dark"] {
+    --accent: #5A8DFF; --accent-press: #387AFF;
+    --blue50: #12233F; --blue100: #1B3560; --blue700: #9CBEFF;
+    --amber50: #3A2E14; --amber900: #FFB43A; --green50: #0C3F23;
+    --base: #000000; --s1: #1B1B1D; --s2: #242427; --s3: #2C2C30;
+    --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93;
+    --hair: #2C2C30; --dash: #616166;
+    --drop-tint: #12233F;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+    background: var(--base); color: var(--tp);
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+    transition: background .3s, color .3s;
+  }
+
+  .frame { display: flex; height: 100vh; min-height: 620px; }
+
+  /* ── nav rail ── */
+  .rail {
+    width: 72px; flex: none; display: flex; flex-direction: column; align-items: center;
+    padding: 18px 0; gap: 6px; background: var(--s1);
+  }
+  .rail .logo { width: 38px; height: 38px; border-radius: 13px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; margin-bottom: 14px; }
+  .rail button { width: 46px; height: 46px; border: none; background: none; border-radius: 16px; font-size: 19px; cursor: pointer; color: var(--tm); }
+  .rail button.on { background: var(--blue50); color: var(--accent); }
+  .rail .sp { flex: 1; }
+
+  /* ── main ── */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 18px 0 18px 18px; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 4px 6px 16px; }
+  .topbar h1 { font-size: 24px; font-weight: 800; letter-spacing: -.3px; }
+  .topbar .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
+  .topbar .sp { flex: 1; }
+  .pill-btn {
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--tp);
+    background: var(--s1); border: none; border-radius: 20px; padding: 9px 16px; cursor: pointer;
+  }
+  .pill-btn.acc { background: var(--blue50); color: var(--accent); }
+
+  .gridcard {
+    flex: 1; min-height: 0; background: var(--s1); border-radius: 26px;
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  .dayhead { display: grid; grid-template-columns: 52px repeat(5, 1fr); padding: 14px 14px 8px; }
+  .dayhead .dh { text-align: center; }
+  .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--tm); letter-spacing: 1px; }
+  .dayhead .dnum { font-size: 17px; font-weight: 700; margin-top: 2px; }
+  .gwrap { flex: 1; overflow-y: auto; padding: 6px 14px 14px; }
+  .grid { display: grid; grid-template-columns: 52px repeat(5, 1fr); }
+  .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 8px; transform: translateY(-6px); }
+  .cell {
+    height: 56px; border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair);
+    position: relative; transition: background .2s ease-out, box-shadow .2s;
+  }
+  .evt {
+    position: absolute; inset: 2px 4px; border-radius: 10px;
+    background: var(--s2); color: var(--ts);
+    font-size: 11px; font-weight: 600; padding: 5px 8px; overflow: hidden; z-index: 2;
+    transition: filter .3s, opacity .3s;
+  }
+  .evt.mine { background: var(--accent); color: #fff; }
+
+  /* drag states */
+  .dropmode .cell.valid { background: var(--drop-tint); cursor: copy; }
+  .dropmode .evt { filter: saturate(.6); opacity: .55; }
+  .cell.near { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .ghost-in-cell {
+    position: absolute; inset: 2px 4px; border-radius: 10px; z-index: 3;
+    background: color-mix(in srgb, var(--blue100) 60%, transparent);
+    border: 1.5px dashed var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--accent);
+  }
+
+  /* placed voting card */
+  .vcard {
+    position: absolute; inset: 2px 4px; border-radius: 10px; z-index: 4;
+    background: var(--blue50); border: 1.5px dashed var(--accent);
+    padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--accent);
+    transition: transform .32s cubic-bezier(.4,0,.2,1), background .3s, border .3s, color .3s;
+    animation: settle .32s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes settle { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+  .vcard .mini-dots { display: flex; gap: 3px; margin-top: 3px; }
+  .vcard .mini-dots i { width: 6px; height: 6px; border-radius: 50%; background: transparent; border: 1px solid var(--dash); }
+  .vcard .mini-dots i.g { background: var(--green400); border-color: var(--green400); }
+  .vcard .mini-dots i.a { background: var(--amber400); border-color: var(--amber400); }
+  .vcard.confirmed { background: var(--accent); border: 1.5px solid var(--accent); color: #fff; }
+  .vcard.confirmed .mini-dots i { background: rgba(255,255,255,.85); border-color: transparent; }
+  .vcard .shift-tag { position: absolute; top: -10px; right: 6px; font-size: 10px; background: var(--amber50); color: var(--amber900); border-radius: 8px; padding: 2px 7px; font-weight: 700; }
+
+  .flash { animation: flash .5s ease; }
+  @keyframes flash { 0% { box-shadow: inset 0 0 0 3px var(--accent); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+
+  /* ── aside ── */
+  .aside { width: 348px; flex: none; padding: 18px; overflow-y: auto; }
+  .aside-h { display: flex; align-items: center; gap: 8px; padding: 6px 6px 4px; }
+  .aside-h .t { font-size: 16px; font-weight: 800; }
+  .aside-h .badge { min-width: 22px; height: 22px; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 7px; }
+  .aside-sub { font-size: 12px; color: var(--ts); line-height: 1.55; padding: 0 6px 12px; }
+
+  .reco {
+    background: var(--s1); border-radius: 20px; padding: 16px; margin-bottom: 12px;
+    cursor: grab; user-select: none; -webkit-user-select: none;
+    transition: transform .16s ease-out, box-shadow .16s ease-out, opacity .2s;
+    touch-action: none;
+  }
+  .reco:active { cursor: grabbing; }
+  .reco.lifted { transform: scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+  .reco.placeholder { opacity: 0; pointer-events: none; }
+  .reco .chip {
+    display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px;
+    border-radius: 13px; background: var(--amber50); color: var(--amber900);
+    font-size: 11.5px; font-weight: 700; margin-bottom: 9px;
+  }
+  .reco .chip.ok { background: var(--green50); color: var(--green); }
+  .reco .tm { font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
+  .reco .meta { font-size: 13px; color: var(--ts); font-weight: 500; margin: 3px 0 10px; }
+  .dotbar { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
+  .dotbar i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--dash); transition: all .18s; }
+  .dotbar i.g { background: var(--green400); border-color: var(--green400); animation: dotin .18s ease; }
+  .dotbar i.a { background: var(--amber400); border-color: var(--amber400); animation: dotin .18s ease; }
+  @keyframes dotin { from { transform: scale(.6); opacity: .4; } }
+  .dotbar .cnt { font-size: 12px; color: var(--ts); margin-left: 4px; }
+  .avs { display: flex; gap: 5px; }
+  .av { width: 28px; height: 28px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; transition: transform .2s; }
+  .av.pending { background: var(--s2); color: var(--tm); border: 1.5px dashed var(--dash); }
+  .av .st { position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-radius: 50%; font-size: 8px; display: none; align-items: center; justify-content: center; color: #fff; border: 1.5px solid var(--s1); }
+  .av.yes .st { display: flex; background: var(--green400); }
+  .av.adj .st { display: flex; background: var(--amber400); }
+  .av.flip { animation: flip .2s ease; }
+  @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+  .suggest {
+    margin-top: 11px; padding-top: 11px; border-top: 1px dashed var(--hair);
+    display: none; align-items: center; gap: 8px; animation: rise2 .3s ease;
+  }
+  .suggest.show { display: flex; }
+  @keyframes rise2 { from { transform: translateY(6px); opacity: 0; } }
+  .suggest .q { flex: 1; font-size: 12px; color: var(--ts); line-height: 1.4; }
+  .suggest .q b { color: var(--tp); font-weight: 700; }
+  .suggest button {
+    font: inherit; font-size: 12px; font-weight: 700; color: var(--accent);
+    background: var(--blue50); border: none; border-radius: 12px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+  }
+  .reco .hint { font-size: 11.5px; color: var(--tm); margin-top: 10px; }
+
+  /* drag clone */
+  #clone { position: fixed; z-index: 100; width: 312px; pointer-events: none; display: none; }
+  #clone .reco { box-shadow: 0 16px 36px rgba(0,0,0,.22); transform: scale(1.03); margin: 0; }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 34px; transform: translate(-50%, 16px);
+    background: var(--tp); color: var(--base); font-size: 13.5px; font-weight: 600;
+    padding: 13px 20px; border-radius: 26px; z-index: 120; display: flex; gap: 14px; align-items: center;
+    opacity: 0; pointer-events: none; transition: all .3s ease;
+  }
+  .toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .toast button { font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); background: none; border: none; cursor: pointer; }
+
+  /* receiver sheet (mobile mock overlay) */
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 130; display: none; align-items: flex-end; justify-content: center; }
+  .scrim.show { display: flex; }
+  .sheet {
+    width: min(400px, 100%); background: var(--s1); border-radius: 26px 26px 0 0;
+    padding: 10px 20px 24px; animation: sheetup .3s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes sheetup { from { transform: translateY(60px); opacity: 0; } }
+  .sheet .grab { width: 32px; height: 4px; border-radius: 2px; background: var(--dash); margin: 0 auto 16px; }
+  .sheet h3 { font-size: 17px; font-weight: 700; line-height: 1.45; }
+  .sheet .sub { font-size: 13px; color: var(--ts); margin: 6px 0 18px; line-height: 1.5; }
+  .vbtn { width: 100%; font: inherit; font-weight: 700; border: none; cursor: pointer; margin-bottom: 8px; transition: transform .1s; }
+  .vbtn:active { transform: scale(.98); }
+  .vbtn.yes { height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font-size: 15px; }
+  .vbtn.adj { height: 52px; border-radius: 26px; background: var(--blue50); color: var(--blue700); font-size: 15px; }
+  .vbtn.no { height: 44px; border-radius: 22px; background: none; color: var(--ts); font-size: 13.5px; }
+  .offset { display: none; padding-top: 6px; animation: rise2 .28s ease; }
+  .offset.show { display: block; }
+  .offset .q2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .offset .chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+  .offset .chips button {
+    font: inherit; font-size: 12.5px; font-weight: 600; height: 36px; padding: 0 14px;
+    border-radius: 18px; border: 1px solid var(--hair); background: var(--s1); color: var(--tp); cursor: pointer;
+  }
+  .offset .chips button.on { background: var(--blue50); border-color: var(--accent); color: var(--accent); }
+  .offset input {
+    width: 100%; font: inherit; font-size: 13px; border: none; border-radius: 14px;
+    background: var(--s2); color: var(--tp); padding: 12px 14px; margin-bottom: 12px;
+  }
+  .offset input::placeholder { color: var(--tm); }
+  .offset .send { width: 100%; height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 700; border: none; cursor: pointer; }
+  .offset .safe { font-size: 11.5px; color: var(--tm); text-align: center; margin-top: 10px; line-height: 1.5; }
+  .sheet .calm { font-size: 13px; color: var(--ts); text-align: center; padding: 14px 0 4px; line-height: 1.6; display: none; }
+
+  /* responsive: aside → bottom strip */
+  @media (max-width: 860px) {
+    .frame { flex-direction: column; }
+    .rail { display: none; }
+    .main { padding: 14px 14px 0; }
+    .aside { width: 100%; display: flex; gap: 10px; overflow-x: auto; padding: 12px 14px 16px; }
+    .aside-h, .aside-sub { display: none; }
+    .reco { min-width: 270px; margin-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <nav class="rail">
+    <div class="logo">모</div>
+    <button title="홈">▦</button>
+    <button class="on" title="캘린더">▤</button>
+    <button title="회의">◷</button>
+    <button title="팀">◉</button>
+    <span class="sp"></span>
+    <button title="설정">⚙</button>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>7월 13–17</h1>
+        <div class="sub">다음 주 · 팀 킥오프 1시간 · 6명</div>
+      </div>
+      <span class="sp"></span>
+      <button class="pill-btn" id="sheetBtn" onclick="openSheet()">수신자 화면 미리보기</button>
+      <button class="pill-btn acc" id="themeBtn" onclick="toggleTheme()">다크</button>
+    </div>
+    <div class="gridcard">
+      <div class="dayhead" id="dayhead"></div>
+      <div class="gwrap"><div class="grid" id="grid"></div></div>
+    </div>
+  </main>
+
+  <aside class="aside" id="aside">
+    <div class="aside-h"><span class="t">✨ AI 추천</span><span class="badge" id="cnt">3</span></div>
+    <p class="aside-sub">모두 되는 시간이 없어서, 조금만 조정하면 되는 시간을 찾았어요. 카드를 캘린더로 끌어다 놓으면 바로 물어봐 드릴게요.</p>
+    <div id="recoList"></div>
+  </aside>
+</div>
+
+<div id="clone"></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAct"></button></div>
+
+<div class="scrim" id="scrim" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>회의 제안이 왔어요 — 화요일 오후 2시</h3>
+    <p class="sub">지민 님이 팀 킥오프(1시간)를 잡고 있어요. 준호 님 답이 필요해요.</p>
+    <div id="voteArea">
+      <button class="vbtn yes" onclick="votePick('yes')">가능해요 😊</button>
+      <button class="vbtn adj" onclick="votePick('adj')">조금만 조정하면 돼요 🤔</button>
+      <button class="vbtn no" onclick="votePick('no')">어려워요, 미안! 🙏</button>
+    </div>
+    <div class="offset" id="offset">
+      <div class="q2">얼마나 옮기면 편해요?</div>
+      <div class="chips" id="offChips">
+        <button onclick="offPick(this)">15분 늦게</button>
+        <button class="on" onclick="offPick(this)">30분 늦게</button>
+        <button onclick="offPick(this)">1시간 뒤</button>
+        <button onclick="offPick(this)">점심 이후로</button>
+      </div>
+      <input placeholder="예: 2시 이후면 언제든 좋아요" />
+      <button class="send" onclick="sendOffset()">이 조건으로 보내기</button>
+      <p class="safe">이 내용은 지민 님에게만 보여요.<br />옮길지는 지민 님이 정해요 — 부담 갖지 마세요.</p>
+    </div>
+    <p class="calm" id="calmMsg"></p>
+  </div>
+</div>
+
+<script>
+/* ─── data ─── */
+const DAYS = [["월",13],["화",14],["수",15],["목",16],["금",17]];
+const HOURS = [9,10,11,12,13,14,15,16,17];
+const EVENTS = [
+  {d:0,h:9,t:"위클리 스크럼",mine:1},{d:0,h:10,t:"디자인 크리틱",mine:1},
+  {d:0,h:14,t:"준호 · 외근"},{d:1,h:9,t:"서연 · 1:1"},{d:1,h:11,t:"전사 타운홀"},
+  {d:2,h:14,t:"스프린트 데모",mine:1},{d:2,h:9,t:"민지 · 분석 리뷰"},
+  {d:3,h:10,t:"외근 · 고객사",mine:1},{d:3,h:11,t:"외근 · 고객사",mine:1},
+  {d:4,h:13,t:"외부 미팅",mine:1},{d:4,h:15,t:"하은 · CX 위클리"}
+];
+const PEOPLE = [["지","#387AFF"],["준","#5A8DFF"],["서","#7C6BF0"],["민","#4FB6A8"],["도","#E8927C"],["하","#D9A03C"]];
+const RECOS = [
+  {id:0,d:1,h:14,label:"화요일 오후 2시",chip:"준호 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:1,adjName:"준호"},
+  {id:1,d:2,h:11,label:"수요일 오전 11시",chip:"민지 님 없이면 지금도 가능해요",meta:"1시간 · 5명 · 민지 님에겐 요약 전달",adjWho:3,adjName:"민지"},
+  {id:2,d:3,h:15,label:"목요일 오후 3시",chip:"도윤 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:4,adjName:"도윤"}
+];
+
+/* ─── render grid ─── */
+const grid = document.getElementById("grid");
+document.getElementById("dayhead").innerHTML = "<div></div>" + DAYS.map(d=>`<div class="dh"><div class="dow">${d[0]}</div><div class="dnum">${d[1]}</div></div>`).join("");
+let g = "";
+HOURS.forEach(h=>{
+  g += `<div class="tl">${h>=12?"오후 "+(h===12?12:h-12):"오전 "+h}시</div>`;
+  DAYS.forEach((_,d)=>{
+    const ev = EVENTS.find(e=>e.d===d&&e.h===h);
+    g += `<div class="cell" id="c-${d}-${h}">${ev?`<div class="evt${ev.mine?" mine":""}">${ev.t}</div>`:""}</div>`;
+  });
+});
+grid.innerHTML = g;
+
+/* ─── render reco cards ─── */
+const list = document.getElementById("recoList");
+function avatarRow(pref){
+  return `<div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="${pref}-av-${i}" style="--c:${p[1]}">${p[0]}<span class="st">✓</span></span>`).join("")}</div>`;
+}
+RECOS.forEach(r=>{
+  const el = document.createElement("div");
+  el.className = "reco"; el.id = "reco-"+r.id; el.dataset.rid = r.id;
+  el.innerHTML = `
+    <span class="chip">✨ ${r.chip}</span>
+    <div class="tm">${r.label}</div>
+    <div class="meta">${r.meta}</div>
+    <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
+    ${avatarRow("r"+r.id)}
+    <div class="suggest" id="sg-${r.id}">
+      <span class="q">💬 <b>${r.adjName}</b>: 30분 뒤면 가능해요</span>
+      <button onclick="applyShift(${r.id})">30분 뒤로 옮기기</button>
+    </div>
+    <div class="hint">끌어서 캘린더에 놓거나, 카드를 탭하세요</div>`;
+  list.appendChild(el);
+});
+
+/* ─── drag & snap ─── */
+const clone = document.getElementById("clone");
+let drag = null;
+document.querySelectorAll(".reco").forEach(card=>{
+  card.addEventListener("pointerdown", e=>{
+    if (e.target.tagName==="BUTTON" || card.classList.contains("placed")) return;
+    const rid = +card.dataset.rid;
+    drag = { rid, card, moved:false, sx:e.clientX, sy:e.clientY };
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener("pointermove", e=>{
+    if (!drag || drag.card!==card) return;
+    if (!drag.moved && Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) < 8) return;
+    if (!drag.moved) startDrag(e);
+    moveDrag(e);
+  });
+  card.addEventListener("pointerup", e=>{
+    if (!drag || drag.card!==card) return;
+    drag.moved ? endDrag(e) : tapPlace(drag.rid);
+    drag = null;
+  });
+});
+function targetCell(rid){ const r = RECOS[rid]; return document.getElementById(`c-${r.d}-${r.h}`); }
+function startDrag(e){
+  drag.moved = true;
+  drag.card.classList.add("placeholder");
+  clone.innerHTML = ""; const c = drag.card.cloneNode(true); c.classList.remove("placeholder"); c.classList.add("lifted"); clone.appendChild(c);
+  clone.style.display = "block";
+  document.body.classList.add("dragging");
+  grid.classList.add("dropmode"); document.querySelector(".gridcard").classList.add("dropmode");
+  targetCell(drag.rid).classList.add("valid");
+  moveDrag(e);
+}
+function moveDrag(e){
+  clone.style.left = (e.clientX-156)+"px"; clone.style.top = (e.clientY-30)+"px";
+  const t = targetCell(drag.rid), r = t.getBoundingClientRect();
+  const near = Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) < Math.max(60, r.width/2+10);
+  t.classList.toggle("near", near);
+  if (near && !t.querySelector(".ghost-in-cell")) { const gh=document.createElement("div"); gh.className="ghost-in-cell"; gh.textContent="여기에 착"; t.appendChild(gh); }
+  if (!near) t.querySelector(".ghost-in-cell")?.remove();
+  drag.near = near;
+}
+function endDrag(){
+  clone.style.display="none";
+  grid.classList.remove("dropmode"); document.querySelector(".gridcard").classList.remove("dropmode");
+  const t = targetCell(drag.rid);
+  t.classList.remove("valid","near"); t.querySelector(".ghost-in-cell")?.remove();
+  if (drag.near) place(drag.rid); else drag.card.classList.remove("placeholder");
+}
+function tapPlace(rid){
+  const t = targetCell(rid);
+  t.scrollIntoView({behavior:"smooth",block:"center"});
+  document.getElementById("reco-"+rid).classList.add("placeholder");
+  place(rid);
+}
+
+/* ─── place + vote simulation ─── */
+let placedState = {};
+function place(rid){
+  const r = RECOS[rid], t = targetCell(rid);
+  if (t.querySelector(".vcard")) return;
+  const v = document.createElement("div");
+  v.className = "vcard"; v.id = "vc-"+rid;
+  v.innerHTML = `팀 킥오프<div class="mini-dots">${PEOPLE.map(()=>"<i></i>").join("")}</div>`;
+  t.appendChild(v); t.classList.add("flash");
+  const card = document.getElementById("reco-"+rid);
+  card.classList.remove("placeholder"); card.classList.add("placed");
+  card.style.cursor = "default";
+  card.querySelector(".hint").textContent = "투표가 진행되고 있어요";
+  toast("세 분에게 물어볼게요", "실행 취소", ()=>undoPlace(rid));
+  placedState[rid] = { timers: [] };
+  runVotes(rid);
+}
+function undoPlace(rid){
+  placedState[rid]?.timers.forEach(clearTimeout);
+  document.getElementById("vc-"+rid)?.remove();
+  const card = document.getElementById("reco-"+rid);
+  card.classList.remove("placed"); card.style.cursor = "grab";
+  card.querySelector(".hint").textContent = "끌어서 캘린더에 놓거나, 카드를 탭하세요";
+  resetVotes(rid); hideToast();
+}
+function resetVotes(rid){
+  document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="");
+  document.getElementById("cnt-"+rid).textContent = "0/6 답했어요";
+  PEOPLE.forEach((_,i)=>{ const a=document.getElementById(`r${rid}-av-${i}`); a.className="av pending"; a.style.background=""; });
+  document.getElementById("sg-"+rid).classList.remove("show");
+}
+function vote(rid, who, kind, idx){
+  const a = document.getElementById(`r${rid}-av-${who}`);
+  a.classList.remove("pending"); a.classList.add("flip", kind==="adj"?"adj":"yes");
+  a.style.background = PEOPLE[who][1]; a.style.border = "none";
+  if (kind==="adj") a.querySelector(".st").textContent = "~";
+  const dots = document.querySelectorAll(`#db-${rid} i`);
+  dots[idx].className = kind==="adj" ? "a" : "g";
+  document.getElementById("cnt-"+rid).textContent = `${idx+1}/6 답했어요`;
+  const mini = document.querySelectorAll(`#vc-${rid} .mini-dots i`);
+  if (mini[idx]) mini[idx].className = kind==="adj" ? "a" : "g";
+}
+function runVotes(rid){
+  const r = RECOS[rid], st = placedState[rid];
+  const order = [0,2,3,5].filter(w=>w!==r.adjWho);
+  let idx = 0;
+  order.slice(0,4).forEach((who,k)=>{
+    st.timers.push(setTimeout(()=>vote(rid,who,"yes",k), 800+k*700));
+  });
+  idx = Math.min(4, order.length);
+  st.timers.push(setTimeout(()=>{
+    vote(rid, r.adjWho, "adj", idx);
+    document.getElementById("sg-"+rid).classList.add("show");
+    toast(`${r.adjName} 님이 30분 뒤면 가능하대요`, "", null);
+  }, 800+idx*700+400));
+}
+function applyShift(rid){
+  const r = RECOS[rid];
+  const v = document.getElementById("vc-"+rid);
+  v.style.transform = "translateY(28px)";
+  const tag = document.createElement("span"); tag.className="shift-tag"; tag.textContent="조정됨 +30분"; v.appendChild(tag);
+  document.getElementById("sg-"+rid).classList.remove("show");
+  toast("30분 뒤로 옮겼어요. " + r.adjName + " 님 의견을 반영했어요", "", null);
+  const st = placedState[rid];
+  const remaining = [1,4].filter(w=>w!==r.adjWho);
+  st.timers.push(setTimeout(()=>{
+    vote(rid, r.adjWho===1?4:1, "yes", 5); confirmCard(rid);
+  }, 1400));
+  setTimeout(()=>tag.remove(), 3400);
+}
+function confirmCard(rid){
+  const r = RECOS[rid];
+  const v = document.getElementById("vc-"+rid);
+  v.classList.add("confirmed");
+  document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="g");
+  document.getElementById("cnt-"+rid).textContent = "6/6 · 확정됐어요";
+  const card = document.getElementById("reco-"+rid);
+  card.querySelector(".chip").className = "chip ok";
+  card.querySelector(".chip").textContent = "✓ 확정 — 캘린더에 등록해 뒀어요";
+  card.querySelector(".hint").textContent = "모두의 캘린더에 자동으로 들어갔어요";
+  toast("확정됐어요. 모두의 캘린더에 등록해 뒀어요", "", null);
+}
+
+/* ─── toast ─── */
+let toastTimer;
+function toast(msg, act, fn){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  const b = document.getElementById("toastAct");
+  b.textContent = act||""; b.style.display = act?"block":"none"; b.onclick = fn;
+  t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, act?5000:2600);
+}
+function hideToast(){ document.getElementById("toast").classList.remove("show"); }
+
+/* ─── receiver sheet ─── */
+function openSheet(){ document.getElementById("scrim").classList.add("show"); resetSheet(); }
+function closeSheet(){ document.getElementById("scrim").classList.remove("show"); }
+function resetSheet(){
+  document.getElementById("voteArea").style.display = "block";
+  document.getElementById("offset").classList.remove("show");
+  const c = document.getElementById("calmMsg"); c.style.display="none";
+}
+function votePick(kind){
+  if (kind==="adj"){
+    document.getElementById("voteArea").style.display = "none";
+    document.getElementById("offset").classList.add("show");
+  } else if (kind==="no"){
+    document.getElementById("voteArea").style.display = "none";
+    const c = document.getElementById("calmMsg");
+    c.textContent = "전할게요. 미안해할 일 아니에요 — 다른 시간을 이미 찾고 있어요.";
+    c.style.display = "block";
+    setTimeout(closeSheet, 1800);
+  } else {
+    document.getElementById("voteArea").style.display = "none";
+    const c = document.getElementById("calmMsg");
+    c.textContent = "답했어요! 지민 님에게 바로 전할게요 😊";
+    c.style.display = "block";
+    setTimeout(closeSheet, 1400);
+  }
+}
+function offPick(b){ document.querySelectorAll("#offChips button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }
+function sendOffset(){
+  document.getElementById("offset").classList.remove("show");
+  const c = document.getElementById("calmMsg");
+  c.textContent = "조건을 전했어요. 옮길지는 지민 님이 정할 거예요 — 잘하셨어요 👍";
+  c.style.display = "block";
+  setTimeout(closeSheet, 1800);
+}
+
+/* ─── theme + deep link ─── */
+function toggleTheme(){
+  const b = document.body;
+  const dark = b.getAttribute("data-theme")==="dark";
+  b.setAttribute("data-theme", dark?"light":"dark");
+  document.getElementById("themeBtn").textContent = dark?"다크":"라이트";
+}
+const q = new URLSearchParams(location.search);
+if (q.get("theme")==="dark") { document.body.setAttribute("data-theme","dark"); document.getElementById("themeBtn").textContent="라이트"; }
+const demo = q.get("demo");
+if (demo==="voting"){ tapPlace(0); }
+else if (demo==="confirmed"){ tapPlace(0); setTimeout(()=>{ placedState[0].timers.forEach(clearTimeout); [0,2,3,5].slice(0,4).forEach((w,k)=>vote(0,w,"yes",k)); vote(0,1,"adj",4); applyShift(0); placedState[0].timers.forEach(clearTimeout); vote(0,4,"yes",5); confirmCard(0); hideToast(); }, 150); }
+else if (demo==="suggest"){ tapPlace(0); setTimeout(()=>{ placedState[0].timers.forEach(clearTimeout); [0,2,3,5].slice(0,4).forEach((w,k)=>vote(0,w,"yes",k)); vote(0,1,"adj",4); document.getElementById("sg-0").classList.add("show"); hideToast(); }, 150); }
+else if (demo==="sheet"){ openSheet(); }
+else if (demo==="sheet-adjust"){ openSheet(); votePick("adj"); }
+</script>
+</body>
+</html>
