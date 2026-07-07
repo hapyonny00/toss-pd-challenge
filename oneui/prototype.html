@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>회의 조율 — One UI 프로토타입</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  /* ── 토큰: 라이트 (기본) ─────────────────── */
+  :root {
+    --s-base:#F4F4F6; --s-1:#FFFFFF; --s-2:#ECECEE; --s-3:#E4E4E7; --s-sheet:#FFFFFF;
+    --scrim:rgba(0,0,0,.32);
+    --t-primary:#17171A; --t-secondary:#616166; --t-tertiary:#8E8E93; --t-disabled:#B8B8BE;
+    --a-fill:#387AFF; --a-press:#2E6FF2; --a-on:#FFFFFF; --a-text:#1B57D6; --a-tint:#EAF1FF;
+    --comfy-bg:#E3F5EA; --comfy-tx:#22A45D;
+    --hard-bg:#ECECEE; --hard-tx:#9A9AA0;
+    --burden:#FFB43A;
+    --line:#E4E4E7; --line-strong:#D4D4D8;
+    --sheet-shadow:0 -4px 24px rgba(0,0,0,.10);
+    --fab-shadow:0 4px 16px rgba(56,122,255,.32);
+    --toast-bg:rgba(28,28,30,.94);
+    --phone-bezel:#0A0A0A;
+  }
+  [data-theme="dark"] {
+    --s-base:#000000; --s-1:#1B1B1D; --s-2:#242427; --s-3:#2C2C30; --s-sheet:#1B1B1D;
+    --scrim:rgba(0,0,0,.60);
+    --t-primary:#FFFFFF; --t-secondary:#B0B0B6; --t-tertiary:#8A8A90; --t-disabled:#5A5A60;
+    --a-fill:#3B76F5; --a-press:#2E63D8; --a-on:#FFFFFF; --a-text:#82AAFF; --a-tint:#16233D;
+    --comfy-bg:#12301F; --comfy-tx:#54D08A;
+    --hard-bg:#161618; --hard-tx:#6E6E74;
+    --burden:#FFB43A;
+    --line:#2C2C30; --line-strong:#3A3A40;
+    --sheet-shadow:none;
+    --fab-shadow:0 4px 16px rgba(0,0,0,.5);
+    --toast-bg:rgba(40,40,44,.94);
+    --phone-bezel:#000000;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  body {
+    font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+    background:#1a1c22;
+    color:#e6e6ea;
+    min-height:100vh; padding:16px 20px 48px;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+
+  /* ── 데모 셸 컨트롤 ─────────────────── */
+  .demo-head { text-align:center; max-width:420px; }
+  .demo-head h1 { font-size:19px; font-weight:600; letter-spacing:-.3px; }
+  .demo-head p { font-size:13px; color:#9a9aa6; margin-top:6px; line-height:1.6; }
+  .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:520px; }
+  .controls .grp { display:flex; gap:4px; background:#2a2c34; border-radius:999px; padding:4px; }
+  .controls button {
+    font:inherit; font-size:12.5px; font-weight:600; color:#b7b7c2;
+    border:none; background:none; padding:7px 13px; border-radius:999px; cursor:pointer;
+    transition:all .18s;
+  }
+  .controls button.on { background:#4a4d59; color:#fff; }
+  .controls .theme button.on { background:var(--a-fill,#387AFF); }
+
+  /* ── 폰 프레임 ─────────────────── */
+  .phone {
+    width:360px; height:780px; flex:none;
+    background:var(--phone-bezel); border-radius:46px; padding:5px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    position:relative;
+  }
+  .screen {
+    width:100%; height:100%; background:var(--s-base); color:var(--t-primary);
+    border-radius:42px; overflow:hidden; position:relative;
+    display:flex; flex-direction:column;
+    transition:background .3s;
+  }
+
+  /* status bar */
+  .statusbar {
+    height:34px; flex:none; display:flex; align-items:center; justify-content:space-between;
+    padding:0 24px; font-size:13px; font-weight:600; color:var(--t-primary);
+  }
+  .statusbar .icons { display:flex; gap:6px; align-items:center; font-size:12px; }
+
+  /* app bar */
+  .appbar {
+    height:52px; flex:none; display:flex; align-items:center; gap:8px; padding:0 16px;
+  }
+  .appbar .ico { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:20px; color:var(--t-primary); cursor:pointer; }
+  .appbar .ico:active { background:var(--s-3); }
+  .appbar .spacer { flex:1; }
+  .appbar .layerchip {
+    display:none; align-items:center; gap:6px; font-size:12px; font-weight:600;
+    color:var(--a-text); background:var(--a-tint); padding:6px 12px; border-radius:999px; cursor:pointer;
+  }
+  .appbar .layerchip.show { display:inline-flex; }
+  .appbar .layerchip .d { width:6px; height:6px; border-radius:50%; background:var(--a-fill); }
+  .appbar .av { width:32px; height:32px; border-radius:50%; background:var(--a-fill); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+
+  /* viewing area */
+  .viewing { flex:1; display:flex; flex-direction:column; min-height:0; padding:0 0 0; transition:flex .3s; }
+  .bigtitle { padding:4px 24px 12px; }
+  .bigtitle h2 { font-size:28px; font-weight:700; letter-spacing:-.4px; }
+  .bigtitle .sub { font-size:14px; color:var(--t-secondary); margin-top:2px; }
+
+  /* week calendar */
+  .cal { flex:1; display:flex; flex-direction:column; min-height:0; }
+  .cal .dow { display:grid; grid-template-columns:34px repeat(5,1fr); padding:0 12px 6px 0; }
+  .cal .dow div { text-align:center; }
+  .cal .dow .wd { font-size:11px; font-weight:600; color:var(--t-tertiary); }
+  .cal .dow .dn { font-size:15px; font-weight:700; margin-top:2px; width:26px; height:26px; line-height:26px;
+    border-radius:50%; display:inline-block; }
+  .cal .dow .today .dn { background:var(--a-fill); color:#fff; }
+  .cal .grid-wrap { flex:1; overflow-y:auto; padding:0 12px 8px 0; }
+  .cal .grid { display:grid; grid-template-columns:34px repeat(5,1fr); gap:3px; }
+  .cal .tl { font-size:10px; color:var(--t-tertiary); text-align:right; padding-right:6px; transform:translateY(-5px); }
+  .cell { height:38px; border-radius:8px; position:relative; background:transparent; }
+  .cell.hair { box-shadow:inset 0 0 0 1px var(--line); }
+  .evt { position:absolute; inset:1px; border-radius:7px; background:var(--a-fill); color:#fff;
+    font-size:9px; font-weight:600; padding:3px 5px; overflow:hidden; line-height:1.25; z-index:2; }
+  .evt.span2 { height:calc(200% + 3px); }
+  .evt.final { animation:pop .42s cubic-bezier(.34,1.56,.64,1); box-shadow:0 3px 10px rgba(56,122,255,.4); }
+  @keyframes pop { from { transform:scale(.9); opacity:0; } }
+
+  /* heatmap layer */
+  .layered .cell.s-hard { background:var(--hard-bg); }
+  .layered .cell.s-comfy { background:var(--comfy-bg); }
+  .layered .cell.s-reco { background:var(--a-tint); box-shadow:inset 0 0 0 1.5px var(--a-fill); z-index:3; }
+  .rbadge { display:none; position:absolute; inset:0; align-items:center; justify-content:center;
+    font-size:9px; font-weight:700; color:var(--a-text); }
+  .layered .rbadge { display:flex; }
+  .wd-dot { display:none; position:absolute; top:3px; right:3px; border-radius:50%; z-index:4; }
+  .layered .wd-dot { display:block; }
+  .wd-dot.req { width:6px; height:6px; background:var(--burden); }
+  .wd-dot.opt { width:5px; height:5px; background:var(--t-tertiary); }
+  .legend { display:none; gap:9px; flex-wrap:wrap; padding:8px 24px 4px; font-size:10.5px; color:var(--t-secondary); }
+  .layered-on .legend { display:flex; }
+  .legend i { width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:4px; vertical-align:-1px; }
+
+  /* ── 바텀시트 ─────────────────── */
+  .sheet {
+    position:absolute; left:0; right:0; bottom:0; z-index:20;
+    background:var(--s-sheet); border-radius:28px 28px 0 0; box-shadow:var(--sheet-shadow);
+    display:flex; flex-direction:column;
+    transform:translateY(100%); transition:transform .34s cubic-bezier(.22,1,.36,1), height .34s cubic-bezier(.22,1,.36,1);
+    max-height:92%;
+  }
+  [data-theme="dark"] .sheet { border-top:1px solid var(--line); }
+  .sheet.show { transform:translateY(0); }
+  .sheet .handle { flex:none; padding:10px 0 6px; display:flex; justify-content:center; }
+  .sheet .handle span { width:32px; height:4px; border-radius:999px; background:var(--line-strong); }
+  .sheet-head { flex:none; display:flex; align-items:baseline; justify-content:space-between; padding:2px 24px 8px; }
+  .sheet-head h3 { font-size:24px; font-weight:700; letter-spacing:-.3px; }
+  .sheet-head .step { font-size:12px; font-weight:600; color:var(--t-secondary); }
+  .sheet-head .step b { color:var(--a-text); }
+  .sheet-body { flex:1; overflow-y:auto; padding:2px 24px 12px; }
+  .sheet-foot { flex:none; padding:10px 20px calc(20px + env(safe-area-inset-bottom)); }
+
+  /* form bits */
+  .sec { font-size:14px; font-weight:600; color:var(--t-secondary); margin:14px 0 8px; }
+  .sec:first-child { margin-top:2px; }
+  .field { width:100%; height:52px; background:var(--s-2); border:none; border-radius:26px;
+    padding:0 20px; font:inherit; font-size:15px; font-weight:600; color:var(--t-primary); }
+  .field::placeholder { color:var(--t-tertiary); font-weight:400; }
+  .chiprow { display:flex; gap:8px; }
+  .chip { flex:1; height:40px; border-radius:999px; background:var(--s-2); color:var(--t-secondary);
+    font:inherit; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+  .chip.on { background:var(--a-tint); color:var(--a-text); }
+
+  .att { display:flex; align-items:center; gap:12px; padding:10px 0; }
+  .att + .att { border-top:1px solid var(--line); }
+  .att .ava { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center;
+    justify-content:center; font-size:14px; font-weight:700; color:#fff; }
+  .att .info { flex:1; min-width:0; }
+  .att .nm { font-size:16px; font-weight:500; }
+  .att .rl { font-size:12.5px; color:var(--t-secondary); margin-top:1px; }
+  .seg { display:flex; background:var(--s-2); border-radius:999px; padding:2px; flex:none; }
+  .seg button { font:inherit; font-size:11.5px; font-weight:600; color:var(--t-secondary);
+    border:none; background:none; padding:7px 11px; border-radius:999px; cursor:pointer; white-space:nowrap; transition:all .18s; }
+  .seg button.on { background:var(--s-1); color:var(--a-text); box-shadow:0 1px 4px rgba(0,0,0,.14); }
+  .seg.lock button.on { color:var(--t-tertiary); }
+  .note { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-top:14px; }
+
+  .btn-primary { width:100%; height:56px; border-radius:18px; background:var(--a-fill); color:var(--a-on);
+    font:inherit; font-size:16px; font-weight:600; border:none; cursor:pointer; transition:transform .15s, background .15s; }
+  .btn-primary:active { background:var(--a-press); transform:scale(.985); }
+  .btn-ghost { width:100%; height:48px; background:none; border:none; color:var(--t-secondary);
+    font:inherit; font-size:14px; font-weight:600; cursor:pointer; margin-top:4px; }
+  .btn-tonal { background:var(--a-tint); color:var(--a-text); border:none; border-radius:14px;
+    font:inherit; font-size:13px; font-weight:700; padding:11px 16px; cursor:pointer; }
+
+  /* reco card */
+  .reco { background:var(--s-1); border:1px solid var(--line); border-radius:26px; padding:18px 20px;
+    margin-bottom:10px; cursor:pointer; transition:border-color .15s; }
+  .reco:active { border-color:var(--a-fill); }
+  .reco .rk { font-size:11px; font-weight:700; color:var(--a-text); background:var(--a-tint);
+    padding:4px 10px; border-radius:999px; display:inline-block; }
+  .reco .tm { font-size:20px; font-weight:700; margin:9px 0 5px; letter-spacing:-.3px; }
+  .reco .rs { font-size:13px; color:var(--t-secondary); line-height:1.55; }
+
+  /* peek reco (히트맵 위) */
+  .peek-note { font-size:13px; color:var(--t-secondary); line-height:1.55; margin-bottom:12px; }
+
+  /* compromise */
+  .comp-head { font-size:19px; font-weight:700; line-height:1.45; margin:2px 0 6px; letter-spacing:-.3px; }
+  .comp-sub { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-bottom:16px; }
+  .comp { background:var(--s-1); border:1px solid var(--line); border-radius:26px; padding:18px 20px; margin-bottom:12px; }
+  .comp .ct { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .comp .cd { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-bottom:14px; }
+  .msg-prev { margin-top:14px; padding:14px 16px; background:var(--s-2); border-radius:16px;
+    border-left:3px solid var(--a-fill); font-size:12.5px; line-height:1.7; color:var(--t-primary); }
+  .msg-prev .from { font-size:11px; font-weight:700; color:var(--t-secondary); margin-bottom:6px; }
+
+  /* done */
+  .done { text-align:center; padding-top:20px; }
+  .done .ck { width:60px; height:60px; border-radius:50%; background:var(--a-fill); color:#fff;
+    font-size:28px; display:flex; align-items:center; justify-content:center; margin:0 auto 18px;
+    animation:pop .42s cubic-bezier(.34,1.56,.64,1); }
+  .done h3 { font-size:22px; font-weight:700; letter-spacing:-.3px; }
+  .done p { font-size:14px; color:var(--t-secondary); line-height:1.65; margin-top:10px; }
+  .done .extra { text-align:left; margin-top:16px; padding:14px 16px; background:var(--s-2);
+    border-radius:16px; font-size:12.5px; line-height:1.6; color:var(--t-primary); }
+
+  /* FAB */
+  .fab { position:absolute; right:20px; bottom:24px; z-index:15; width:56px; height:56px; border-radius:50%;
+    background:var(--a-fill); color:#fff; border:none; font-size:26px; cursor:pointer; box-shadow:var(--fab-shadow);
+    display:flex; align-items:center; justify-content:center; transition:transform .15s; }
+  .fab:active { transform:scale(.94); }
+
+  /* cold start */
+  .cold { position:absolute; left:16px; right:16px; bottom:20px; z-index:16;
+    background:var(--s-1); border-radius:26px; box-shadow:var(--sheet-shadow); padding:18px 20px;
+    animation:rise .45s cubic-bezier(.22,1,.36,1); }
+  [data-theme="dark"] .cold { border:1px solid var(--line); }
+  @keyframes rise { from { transform:translateY(20px); opacity:0; } }
+  .cold .tag { font-size:11px; font-weight:700; color:var(--a-text); background:var(--a-tint);
+    padding:4px 10px; border-radius:999px; display:inline-block; }
+  .cold h4 { font-size:16px; font-weight:700; margin:11px 0 6px; }
+  .cold p { font-size:13px; color:var(--t-secondary); line-height:1.6; }
+  .cold .acts { display:flex; gap:8px; margin-top:15px; }
+  .cold .acts button { flex:1; height:44px; border-radius:14px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; }
+  .cold .yes { background:var(--a-tint); color:var(--a-text); border:none; }
+  .cold .no { background:none; color:var(--t-secondary); border:1px solid var(--line); }
+
+  /* toast */
+  .toast { position:absolute; left:50%; bottom:32px; transform:translate(-50%,16px); z-index:40;
+    background:var(--toast-bg); color:#fff; font-size:13px; font-weight:600; padding:12px 20px;
+    border-radius:999px; opacity:0; pointer-events:none; transition:all .3s; max-width:82%; text-align:center; }
+  .toast.show { opacity:1; transform:translate(-50%,0); }
+
+  .gesturebar { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); z-index:30;
+    width:120px; height:4px; border-radius:999px; background:var(--t-primary); opacity:.28; }
+
+  .caption { font-size:12px; color:#8a8a96; text-align:center; max-width:420px; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div class="demo-head">
+  <h1>회의 조율 서비스 · One UI 프로토타입</h1>
+  <p>삼성 One UI 8.5 · 하단 집중 구조 · 라이트/다크 · 모바일 반응형. 아래 컨트롤로 화면과 모드를 바꿔 보세요.</p>
+</div>
+
+<div class="controls">
+  <div class="grp stages" id="stages">
+    <button data-stage="home" class="on">홈</button>
+    <button data-stage="step1">참석자</button>
+    <button data-stage="heatmap">히트맵</button>
+    <button data-stage="step3">추천</button>
+    <button data-stage="done">완료</button>
+    <button data-stage="edge">타협</button>
+  </div>
+  <div class="grp theme" id="theme">
+    <button data-theme-btn="light" class="on">라이트</button>
+    <button data-theme-btn="dark">다크</button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="screen" id="screen" data-theme="light">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="icons"><i class="ti"></i>5G ▮▮▮ 88%</span>
+    </div>
+    <div class="appbar">
+      <div class="ico" id="backico">☰</div>
+      <div class="spacer"></div>
+      <div class="layerchip" id="layerchip"><span class="d"></span> 팀의 시간 레이어 · 켜짐</div>
+      <div class="ico">⌕</div>
+      <div class="av">지</div>
+    </div>
+
+    <div class="viewing" id="viewing">
+      <div class="bigtitle" id="bigtitle">
+        <h2>이번 주</h2>
+        <div class="sub">7월 13일 – 17일 · 다음 주</div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="cal">
+        <div class="dow" id="dow"></div>
+        <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+      </div>
+    </div>
+
+    <button class="fab" id="fab" onclick="go('step1')">＋</button>
+
+    <div class="cold" id="cold">
+      <span class="tag">캘린더를 읽어봤어요</span>
+      <h4>목요일 오전엔 외근이 잦으시네요</h4>
+      <p>외근에서 돌아온 다음 시간은 피해서 회의를 추천해 드릴까요?</p>
+      <div class="acts">
+        <button class="yes" onclick="coldDone('네, 알겠어요. 목요일 외근 다음 시간은 피해서 추천할게요')">네, 피해주세요</button>
+        <button class="no" onclick="coldDone('이번 주는 그대로 둘게요. 언제든 바꿀 수 있어요')">이번 주는 괜찮아요</button>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet">
+      <div class="handle" id="handle"><span></span></div>
+      <div class="sheet-head">
+        <h3 id="sh-title">회의 잡기</h3>
+        <span class="step" id="sh-step"><b>1</b> / 3</span>
+      </div>
+      <div class="sheet-body" id="sh-body"></div>
+      <div class="sheet-foot" id="sh-foot"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="gesturebar"></div>
+  </div>
+</div>
+
+<p class="caption">명세 전문은 <b>SPEC.md</b> 참고. 데스크톱 반응형은 <b>gcal-prototype</b>을 One UI 토큰으로 재도색하는 규칙(SPEC §3.3)을 따릅니다.</p>
+
+<script>
+/* ── 데이터 ─────────────────── */
+const DAYS = [{w:"월",d:13},{w:"화",d:14},{w:"수",d:15},{w:"목",d:16},{w:"금",d:17}];
+const HOURS = [9,10,11,12,13,14,15,16,17];
+// x=어려움 o=가능 g=모두편함 r#=추천 !=꼭참석자부담 .=가능하면참석자부담
+const M = [
+  ["x","x","o","x","o.","x","o","o!","x"],
+  ["g","r1","g","x","o!","x","r3","o","x"],
+  ["x","o","r2","x","x","x","o.","x","x"],
+  ["o","x","x","x","o!","o","x","o.","x"],
+  ["x","o","o","x","x","x","x","x","o!"],
+];
+const MY = [
+  {d:0,h:9,t:"스크럼"},{d:0,h:10,t:"크리틱"},{d:2,h:14,t:"데모"},
+  {d:3,h:10,t:"외근",span:2},{d:4,h:13,t:"외부미팅"},
+];
+const PEOPLE = [
+  {nm:"김지민",rl:"프로덕트 디자이너 · 나",c:"#387AFF",req:true,me:true},
+  {nm:"박준호",rl:"개발 리드",c:"#5A8DEF",req:true},
+  {nm:"이서연",rl:"프로덕트 오너",c:"#7C6BF0",req:true},
+  {nm:"최민지",rl:"데이터 분석가",c:"#22A45D",req:false},
+  {nm:"정도윤",rl:"마케터",c:"#E8927C",req:false},
+  {nm:"한하은",rl:"CX 매니저",c:"#D9A03C",req:false},
+];
+const RECOS = [
+  {rank:1,d:1,h:10,label:"화요일 오전 10시",rs:"꼭 참석할 세 분 모두 편한 시간이에요. 여섯 분 전원이 올 수 있어요."},
+  {rank:2,d:2,h:11,label:"수요일 오전 11시",rs:"여섯 분 전원이 올 수 있어요. 부담스러운 시간이 있는 분도 없어요."},
+  {rank:3,d:1,h:15,label:"화요일 오후 3시",rs:"전원이 올 수 있지만, 도윤 님은 바로 앞에 회의가 있어 조금 빠듯할 수 있어요."},
+];
+const COMPS = [
+  {ct:"민지 님 없이 진행하면",cd:"수요일 오전 11시에 모일 수 있어요. 회의 내용은 민지 님에게 자동으로 정리해서 보내드릴게요.",btn:"이 시간으로 잡기",mode:"skip"},
+  {ct:"화요일 오후 1시는 어때요?",cd:"준호 님이 외근 직후라 조금 힘들 수 있는 시간이에요. 양해 메시지를 대신 보내드릴까요?",btn:"메시지 보고 잡기",mode:"excuse"},
+  {ct:"30분으로 줄이면",cd:"목요일 오후 2시에 여섯 분 모두 모일 수 있어요.",btn:"30분으로 잡기",mode:"short"},
+];
+
+/* ── 캘린더 렌더 ─────────────────── */
+const dow = document.getElementById("dow");
+dow.innerHTML = `<div></div>` + DAYS.map((x,i)=>
+  `<div class="${i===1?'today':''}"><div class="wd">${x.w}</div><div class="dn">${x.d}</div></div>`).join("");
+function fmtH(h){ return h>=12 ? "오후 "+(h===12?12:h-12) : "오전 "+h; }
+const grid = document.getElementById("grid");
+function renderGrid(){
+  let h = "";
+  HOURS.forEach((hr,r)=>{
+    h += `<div class="tl">${fmtH(hr)}</div>`;
+    DAYS.forEach((_,d)=>{
+      const v = M[d][r];
+      const st = v[0]==="x"?"s-hard":v[0]==="g"?"s-comfy":v[0]==="r"?"s-reco":"s-ok";
+      let inner = "";
+      if(v[0]==="r") inner += `<span class="rbadge">추천${v[1]}</span>`;
+      if(v.includes("!")) inner += `<span class="wd-dot req"></span>`;
+      if(v.includes(".")) inner += `<span class="wd-dot opt"></span>`;
+      const ev = MY.find(e=>e.d===d&&e.h===hr);
+      if(ev) inner += `<div class="evt${ev.span===2?" span2":""}">${ev.t}</div>`;
+      const click = v[0]==="r" ? `onclick="pickReco(${v[1]-1})"` : "";
+      h += `<div class="cell hair ${st}" id="c-${d}-${hr}" ${click}>${inner}</div>`;
+    });
+  });
+  grid.innerHTML = h;
+}
+renderGrid();
+
+/* ── 요소 참조 ─────────────────── */
+const screen=document.getElementById("screen"), sheet=document.getElementById("sheet"),
+  shTitle=document.getElementById("sh-title"), shStep=document.getElementById("sh-step"),
+  shBody=document.getElementById("sh-body"), shFoot=document.getElementById("sh-foot"),
+  fab=document.getElementById("fab"), cold=document.getElementById("cold"),
+  layerchip=document.getElementById("layerchip"), legend=document.getElementById("legend"),
+  bigtitle=document.getElementById("bigtitle"), backico=document.getElementById("backico");
+
+legend.innerHTML = `
+  <span><i style="background:var(--hard-bg)"></i>어려워요</span>
+  <span><i style="background:var(--s-2)"></i>가능해요</span>
+  <span><i style="background:var(--comfy-bg)"></i>모두 편해요</span>
+  <span><i style="background:var(--a-tint);box-shadow:inset 0 0 0 1.5px var(--a-fill)"></i>추천</span>
+  <span><i style="background:var(--burden);border-radius:50%;width:8px;height:8px"></i>조금 힘든 시간</span>`;
+
+/* ── 레이어 ─────────────────── */
+function setLayer(on){
+  grid.classList.toggle("layered",on);
+  screen.classList.toggle("layered-on",on);
+  layerchip.classList.toggle("show",on);
+}
+
+/* ── 스테이지 전환 ─────────────────── */
+let placed=null;
+function clearPlaced(){ if(placed){placed.remove();placed=null;} }
+function placeEvent(d,h,title){
+  clearPlaced();
+  const c=document.getElementById(`c-${d}-${h}`);
+  const el=document.createElement("div");
+  el.className="evt final"; el.style.background="var(--a-fill)"; el.textContent=title;
+  c.appendChild(el); placed=el;
+}
+
+function go(stage){
+  document.querySelectorAll("#stages button").forEach(b=>b.classList.toggle("on",b.dataset.stage===stage));
+  // reset
+  cold.style.display="none"; fab.style.display="none"; sheet.classList.remove("show");
+  setLayer(false); clearPlaced(); backico.textContent="☰";
+  bigtitle.querySelector("h2").textContent="이번 주";
+  bigtitle.querySelector(".sub").textContent="7월 13일 – 17일 · 다음 주";
+
+  if(stage==="home"){
+    fab.style.display="flex"; cold.style.display="block";
+  }
+  else if(stage==="step1"){ backico.textContent="✕"; renderStep1(); openSheet(62); }
+  else if(stage==="heatmap"){ setLayer(true); renderHeatmapSheet(); openSheet(46); }
+  else if(stage==="step3"){ setLayer(true); renderStep3(); openSheet(64); }
+  else if(stage==="done"){ setLayer(true); placeEvent(1,10,"팀 킥오프"); renderDone(); openSheet(58); }
+  else if(stage==="edge"){ setLayer(true); renderEdge(); openSheet(88); }
+}
+function openSheet(pct){ sheet.style.height=pct+"%"; requestAnimationFrame(()=>sheet.classList.add("show")); }
+
+/* ── 스텝1: 참석자 ─────────────────── */
+function renderStep1(){
+  shTitle.textContent="회의 잡기"; shStep.innerHTML="<b>1</b> / 3";
+  shBody.innerHTML = `
+    <div class="sec">회의 이름</div>
+    <input class="field" value="팀 킥오프" />
+    <div class="sec">길이</div>
+    <div class="chiprow"><button class="chip">30분</button><button class="chip on">1시간</button><button class="chip">1시간 30분</button></div>
+    <div class="sec">함께할 사람</div>
+    ${PEOPLE.map((p,i)=>`
+      <div class="att">
+        <div class="ava" style="background:${p.c}">${p.nm[1]}</div>
+        <div class="info"><div class="nm">${p.nm}${p.me?" (나)":""}</div><div class="rl">${p.rl}</div></div>
+        <div class="seg ${p.me?'lock':''}" id="seg-${i}">
+          <button class="${p.req?'on':''}" onclick="setReq(${i},true)">꼭 참석</button>
+          <button class="${p.req?'':'on'}" onclick="setReq(${i},false)">가능하면</button>
+        </div>
+      </div>`).join("")}
+    <div class="note">'꼭 참석'인 분들이 되는 시간부터 맞춰 드릴게요.</div>`;
+  shFoot.innerHTML = `<button class="btn-primary" onclick="go('heatmap')">되는 시간 찾기</button>`;
+}
+function setReq(i,v){
+  if(PEOPLE[i].me) return;
+  PEOPLE[i].req=v;
+  const s=document.getElementById("seg-"+i);
+  s.children[0].classList.toggle("on",v); s.children[1].classList.toggle("on",!v);
+}
+
+/* ── 히트맵 시트 (peek) ─────────────────── */
+function renderHeatmapSheet(){
+  shTitle.textContent="이 시간이 좋아요"; shStep.innerHTML="<b>2</b> / 3";
+  const r=RECOS[0];
+  shBody.innerHTML = `
+    <div class="peek-note">여섯 분의 캘린더와 컨디션을 겹쳐 봤어요. 파란 칸을 바로 눌러도 돼요.</div>
+    <div class="reco" onclick="pickReco(0)">
+      <span class="rk">추천 ${r.rank}</span>
+      <div class="tm">${r.label}</div>
+      <div class="rs">${r.rs}</div>
+    </div>`;
+  shFoot.innerHTML = `<button class="btn-primary" onclick="go('step3')">추천 더 보기</button>`;
+}
+
+/* ── 스텝3: 추천 3장 ─────────────────── */
+function renderStep3(){
+  shTitle.textContent="이 시간이 좋아요"; shStep.innerHTML="<b>3</b> / 3";
+  shBody.innerHTML = `
+    <div class="peek-note">마음에 드는 시간을 하나만 골라 주세요.</div>
+    ${RECOS.map((r,i)=>`
+      <div class="reco" onclick="pickReco(${i})">
+        <span class="rk">추천 ${r.rank}</span>
+        <div class="tm">${r.label}</div>
+        <div class="rs">${r.rs}</div>
+      </div>`).join("")}`;
+  shFoot.innerHTML = `<button class="btn-ghost" onclick="go('edge')">만약 모두 되는 시간이 없다면?</button>`;
+}
+function pickReco(i){ const r=RECOS[i]; placeEvent(r.d,r.h,"팀 킥오프"); go2done(r.label,`여섯 분 모두에게 초대를 보냈어요. 지민 님 캘린더에도 등록해 뒀어요.`); }
+
+/* ── 완료 ─────────────────── */
+function renderDone(){ doneContent("화요일 오전 10시","여섯 분 모두에게 초대를 보냈어요. 지민 님 캘린더에도 등록해 뒀어요.",null); }
+function go2done(label,sub,extra){ setLayer(true); doneContent(label,sub,extra); openSheet(58); }
+function doneContent(label,sub,extra){
+  document.querySelectorAll("#stages button").forEach(b=>b.classList.toggle("on",b.dataset.stage==="done"));
+  cold.style.display="none"; fab.style.display="none";
+  shTitle.textContent="완료"; shStep.innerHTML="<b>3</b> / 3";
+  shBody.innerHTML = `
+    <div class="done">
+      <div class="ck">✓</div>
+      <h3>${label}로 잡았어요</h3>
+      <p>${sub}</p>
+      ${extra?`<div class="extra">${extra}</div>`:""}
+    </div>`;
+  shFoot.innerHTML = `
+    <button class="btn-primary" onclick="go('home')">완료</button>
+    <button class="btn-ghost" onclick="go('step3')">다른 시간 볼게요</button>`;
+}
+
+/* ── 엣지: 타협 ─────────────────── */
+function renderEdge(){
+  shTitle.textContent="다른 방법이 있어요"; shStep.innerHTML="<b>2</b> / 3";
+  shBody.innerHTML = `
+    <div class="comp-head">다음 주엔 모두 모이기 어려워요.<br>대신 이런 방법이 있어요.</div>
+    <div class="comp-sub">무엇을 얻고 무엇을 내려놓는지 함께 보여드릴게요. 결정은 지민 님이 하면 돼요.</div>
+    ${COMPS.map((c,i)=>`
+      <div class="comp">
+        <div class="ct">${c.ct}</div>
+        <div class="cd">${c.cd}</div>
+        <button class="btn-tonal" onclick="pickComp(${i})">${c.btn}</button>
+      </div>`).join("")}`;
+  shFoot.innerHTML = `<button class="btn-primary" onclick="toast('7월 20일 주에서 다시 찾아볼게요')">그다음 주 더 보기</button>`;
+}
+function pickComp(i){
+  const c=COMPS[i];
+  if(c.mode==="skip"){ placeEvent(2,11,"팀 킥오프"); go2done("수요일 오전 11시","다섯 분에게 초대를 보냈어요.","민지 님에게는 회의가 끝나면 내용을 정리해서 보내드릴게요. '빠졌다'가 아니라 '따라올 수 있다'로 느끼도록요."); }
+  else if(c.mode==="excuse"){
+    placeEvent(1,13,"팀 킥오프");
+    setLayer(true);
+    document.querySelectorAll("#stages button").forEach(b=>b.classList.toggle("on",b.dataset.stage==="done"));
+    cold.style.display="none"; fab.style.display="none";
+    shTitle.textContent="완료"; shStep.innerHTML="<b>3</b> / 3";
+    shBody.innerHTML = `
+      <div class="done" style="padding-top:8px">
+        <div class="ck">✓</div>
+        <h3>화요일 오후 1시로 잡았어요</h3>
+        <p>여섯 분 모두에게 초대를 보냈어요.</p>
+      </div>
+      <div class="msg-prev"><div class="from">준호 님에게 보낼 메시지</div>준호님, 화요일 오후 1시가 외근 직후라 힘드실 것 같아 먼저 양해를 구합니다. 꼭 필요한 이야기만 나누고 1시간 안에 마칠게요. — 지민 드림</div>`;
+    shFoot.innerHTML = `<button class="btn-primary" onclick="go('home')">메시지 보내고 완료</button><button class="btn-ghost" onclick="go('edge')">다시 볼게요</button>`;
+    openSheet(70);
+  }
+  else { placeEvent(3,14,"팀 킥오프 (30분)"); go2done("목요일 오후 2시","여섯 분 모두에게 초대를 보냈어요. 짧아진 만큼 안건을 미리 공유하면 좋아요."); }
+}
+
+/* ── 콜드스타트 · 토스트 ─────────────────── */
+function coldDone(msg){ cold.style.display="none"; toast(msg); }
+let tT;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("show"),2800); }
+
+/* ── 컨트롤 ─────────────────── */
+document.querySelectorAll("#stages button").forEach(b=>b.onclick=()=>go(b.dataset.stage));
+document.querySelectorAll("#theme button").forEach(b=>b.onclick=()=>{
+  screen.setAttribute("data-theme",b.dataset.themeBtn);
+  document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x===b));
+});
+backico.onclick=()=>go("home");
+
+/* ── 딥링크 & 초기 ─────────────────── */
+const q=new URLSearchParams(location.search);
+if(q.get("theme")==="dark"){ screen.setAttribute("data-theme","dark");
+  document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x.dataset.themeBtn==="dark")); }
+go(q.get("stage")||"home");
+</script>
+</body>
+</html>

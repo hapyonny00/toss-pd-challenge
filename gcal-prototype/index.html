@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GCalendar — 팀의 시간 레이어</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --blue: #036EFE;
+    --blue-tint: #DFEDFF;
+    --blue-weak: #EAF3FF;
+    --bg: #EDF5F7;
+    --card: #FFFFFF;
+    --line: #E4E9EF;
+    --text: #1B1B1D;
+    --sub: #8A8A8A;
+    --green: #188038;
+    --green-tint: #E6F4EA;
+    --amber: #F9AB00;
+    --dim: #F1F3F5;
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #E9F1F4 0%, #EDF5F7 55%, #E4EEF3 100%);
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    padding: 28px; min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .window {
+    width: min(1400px, 100%);
+    height: min(860px, calc(100vh - 56px));
+    min-height: 640px;
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: 0 24px 64px rgba(27, 42, 66, .16), 0 2px 8px rgba(27, 42, 66, .08);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* ── mac titlebar ── */
+  .titlebar {
+    height: 44px; flex: none;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; border-bottom: 1px solid var(--line);
+    background: #FAFCFD;
+  }
+  .traffic { display: flex; gap: 8px; margin-right: 10px; }
+  .traffic span { width: 12px; height: 12px; border-radius: 50%; }
+  .traffic .r { background: #FF5F57; } .traffic .y { background: #FEBC2E; } .traffic .g { background: #28C840; }
+  .titlebar .appname { font-size: 13px; font-weight: 600; color: var(--sub); letter-spacing: .2px; }
+
+  /* ── topbar ── */
+  .topbar {
+    height: 60px; flex: none;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px; border-bottom: 1px solid var(--line);
+  }
+  .btn-today {
+    font: inherit; font-size: 13px; font-weight: 600;
+    padding: 7px 16px; border: 1px solid var(--line); border-radius: 10px;
+    background: #fff; cursor: pointer;
+  }
+  .nav-arrows { display: flex; gap: 2px; }
+  .nav-arrows button {
+    width: 30px; height: 30px; border: none; background: none; border-radius: 8px;
+    font-size: 15px; color: var(--sub); cursor: pointer;
+  }
+  .nav-arrows button:hover { background: var(--dim); }
+  .topbar h1 { font-size: 18px; font-weight: 700; }
+  .topbar .range { font-size: 13px; color: var(--sub); font-weight: 500; margin-top: 2px; }
+  .topbar .spacer { flex: 1; }
+
+  .layer-chip {
+    display: none; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--blue);
+    background: var(--blue-weak); border: 1px solid #C9DFFE;
+    padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    font-family: inherit;
+  }
+  .layer-chip.show { display: inline-flex; }
+  .layer-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+  .layer-chip.off { color: var(--sub); background: var(--dim); border-color: var(--line); }
+  .layer-chip.off .dot { background: #C2C9D1; }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+
+  /* ── layout ── */
+  .app { flex: 1; display: flex; min-height: 0; }
+
+  /* ── sidebar ── */
+  .sidebar {
+    width: 248px; flex: none; border-right: 1px solid var(--line);
+    padding: 18px 16px; overflow-y: auto; background: #FCFDFE;
+  }
+  .btn-create {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    font: inherit; font-size: 14px; font-weight: 700; color: #fff;
+    background: var(--blue); border: none; border-radius: 14px;
+    padding: 13px 0; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(3, 110, 254, .28);
+    transition: transform .12s;
+  }
+  .btn-create:active { transform: scale(.97); }
+  .btn-create .plus { font-size: 17px; font-weight: 600; line-height: 1; }
+
+  .mini { margin-top: 22px; }
+  .mini .mtitle { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-left: 4px; }
+  .mini table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
+  .mini th { color: var(--sub); font-weight: 600; padding: 3px 0; }
+  .mini td { padding: 0; }
+  .mini td span {
+    display: inline-flex; width: 24px; height: 24px; border-radius: 50%;
+    align-items: center; justify-content: center; color: var(--text);
+  }
+  .mini td.out span { color: #C2C9D1; }
+  .mini td.today span { background: var(--blue); color: #fff; font-weight: 700; }
+  .mini td.sel span { background: var(--blue-weak); border-radius: 0; }
+  .mini td.sel.first span { border-radius: 12px 0 0 12px; }
+  .mini td.sel.last span { border-radius: 0 12px 12px 0; }
+
+  .side-sec { margin-top: 22px; }
+  .side-sec .stitle { font-size: 12px; font-weight: 700; color: var(--sub); letter-spacing: .3px; margin-bottom: 10px; padding-left: 4px; }
+  .cal-row { display: flex; align-items: center; gap: 9px; padding: 6px 4px; font-size: 13px; font-weight: 500; }
+  .cal-row .cb { width: 14px; height: 14px; border-radius: 4px; background: var(--blue); position: relative; }
+  .cal-row .cb.green { background: #34A853; } .cal-row .cb.gray { background: #C2C9D1; }
+  .cal-row .cb::after { content: "✓"; color: #fff; font-size: 10px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+  .privacy-note {
+    margin-top: 24px; font-size: 12px; line-height: 1.6; color: var(--sub);
+    background: var(--dim); border-radius: 12px; padding: 12px 14px;
+  }
+
+  /* ── week grid ── */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .dayhead {
+    display: grid; grid-template-columns: 56px repeat(5, 1fr);
+    border-bottom: 1px solid var(--line); flex: none; padding-right: 10px;
+  }
+  .dayhead .dh { text-align: center; padding: 10px 0 12px; }
+  .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--sub); letter-spacing: 1px; }
+  .dayhead .dnum {
+    font-size: 20px; font-weight: 700; margin-top: 2px;
+    width: 36px; height: 36px; line-height: 36px; border-radius: 50%;
+    display: inline-block;
+  }
+  .gridwrap { flex: 1; overflow-y: auto; padding-right: 10px; padding-top: 12px; }
+  .grid { display: grid; grid-template-columns: 56px repeat(5, 1fr); }
+  .tlabel {
+    grid-column: 1; font-size: 11px; color: var(--sub); font-weight: 600;
+    text-align: right; padding-right: 8px; transform: translateY(-6px);
+  }
+  .cell {
+    height: 56px; border-bottom: 1px solid #EEF2F6; border-left: 1px solid #EEF2F6;
+    position: relative; transition: background .35s, box-shadow .35s;
+  }
+  .evt {
+    position: absolute; inset: 2px 4px; border-radius: 8px;
+    background: var(--blue); color: #fff;
+    font-size: 11.5px; font-weight: 600; line-height: 1.35;
+    padding: 5px 8px; overflow: hidden; z-index: 2;
+    transition: opacity .35s;
+  }
+  .evt .etime { display: block; font-size: 10px; font-weight: 500; opacity: .82; }
+  .evt.span2 { height: calc(112px - 4px); }
+  .evt.final { background: var(--blue); box-shadow: 0 6px 14px rgba(3,110,254,.32); animation: pop .3s ease; }
+  @keyframes pop { from { transform: scale(.92); opacity: 0; } }
+
+  /* layer states */
+  .layered .cell.s-x { background: var(--dim); }
+  .layered .cell.s-x .evt { opacity: .38; }
+  .layered .cell.s-g { background: var(--green-tint); }
+  .layered .cell.s-r {
+    background: var(--blue-tint);
+    box-shadow: inset 0 0 0 1.5px var(--blue);
+    cursor: pointer; z-index: 3;
+  }
+  .layered .cell.s-r:hover { box-shadow: inset 0 0 0 2px var(--blue); }
+  .rbadge {
+    display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-size: 12px; font-weight: 700; color: var(--blue); white-space: nowrap;
+  }
+  .layered .rbadge { display: block; }
+  .wdot { display: none; position: absolute; top: 5px; right: 5px; border-radius: 50%; z-index: 4; }
+  .layered .wdot { display: block; }
+  .wdot.req { width: 7px; height: 7px; background: var(--amber); }
+  .wdot.opt { width: 5px; height: 5px; background: #C2C9D1; }
+  .cell[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    background: #2A2D31; color: #fff; font-size: 11.5px; font-weight: 500;
+    padding: 7px 11px; border-radius: 9px; white-space: nowrap; z-index: 20;
+    display: none;
+  }
+  .layered .cell[data-tip]:hover::after { display: block; }
+
+  .legend {
+    display: none; position: absolute; bottom: 14px; left: 70px; z-index: 10;
+    background: rgba(255,255,255,.95); border: 1px solid var(--line); border-radius: 12px;
+    padding: 9px 14px; font-size: 11.5px; color: var(--sub); font-weight: 500;
+    box-shadow: 0 4px 16px rgba(27,42,66,.08);
+    align-items: center; gap: 13px;
+  }
+  .layered-on .legend { display: flex; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+
+  /* ── right panel ── */
+  .panel {
+    width: 0; flex: none; border-left: 1px solid transparent;
+    overflow: hidden; transition: width .3s ease;
+    display: flex; flex-direction: column; background: #FCFDFE;
+  }
+  .panel.open { width: 344px; border-left-color: var(--line); }
+  .panel-in { width: 344px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .phead {
+    flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 14px;
+  }
+  .phead h2 { font-size: 16px; font-weight: 700; }
+  .phead .steps { font-size: 12px; font-weight: 600; color: var(--sub); }
+  .phead .steps b { color: var(--blue); }
+  .pclose { border: none; background: none; font-size: 16px; color: var(--sub); cursor: pointer; padding: 4px; }
+  .pbody { flex: 1; overflow-y: auto; padding: 2px 20px 20px; }
+  .pfoot { flex: none; padding: 14px 20px 18px; border-top: 1px solid var(--line); }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--sub); margin-bottom: 7px; }
+  .field input {
+    width: 100%; font: inherit; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; background: #fff;
+  }
+  .field input:focus { outline: none; border-color: var(--blue); }
+  .duration-chips { display: flex; gap: 8px; }
+  .duration-chips button {
+    font: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; cursor: pointer; color: var(--sub);
+  }
+  .duration-chips button.on { border-color: var(--blue); color: var(--blue); background: var(--blue-weak); }
+
+  .att-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0;
+  }
+  .att-row + .att-row { border-top: 1px solid #F0F3F7; }
+  .aava {
+    width: 34px; height: 34px; border-radius: 50%; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; color: #fff;
+  }
+  .att-row .info { flex: 1; min-width: 0; }
+  .att-row .nm { font-size: 13.5px; font-weight: 600; }
+  .att-row .rl { font-size: 11.5px; color: var(--sub); }
+  .seg { display: flex; background: var(--dim); border-radius: 999px; padding: 2px; flex: none; }
+  .seg button {
+    font: inherit; font-size: 11.5px; font-weight: 600; color: var(--sub);
+    border: none; background: none; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .seg button.on { background: #fff; color: var(--blue); box-shadow: 0 1px 4px rgba(27,42,66,.12); }
+  .seg.locked button.on { color: var(--sub); }
+
+  .btn-primary {
+    width: 100%; font: inherit; font-size: 14.5px; font-weight: 700; color: #fff;
+    background: var(--blue); border: none; border-radius: 14px; padding: 14px 0; cursor: pointer;
+    transition: transform .12s;
+  }
+  .btn-primary:active { transform: scale(.98); }
+  .btn-ghost {
+    width: 100%; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--sub);
+    background: none; border: none; padding: 12px 0 2px; cursor: pointer;
+  }
+  .btn-ghost:hover { color: var(--text); }
+
+  .reco-card {
+    border: 1px solid var(--line); border-radius: 14px; background: #fff;
+    padding: 14px 15px; margin-bottom: 10px; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .reco-card:hover { border-color: var(--blue); box-shadow: 0 6px 18px rgba(3,110,254,.10); }
+  .reco-card .rk { font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-weak); border-radius: 6px; padding: 3px 7px; display: inline-block; }
+  .reco-card .tm { font-size: 15.5px; font-weight: 700; margin: 7px 0 4px; }
+  .reco-card .rs { font-size: 12.5px; line-height: 1.55; color: var(--sub); }
+  .reco-card.warn .rk { color: #B06F00; background: #FDF3DC; }
+  .pnote { font-size: 12px; color: var(--sub); line-height: 1.6; margin-top: 6px; }
+
+  .comp-head { font-size: 15px; font-weight: 700; line-height: 1.5; margin: 4px 0 4px; }
+  .comp-sub { font-size: 12.5px; color: var(--sub); line-height: 1.6; margin-bottom: 14px; }
+  .comp-card {
+    border: 1px solid var(--line); border-radius: 14px; background: #fff;
+    padding: 15px; margin-bottom: 10px;
+  }
+  .comp-card .ct { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+  .comp-card .cd { font-size: 12.5px; line-height: 1.6; color: var(--sub); margin-bottom: 11px; }
+  .comp-card button {
+    font: inherit; font-size: 12.5px; font-weight: 700; color: var(--blue);
+    background: var(--blue-weak); border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer;
+  }
+
+  .done { text-align: center; padding-top: 26px; }
+  .done .ck {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--blue);
+    color: #fff; font-size: 26px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px; animation: pop .35s ease;
+  }
+  .done h3 { font-size: 18px; font-weight: 700; line-height: 1.45; }
+  .done p { font-size: 13px; color: var(--sub); line-height: 1.65; margin-top: 10px; }
+  .done .extra {
+    margin-top: 16px; text-align: left; font-size: 12.5px; line-height: 1.6;
+    background: var(--dim); border-radius: 12px; padding: 12px 14px; color: var(--text);
+  }
+  .done .extra b { font-weight: 700; }
+  .msg-preview {
+    margin-top: 16px; text-align: left; font-size: 12.5px; line-height: 1.7;
+    border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; background: #fff; color: var(--text);
+  }
+  .msg-preview .from { font-size: 11px; color: var(--sub); font-weight: 700; margin-bottom: 6px; }
+
+  /* ── cold start card & toast ── */
+  .coldstart {
+    position: fixed; right: 34px; bottom: 34px; width: 320px; z-index: 50;
+    background: #fff; border-radius: var(--radius); border: 1px solid var(--line);
+    box-shadow: 0 18px 48px rgba(27,42,66,.18);
+    padding: 18px; animation: rise .45s ease;
+  }
+  @keyframes rise { from { transform: translateY(16px); opacity: 0; } }
+  .coldstart .tag { font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-weak); display: inline-block; padding: 3px 8px; border-radius: 6px; }
+  .coldstart h4 { font-size: 15px; font-weight: 700; margin: 10px 0 5px; }
+  .coldstart p { font-size: 12.5px; color: var(--sub); line-height: 1.6; }
+  .coldstart .acts { display: flex; gap: 8px; margin-top: 14px; }
+  .coldstart .acts button { flex: 1; font: inherit; font-size: 12.5px; font-weight: 700; border-radius: 11px; padding: 10px 0; cursor: pointer; }
+  .coldstart .yes { background: var(--blue); color: #fff; border: none; }
+  .coldstart .no { background: #fff; color: var(--sub); border: 1px solid var(--line); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 40px; transform: translate(-50%, 16px);
+    background: #2A2D31; color: #fff; font-size: 13.5px; font-weight: 600;
+    padding: 13px 22px; border-radius: 999px; z-index: 60;
+    opacity: 0; pointer-events: none; transition: all .3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="titlebar">
+    <div class="traffic"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+    <span class="appname">GCalendar</span>
+  </div>
+
+  <div class="topbar">
+    <button class="btn-today">오늘</button>
+    <div class="nav-arrows"><button>‹</button><button>›</button></div>
+    <div>
+      <h1>2026년 7월</h1>
+      <div class="range">13일 – 17일 · 다음 주</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="layer-chip" id="layerChip" onclick="toggleLayer()">
+      <span class="dot"></span><span id="layerChipTxt">팀의 시간 레이어 켜짐</span>
+    </button>
+    <div class="avatar">지</div>
+  </div>
+
+  <div class="app">
+    <aside class="sidebar">
+      <button class="btn-create" onclick="openPanel()"><span class="plus">＋</span> 회의 잡기</button>
+
+      <div class="mini">
+        <div class="mtitle">2026년 7월</div>
+        <table>
+          <tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
+          <tr><td class="out"><span>28</span></td><td class="out"><span>29</span></td><td class="out"><span>30</span></td><td><span>1</span></td><td><span>2</span></td><td><span>3</span></td><td><span>4</span></td></tr>
+          <tr><td><span>5</span></td><td><span>6</span></td><td class="today"><span>7</span></td><td><span>8</span></td><td><span>9</span></td><td><span>10</span></td><td><span>11</span></td></tr>
+          <tr><td><span>12</span></td><td class="sel first"><span>13</span></td><td class="sel"><span>14</span></td><td class="sel"><span>15</span></td><td class="sel"><span>16</span></td><td class="sel last"><span>17</span></td><td><span>18</span></td></tr>
+          <tr><td><span>19</span></td><td><span>20</span></td><td><span>21</span></td><td><span>22</span></td><td><span>23</span></td><td><span>24</span></td><td><span>25</span></td></tr>
+          <tr><td><span>26</span></td><td><span>27</span></td><td><span>28</span></td><td><span>29</span></td><td><span>30</span></td><td><span>31</span></td><td class="out"><span>1</span></td></tr>
+        </table>
+      </div>
+
+      <div class="side-sec">
+        <div class="stitle">내 캘린더</div>
+        <div class="cal-row"><span class="cb"></span>김지민</div>
+        <div class="cal-row"><span class="cb green"></span>프로덕트팀</div>
+        <div class="cal-row"><span class="cb gray"></span>회사 일정</div>
+      </div>
+
+      <div class="privacy-note">
+        팀원의 사정은 그대로 보이지 않아요.<br />‘조금 어려운 시간’으로만 표시돼요.
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="dayhead" id="dayhead"></div>
+      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--dim)"></i>어려워요</span>
+        <span><i style="background:#fff;border:1px solid var(--line)"></i>가능해요</span>
+        <span><i style="background:var(--green-tint)"></i>모두 편해요</span>
+        <span><i style="background:var(--blue-tint);border:1.5px solid var(--blue)"></i>추천</span>
+        <span><i style="background:var(--amber);border-radius:50%;width:8px;height:8px"></i>조금 힘든 시간</span>
+      </div>
+    </main>
+
+    <aside class="panel" id="panel"><div class="panel-in">
+      <div class="phead">
+        <h2 id="ptitle">회의 잡기</h2>
+        <span class="steps" id="psteps"><b>1</b> / 3</span>
+        <button class="pclose" onclick="closePanel()">✕</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+      <div class="pfoot" id="pfoot"></div>
+    </div></aside>
+  </div>
+</div>
+
+<div class="coldstart" id="coldstart">
+  <span class="tag">캘린더를 읽어봤어요</span>
+  <h4>목요일 오전엔 외근이 잦으시네요</h4>
+  <p>외근에서 돌아온 다음 시간은 피해서<br />회의를 추천해 드릴까요?</p>
+  <div class="acts">
+    <button class="yes" onclick="coldYes()">네, 피해주세요</button>
+    <button class="no" onclick="coldNo()">이번 주는 괜찮아요</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── data ─────────────────────────────── */
+const DAYS = [
+  { dow: "월", d: 13 }, { dow: "화", d: 14 }, { dow: "수", d: 15 },
+  { dow: "목", d: 16 }, { dow: "금", d: 17 },
+];
+const HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+/* x=어려움(꼭 참석자 일정 있음) o=가능 g=모두 편함 r#=추천 !=꼭 참석자 부담 .=가능하면 참석자 부담 */
+const MATRIX = [
+  ["x","x","o","x","o.","x","o","o!","x"],
+  ["g","r1","g","x","o!","x","r3","o","x"],
+  ["x","o","r2","x","x","x","o.","x","x"],
+  ["o","x","x","x","o!","o","x","o.","x"],
+  ["x","o","o","x","x","x","x","x","o!"],
+];
+const TIPS = {
+  "0-13": "하은 님이 조금 어려운 시간이에요",
+  "0-16": "서연 님이 연속 회의 직후예요",
+  "1-13": "준호 님이 외근 직후예요",
+  "2-15": "하은 님이 조금 어려운 시간이에요",
+  "3-13": "지민 님이 외근에서 돌아온 직후예요",
+  "3-16": "도윤 님이 조금 어려운 시간이에요",
+  "4-17": "금요일 늦은 오후는 모두 지치는 시간이에요",
+};
+const MY_EVENTS = [
+  { d: 0, h: 9,  t: "위클리 스크럼" },
+  { d: 0, h: 10, t: "디자인 크리틱" },
+  { d: 2, h: 14, t: "스프린트 데모" },
+  { d: 3, h: 10, t: "외근 · 고객사 방문", span: 2 },
+  { d: 4, h: 13, t: "외부 미팅" },
+];
+const PEOPLE = [
+  { nm: "김지민", rl: "프로덕트 디자이너 · 나", c: "#036EFE", req: true, me: true },
+  { nm: "박준호", rl: "개발 리드", c: "#5B8DEF", req: true },
+  { nm: "이서연", rl: "프로덕트 오너", c: "#7C6BF0", req: true },
+  { nm: "최민지", rl: "데이터 분석가", c: "#4FB6A8", req: false },
+  { nm: "정도윤", rl: "마케터", c: "#E8927C", req: false },
+  { nm: "한하은", rl: "CX 매니저", c: "#D9A03C", req: false },
+];
+const RECOS = [
+  { rank: 1, d: 1, h: 10, label: "화요일 오전 10시",
+    rs: "꼭 참석할 세 분 모두 편한 시간이에요. 여섯 분 전원이 올 수 있어요." },
+  { rank: 2, d: 2, h: 11, label: "수요일 오전 11시",
+    rs: "여섯 분 전원이 올 수 있어요. 부담스러운 시간이 있는 분도 없어요." },
+  { rank: 3, d: 1, h: 15, label: "화요일 오후 3시",
+    rs: "전원이 올 수 있지만, 도윤 님은 바로 앞에 회의가 있어 조금 빠듯할 수 있어요." },
+];
+const COMPS = [
+  { ct: "민지 님 없이 진행하면", cd: "수요일 오전 11시에 모일 수 있어요. 회의 내용은 민지 님에게 자동으로 정리해서 보내드릴게요.",
+    btn: "이 시간으로 잡기", d: 2, h: 11, label: "수요일 오전 11시", mode: "skip" },
+  { ct: "화요일 오후 1시는 어때요?", cd: "준호 님이 외근 직후라 조금 힘들 수 있는 시간이에요. 양해 메시지를 대신 보내드릴까요?",
+    btn: "메시지 보고 잡기", d: 1, h: 13, label: "화요일 오후 1시", mode: "excuse" },
+  { ct: "30분으로 줄이면", cd: "목요일 오후 2시에 여섯 분 모두 모일 수 있어요.",
+    btn: "30분으로 잡기", d: 3, h: 14, label: "목요일 오후 2시", mode: "short" },
+];
+
+/* ── render grid ──────────────────────── */
+const dayhead = document.getElementById("dayhead");
+dayhead.innerHTML = "<div></div>" + DAYS.map(x =>
+  `<div class="dh"><div class="dow">${x.dow}</div><div class="dnum">${x.d}</div></div>`).join("");
+
+const grid = document.getElementById("grid");
+let gh = "";
+HOURS.forEach((h, r) => {
+  gh += `<div class="tlabel">${h >= 12 ? "오후 " + (h === 12 ? 12 : h - 12) : "오전 " + h}시</div>`;
+  DAYS.forEach((_, d) => {
+    const v = MATRIX[d][r];
+    const st = v[0] === "x" ? "s-x" : v[0] === "g" ? "s-g" : v[0] === "r" ? "s-r" : "s-o";
+    const tip = TIPS[d + "-" + h] ? ` data-tip="${TIPS[d + "-" + h]}"` : "";
+    let inner = "";
+    if (v[0] === "r") inner += `<span class="rbadge">추천 ${v[1]}</span>`;
+    if (v.includes("!")) inner += `<span class="wdot req"></span>`;
+    if (v.includes(".")) inner += `<span class="wdot opt"></span>`;
+    const ev = MY_EVENTS.find(e => e.d === d && e.h === h);
+    if (ev) inner += `<div class="evt${ev.span === 2 ? " span2" : ""}"><span class="etime">${fmtH(h)}</span>${ev.t}</div>`;
+    gh += `<div class="cell ${st}" id="c-${d}-${h}"${tip} ${v[0] === "r" ? `onclick="pickSlot(${v[1] - 1})"` : ""}>${inner}</div>`;
+  });
+});
+grid.innerHTML = gh;
+
+function fmtH(h) { return h >= 12 ? "오후 " + (h === 12 ? 12 : h - 12) + ":00" : "오전 " + h + ":00"; }
+
+/* ── panel steps ──────────────────────── */
+const panel = document.getElementById("panel");
+const pbody = document.getElementById("pbody");
+const pfoot = document.getElementById("pfoot");
+const ptitle = document.getElementById("ptitle");
+const psteps = document.getElementById("psteps");
+const main = document.getElementById("main");
+const chip = document.getElementById("layerChip");
+let layerOn = false;
+
+function openPanel() { panel.classList.add("open"); step1(); }
+function closePanel() {
+  panel.classList.remove("open");
+  setLayer(false); chip.classList.remove("show");
+}
+
+function step1() {
+  ptitle.textContent = "회의 잡기";
+  psteps.innerHTML = "<b>1</b> / 3";
+  setLayer(false);
+  pbody.innerHTML = `
+    <div class="field"><label>회의 이름</label><input value="팀 킥오프" /></div>
+    <div class="field"><label>길이</label>
+      <div class="duration-chips"><button>30분</button><button class="on">1시간</button><button>1시간 30분</button></div>
+    </div>
+    <div class="field" style="margin-bottom:6px"><label>함께할 사람</label></div>
+    ${PEOPLE.map((p, i) => `
+      <div class="att-row">
+        <span class="aava" style="background:${p.c}">${p.nm[1]}</span>
+        <div class="info"><div class="nm">${p.nm}${p.me ? " (나)" : ""}</div><div class="rl">${p.rl}</div></div>
+        <div class="seg${p.me ? " locked" : ""}" id="seg-${i}">
+          <button class="${p.req ? "on" : ""}" onclick="setReq(${i}, true)">꼭 참석</button>
+          <button class="${p.req ? "" : "on"}" onclick="setReq(${i}, false)">가능하면</button>
+        </div>
+      </div>`).join("")}
+    <p class="pnote">‘꼭 참석’인 분들이 되는 시간부터 찾아드릴게요.</p>`;
+  pfoot.innerHTML = `<button class="btn-primary" onclick="step2()">되는 시간 찾기</button>`;
+}
+
+function setReq(i, v) {
+  if (PEOPLE[i].me) return;
+  PEOPLE[i].req = v;
+  const seg = document.getElementById("seg-" + i);
+  seg.children[0].classList.toggle("on", v);
+  seg.children[1].classList.toggle("on", !v);
+}
+
+function step2() {
+  ptitle.textContent = "이 시간이 좋아요";
+  psteps.innerHTML = "<b>2</b> / 3";
+  chip.classList.add("show");
+  setLayer(true);
+  pbody.innerHTML = `
+    <p class="pnote" style="margin:0 0 12px">여섯 분의 캘린더와 컨디션을 겹쳐 봤어요.<br />파란 칸을 바로 눌러도 돼요.</p>
+    ${RECOS.map((r, i) => `
+      <div class="reco-card" onclick="pickSlot(${i})">
+        <span class="rk">추천 ${r.rank}</span>
+        <div class="tm">${r.label}</div>
+        <div class="rs">${r.rs}</div>
+      </div>`).join("")}`;
+  pfoot.innerHTML = `<button class="btn-ghost" onclick="stepComp()">만약 모두 되는 시간이 없다면? →</button>`;
+}
+
+function stepComp() {
+  ptitle.textContent = "다른 방법이 있어요";
+  psteps.innerHTML = "<b>2</b> / 3";
+  pbody.innerHTML = `
+    <div class="comp-head">다음 주엔 모두 모이기 어려워요.<br />대신 이런 방법이 있어요.</div>
+    <div class="comp-sub">무엇을 얻고 무엇을 내려놓는지 함께 보여드릴게요. 결정은 지민 님이 하면 돼요.</div>
+    ${COMPS.map((c, i) => `
+      <div class="comp-card">
+        <div class="ct">${c.ct}</div>
+        <div class="cd">${c.cd}</div>
+        <button onclick="pickComp(${i})">${c.btn}</button>
+      </div>`).join("")}`;
+  pfoot.innerHTML = `
+    <button class="btn-primary" onclick="toast('7월 20일 주에서 다시 찾아볼게요')">그다음 주 더 보기</button>
+    <button class="btn-ghost" onclick="step2()">← 추천으로 돌아가기</button>`;
+}
+
+function pickSlot(i) {
+  const r = RECOS[i];
+  placeEvent(r.d, r.h, "팀 킥오프");
+  done(`${r.label}로 잡았어요`,
+    `여섯 분 모두에게 초대를 보냈어요.<br />지민 님 캘린더에도 등록해 뒀어요.`);
+}
+
+function pickComp(i) {
+  const c = COMPS[i];
+  placeEvent(c.d, c.h, "팀 킥오프" + (c.mode === "short" ? " (30분)" : ""));
+  if (c.mode === "skip") {
+    done(`${c.label}로 잡았어요`,
+      `다섯 분에게 초대를 보냈어요.`,
+      `<b>민지 님에게는</b> 회의가 끝나면 내용을 정리해서 보내드릴게요. ‘빠졌다’가 아니라 ‘따라올 수 있다’로 느끼도록요.`);
+  } else if (c.mode === "excuse") {
+    done(`${c.label}로 잡았어요`,
+      `여섯 분 모두에게 초대를 보냈어요.`,
+      null,
+      `<div class="msg-preview"><div class="from">준호 님에게 보낼 메시지</div>준호님, 화요일 오후 1시가 외근 직후라 힘드실 것 같아 먼저 양해를 구합니다. 꼭 필요한 이야기만 나누고 1시간 안에 마칠게요. — 지민 드림</div>`);
+  } else {
+    done(`${c.label}, 30분으로 잡았어요`,
+      `여섯 분 모두에게 초대를 보냈어요.<br />짧아진 만큼 안건을 미리 공유하면 좋아요.`);
+  }
+}
+
+function done(title, sub, extra, msg) {
+  ptitle.textContent = "완료";
+  psteps.innerHTML = "<b>3</b> / 3";
+  pbody.innerHTML = `
+    <div class="done">
+      <div class="ck">✓</div>
+      <h3>${title}</h3>
+      <p>${sub}</p>
+      ${extra ? `<div class="extra">${extra}</div>` : ""}
+      ${msg || ""}
+    </div>`;
+  pfoot.innerHTML = `
+    <button class="btn-primary" onclick="closePanel()">완료</button>
+    <button class="btn-ghost" onclick="undoAndBack()">다른 시간 볼게요</button>`;
+}
+
+/* ── grid layer & event ───────────────── */
+function setLayer(v) {
+  layerOn = v;
+  grid.classList.toggle("layered", v);
+  main.classList.toggle("layered-on", v);
+  chip.classList.toggle("off", !v);
+  document.getElementById("layerChipTxt").textContent = v ? "팀의 시간 레이어 켜짐" : "팀의 시간 레이어 꺼짐";
+}
+function toggleLayer() { setLayer(!layerOn); }
+
+let placed = null;
+function placeEvent(d, h, title) {
+  removePlaced();
+  const cell = document.getElementById(`c-${d}-${h}`);
+  const el = document.createElement("div");
+  el.className = "evt final";
+  el.innerHTML = `<span class="etime">${fmtH(h)}</span>${title}`;
+  cell.appendChild(el);
+  placed = el;
+}
+function removePlaced() { if (placed) { placed.remove(); placed = null; } }
+function undoAndBack() { removePlaced(); step2(); }
+
+/* ── cold start & toast ───────────────── */
+function coldYes() {
+  document.getElementById("coldstart").remove();
+  toast("알겠어요. 목요일 외근 다음 시간은 피해서 추천할게요");
+}
+function coldNo() {
+  document.getElementById("coldstart").remove();
+  toast("이번 주는 그대로 둘게요. 언제든 바꿀 수 있어요");
+}
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ── demo deep link (?step=2 | comp | done) ── */
+const q = new URLSearchParams(location.search).get("step");
+if (q) {
+  document.getElementById("coldstart").remove();
+  openPanel();
+  if (q === "2") step2();
+  else if (q === "comp") { step2(); stepComp(); }
+  else if (q === "done") { step2(); pickSlot(0); }
+}
+</script>
+</body>
+</html>
