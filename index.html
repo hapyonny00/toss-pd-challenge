@@ -3,90 +3,351 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>회의 조율 프로토타입 — 토스 PD 챌린지 2026 · 김화연</title>
+<title>회의 조율 — One UI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
-    background: #F4F4F6; color: #17171A; -webkit-font-smoothing: antialiased;
-    min-height: 100vh; padding: 48px 20px 80px;
+  :root {
+    --s-base:#F4F4F6; --s-1:#FFFFFF; --s-2:#ECECEE; --s-3:#E4E4E7;
+    --t-primary:#17171A; --t-secondary:#616166; --t-tertiary:#8E8E93;
+    --a-fill:#387AFF; --a-press:#2E6FF2; --a-on:#FFFFFF; --a-text:#1B57D6; --a-tint:#EAF1FF;
+    --comfy-bg:#E3F5EA; --hard-bg:#E7E7EA; --burden:#FFB43A;
+    --line:#E4E4E7; --rail-active:#ECECEE;
+    --fab-shadow:0 6px 16px rgba(56,122,255,.28);
   }
-  .wrap { max-width: 780px; margin: 0 auto; }
-  .hero { padding: 8px 6px 30px; }
-  .hero .tag { display: inline-block; font-size: 12px; font-weight: 700; color: #387AFF; background: #EAF1FF; border-radius: 999px; padding: 6px 14px; margin-bottom: 16px; }
-  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.5px; line-height: 1.3; }
-  .hero p { font-size: 15px; color: #616166; line-height: 1.7; margin-top: 12px; max-width: 620px; }
-  .sec { font-size: 13px; font-weight: 700; color: #8E8E93; letter-spacing: .5px; margin: 26px 6px 12px; }
-  .card {
-    display: block; background: #fff; border-radius: 22px; padding: 22px 24px; margin-bottom: 12px;
-    text-decoration: none; color: inherit; transition: transform .15s ease, box-shadow .15s ease;
+  [data-theme="dark"] {
+    --s-base:#000000; --s-1:#1B1B1D; --s-2:#242427; --s-3:#2C2C30;
+    --t-primary:#FFFFFF; --t-secondary:#B0B0B6; --t-tertiary:#8A8A90;
+    --a-fill:#3B76F5; --a-press:#2E63D8; --a-on:#FFFFFF; --a-text:#82AAFF; --a-tint:#16233D;
+    --comfy-bg:#12301F; --hard-bg:#161618; --burden:#FFB43A;
+    --line:#2C2C30; --rail-active:#2C2C30;
+    --fab-shadow:0 6px 16px rgba(0,0,0,.5);
   }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(23,23,26,.10); }
-  .card h2 { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .card h2 .b { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
-  .b.blue { background: #EAF1FF; color: #1B57D6; }
-  .b.dark { background: #17171A; color: #fff; }
-  .b.green { background: #E3F5EA; color: #22A45D; }
-  .card p { font-size: 13.5px; color: #616166; line-height: 1.65; margin-top: 7px; }
-  .links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-  .links a {
-    font-size: 12px; font-weight: 600; color: #387AFF; text-decoration: none;
-    background: #F4F4F6; border-radius: 999px; padding: 6px 12px;
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-font-smoothing:antialiased; }
+  body { font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+    background:var(--s-base); color:var(--t-primary); height:100vh; overflow:hidden;
+    display:flex; transition:background .3s,color .3s; }
+
+  /* ── One UI Navigation Rail ── */
+  .rail { width:212px; flex:none; background:var(--s-1); display:flex; flex-direction:column;
+    padding:14px 12px; border-right:1px solid var(--line); }
+  .rail .railtop { display:flex; align-items:center; justify-content:space-between; padding:6px 8px 16px; }
+  .rail .ham { width:40px; height:40px; border:none; background:none; border-radius:50%; cursor:pointer;
+    font-size:19px; color:var(--t-primary); display:flex; align-items:center; justify-content:center; }
+  .rail .ham:hover { background:var(--s-2); }
+  .rail .gear { width:36px; height:36px; border:none; background:none; border-radius:50%; cursor:pointer;
+    font-size:17px; color:var(--t-secondary); position:relative; }
+  .rail .gear::after { content:""; position:absolute; top:8px; right:8px; width:6px; height:6px;
+    border-radius:50%; background:#F5581C; }
+  .rail .brand { display:flex; align-items:center; gap:10px; padding:4px 8px 18px; }
+  .rail .brand .logo { width:34px; height:34px; border-radius:12px; background:var(--a-fill); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+  .rail .brand .nm { font-size:16px; font-weight:700; letter-spacing:-.3px; }
+  .rail .item { display:flex; align-items:center; gap:14px; height:50px; padding:0 14px; border-radius:16px;
+    cursor:pointer; color:var(--t-secondary); font-size:15px; font-weight:600; margin-bottom:2px;
+    border:none; background:none; width:100%; text-align:left; }
+  .rail .item .ic { font-size:19px; width:22px; text-align:center; }
+  .rail .item:hover { background:var(--s-2); }
+  .rail .item.on { background:var(--rail-active); color:var(--t-primary); }
+  .rail .item.on .ic { color:var(--a-text); }
+  .rail .sp { flex:1; }
+  .rail .foot { display:flex; align-items:center; gap:10px; padding:10px 12px; border-top:1px solid var(--line); }
+  .rail .foot .av { width:32px; height:32px; border-radius:50%; background:var(--a-fill); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+  .rail .foot .who { font-size:13px; font-weight:600; }
+  .rail .foot .who small { display:block; font-size:11px; color:var(--t-tertiary); font-weight:500; }
+
+  /* ── content column ── */
+  .content { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { height:60px; flex:none; display:flex; align-items:center; gap:12px; padding:0 22px; }
+  .topbar .today { font:inherit; font-size:13px; font-weight:600; color:var(--t-primary);
+    background:var(--s-1); border:1px solid var(--line); padding:8px 16px; border-radius:999px; cursor:pointer; }
+  .topbar .arrows { display:flex; gap:2px; }
+  .topbar .arrows button { width:34px; height:34px; border:none; background:none; border-radius:50%;
+    font-size:16px; color:var(--t-secondary); cursor:pointer; }
+  .topbar .arrows button:hover { background:var(--s-1); }
+  .topbar .sp { flex:1; }
+  .layerchip { display:none; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
+    color:var(--a-text); background:var(--a-tint); padding:8px 14px; border-radius:999px; cursor:pointer; }
+  .layerchip.show { display:inline-flex; }
+  .layerchip .d { width:7px; height:7px; border-radius:50%; background:var(--a-fill); }
+  .theme-tog { display:flex; background:var(--s-1); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .theme-tog button { font:inherit; font-size:12px; font-weight:600; color:var(--t-secondary);
+    border:none; background:none; padding:6px 12px; border-radius:999px; cursor:pointer; }
+  .theme-tog button.on { background:var(--a-tint); color:var(--a-text); }
+
+  .work { flex:1; display:flex; min-height:0; gap:0; padding:0 18px 18px; }
+
+  /* ── calendar (left) ── */
+  .cal { flex:1; min-width:0; background:var(--s-1); border-radius:26px; display:flex; flex-direction:column;
+    overflow:hidden; }
+  .cal .bigt { padding:20px 24px 12px; display:flex; align-items:flex-end; justify-content:space-between; }
+  .cal .bigt h1 { font-size:26px; font-weight:800; letter-spacing:-.5px; }
+  .cal .bigt .sub { font-size:13px; color:var(--t-secondary); margin-top:3px; font-weight:500; }
+  .legend { display:none; gap:13px; font-size:11.5px; color:var(--t-secondary); flex-wrap:wrap; }
+  .layered-on .legend { display:flex; }
+  .legend i { width:11px; height:11px; border-radius:4px; display:inline-block; margin-right:5px; vertical-align:-1px; }
+  .dayhead { display:grid; grid-template-columns:52px repeat(5,1fr); padding:4px 16px 8px; }
+  .dayhead .dh { text-align:center; }
+  .dayhead .wd { font-size:11px; font-weight:700; color:var(--t-tertiary); letter-spacing:1px; }
+  .dayhead .dn { font-size:18px; font-weight:700; margin-top:2px; width:32px; height:32px; line-height:32px;
+    border-radius:50%; display:inline-block; }
+  .dayhead .today .dn { background:var(--a-fill); color:#fff; }
+  .gridwrap { flex:1; overflow-y:auto; padding:4px 16px 16px; }
+  .grid { display:grid; grid-template-columns:52px repeat(5,1fr); gap:4px; }
+  .tl { font-size:11px; color:var(--t-tertiary); text-align:right; padding-right:8px; transform:translateY(-6px); font-weight:600; }
+  .cell { height:54px; border-radius:12px; position:relative; box-shadow:inset 0 0 0 1px var(--line);
+    transition:background .3s,box-shadow .3s; }
+  .evt { position:absolute; inset:2px; border-radius:10px; background:var(--a-fill); color:#fff;
+    font-size:11px; font-weight:600; padding:6px 8px; overflow:hidden; z-index:2; line-height:1.3; }
+  .evt.span2 { height:calc(200% + 4px); }
+  .evt.final { animation:pop .42s cubic-bezier(.34,1.56,.64,1); box-shadow:0 4px 12px rgba(56,122,255,.4); }
+  @keyframes pop { from { transform:scale(.9); opacity:0; } }
+  .layered .cell.s-hard { background:var(--hard-bg); box-shadow:none; }
+  .layered .cell.s-comfy { background:var(--comfy-bg); box-shadow:none; }
+  .layered .cell.s-reco { background:var(--a-tint); box-shadow:inset 0 0 0 2px var(--a-fill); z-index:3; cursor:pointer; }
+  .rbadge { display:none; position:absolute; inset:0; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700; color:var(--a-text); }
+  .layered .rbadge { display:flex; }
+  .wd-dot { display:none; position:absolute; top:5px; right:5px; border-radius:50%; z-index:4; }
+  .layered .wd-dot { display:block; }
+  .wd-dot.req { width:7px; height:7px; background:var(--burden); }
+  .wd-dot.opt { width:5px; height:5px; background:var(--t-tertiary); }
+
+  /* ── right aside (search + mini cal + create form) ── */
+  .aside { width:360px; flex:none; padding:0 0 0 18px; overflow-y:auto; }
+  .search { width:100%; height:52px; background:var(--s-1); border:1px solid var(--line); border-radius:26px;
+    display:flex; align-items:center; gap:10px; padding:0 20px; margin-bottom:14px; }
+  .search .si { font-size:16px; color:var(--t-tertiary); }
+  .search input { flex:1; border:none; background:none; font:inherit; font-size:14px; color:var(--t-primary); }
+  .search input::placeholder { color:var(--t-tertiary); }
+  .block { background:var(--s-1); border-radius:26px; padding:20px; margin-bottom:14px; }
+  .mini .mt { display:flex; align-items:center; justify-content:space-between; font-size:15px; font-weight:700; margin-bottom:14px; }
+  .mini .mt .nav { display:flex; gap:2px; }
+  .mini .mt .nav button { width:28px; height:28px; border:none; background:none; border-radius:50%;
+    color:var(--t-secondary); cursor:pointer; font-size:14px; }
+  .mini table { width:100%; border-collapse:collapse; font-size:12px; text-align:center; }
+  .mini th { color:var(--t-tertiary); font-weight:600; padding:5px 0; }
+  .mini td { padding:1px 0; }
+  .mini td span { display:inline-flex; width:30px; height:30px; border-radius:50%; align-items:center;
+    justify-content:center; color:var(--t-primary); font-weight:500; }
+  .mini td.out span { color:var(--t-tertiary); }
+  .mini td.today span { background:var(--a-fill); color:#fff; font-weight:700; }
+  .mini td.sel span { background:var(--a-tint); border-radius:0; }
+  .mini td.sel.f span { border-radius:15px 0 0 15px; } .mini td.sel.l span { border-radius:0 15px 15px 0; }
+
+  /* create form (image1-style) */
+  .form .fh { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .form .fh h2 { font-size:18px; font-weight:700; letter-spacing:-.3px; }
+  .form .fh .more { color:var(--t-tertiary); font-size:18px; }
+  .fgroup { padding:14px 0 10px; border-bottom:1px solid var(--line); }
+  .fgroup .lb { font-size:12px; font-weight:600; color:var(--t-secondary); margin-bottom:6px; }
+  .fgroup input { width:100%; border:none; background:none; font:inherit; font-size:15px; font-weight:600;
+    color:var(--t-primary); }
+  .fgroup input::placeholder { color:var(--t-tertiary); font-weight:500; }
+  .frow { display:flex; gap:14px; }
+  .frow .fgroup { flex:1; }
+  .fgroup .withic { display:flex; align-items:center; gap:8px; }
+  .fgroup .withic .ic { color:var(--t-tertiary); font-size:15px; }
+  .invite { display:flex; align-items:center; gap:6px; padding-top:6px; flex-wrap:wrap; }
+  .invite .ava { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:#fff; }
+  .invite .add { width:32px; height:32px; border-radius:50%; border:1.5px dashed var(--line); color:var(--t-tertiary);
+    background:none; font-size:15px; cursor:pointer; }
+  .invite .req-note { font-size:11.5px; color:var(--t-tertiary); margin-left:2px; }
+  .segline { display:flex; gap:8px; margin-top:12px; }
+  .segline .chip { flex:1; height:40px; border-radius:999px; background:var(--s-2); color:var(--t-secondary);
+    font:inherit; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+  .segline .chip.on { background:var(--a-tint); color:var(--a-text); }
+  .submit { width:100%; height:54px; border-radius:18px; background:var(--a-fill); color:var(--a-on);
+    font:inherit; font-size:16px; font-weight:700; border:none; cursor:pointer; margin-top:18px;
+    box-shadow:var(--fab-shadow); transition:transform .12s,background .12s; }
+  .submit:active { transform:scale(.98); background:var(--a-press); }
+
+  /* reco / done / edge modes in aside */
+  .ahead { display:flex; align-items:baseline; justify-content:space-between; padding:2px 4px 12px; }
+  .ahead h2 { font-size:22px; font-weight:800; letter-spacing:-.4px; }
+  .ahead .back { font:inherit; font-size:13px; font-weight:600; color:var(--a-text); background:none; border:none; cursor:pointer; }
+  .peek-note { font-size:13px; color:var(--t-secondary); line-height:1.55; padding:0 4px 12px; }
+  .reco { background:var(--s-1); border-radius:22px; padding:18px 20px; margin-bottom:10px; cursor:pointer;
+    box-shadow:inset 0 0 0 1px var(--line); transition:box-shadow .15s,transform .12s; }
+  .reco:hover { box-shadow:inset 0 0 0 2px var(--a-fill); transform:translateY(-1px); }
+  .reco .rk { font-size:11px; font-weight:700; color:var(--a-text); background:var(--a-tint); padding:4px 10px; border-radius:999px; display:inline-block; }
+  .reco .tm { font-size:19px; font-weight:700; margin:9px 0 5px; letter-spacing:-.3px; }
+  .reco .rs { font-size:13px; color:var(--t-secondary); line-height:1.55; }
+  .comp-head { font-size:18px; font-weight:700; line-height:1.45; margin:2px 4px 6px; letter-spacing:-.3px; }
+  .comp-sub { font-size:13px; color:var(--t-secondary); line-height:1.6; margin:0 4px 16px; }
+  .comp { background:var(--s-1); border-radius:22px; padding:18px 20px; margin-bottom:12px; box-shadow:inset 0 0 0 1px var(--line); }
+  .comp .ct { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .comp .cd { font-size:13px; color:var(--t-secondary); line-height:1.6; margin-bottom:14px; }
+  .btn-tonal { background:var(--a-tint); color:var(--a-text); border:none; border-radius:14px;
+    font:inherit; font-size:13px; font-weight:700; padding:12px 18px; cursor:pointer; }
+  .btn-ghost { width:100%; height:46px; background:none; border:none; color:var(--t-secondary);
+    font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+  .msg-prev { margin-top:14px; padding:14px 16px; background:var(--s-2); border-radius:16px;
+    border-left:3px solid var(--a-fill); font-size:12.5px; line-height:1.7; }
+  .msg-prev .from { font-size:11px; font-weight:700; color:var(--t-secondary); margin-bottom:6px; }
+  .done { text-align:center; padding:24px 4px; }
+  .done .ck { width:60px; height:60px; border-radius:50%; background:var(--a-fill); color:#fff; font-size:28px;
+    display:flex; align-items:center; justify-content:center; margin:0 auto 18px; animation:pop .42s cubic-bezier(.34,1.56,.64,1); }
+  .done h4 { font-size:21px; font-weight:700; letter-spacing:-.3px; }
+  .done p { font-size:14px; color:var(--t-secondary); line-height:1.65; margin-top:10px; }
+  .done .extra { text-align:left; margin-top:16px; padding:14px 16px; background:var(--s-2); border-radius:16px;
+    font-size:12.5px; line-height:1.6; }
+  .done .btn-primary { width:100%; height:52px; border-radius:16px; background:var(--a-fill); color:#fff;
+    font:inherit; font-size:15px; font-weight:700; border:none; cursor:pointer; margin-top:20px; }
+
+  .toast { position:fixed; left:calc(50% + 100px); bottom:30px; transform:translate(-50%,16px); z-index:60;
+    background:rgba(28,28,30,.94); color:#fff; font-size:13.5px; font-weight:600; padding:13px 22px;
+    border-radius:999px; opacity:0; pointer-events:none; transition:all .3s; }
+  [data-theme="dark"] .toast { background:rgba(52,52,56,.96); }
+  .toast.show { opacity:1; transform:translate(-50%,0); }
+
+  @media (max-width:1120px) {
+    .aside { width:320px; }
+    .rail .brand .nm, .rail .item span:last-child, .rail .foot .who { display:none; }
+    .rail { width:76px; align-items:center; }
+    .rail .item { justify-content:center; padding:0; width:50px; }
+    .rail .brand { justify-content:center; padding:4px 0 18px; }
   }
-  .links a:hover { background: #EAF1FF; }
-  footer { text-align: center; font-size: 12.5px; color: #8E8E93; margin-top: 44px; line-height: 1.7; }
-  footer a { color: #387AFF; text-decoration: none; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <header class="hero">
-    <span class="tag">토스 프로덕트 디자이너 챌린지 2026</span>
-    <h1>여섯 명의 다음 주에서<br />모두가 만족하는 1시간 찾기</h1>
-    <p>일정 조율의 진짜 고통은 빈 시간 찾기가 아니라, 모두가 안 될 때 '누굴 포기할지'를 주최자가 혼자 떠안는 것.
-    시스템이 판단의 무게와 미안함을 대신 지는 3개의 프로토타입입니다. — 김화연</p>
-  </header>
+<body data-theme="light" id="body">
 
-  <div class="sec">인터랙티브 프로토타입</div>
+<nav class="rail">
+  <div class="railtop">
+    <button class="ham">☰</button>
+    <button class="gear" title="설정">⚙</button>
+  </div>
+  <div class="brand"><div class="logo">모</div><div class="nm">모이라</div></div>
+  <button class="item"><span class="ic">⌂</span><span>홈</span></button>
+  <button class="item on"><span class="ic">▦</span><span>캘린더</span></button>
+  <button class="item"><span class="ic">◷</span><span>회의</span></button>
+  <button class="item"><span class="ic">◍</span><span>팀</span></button>
+  <div class="sp"></div>
+  <div class="foot"><div class="av">지</div><div class="who">김지민<small>프로덕트 디자이너</small></div></div>
+</nav>
 
-  <a class="card" href="oneui/prototype-vote.html">
-    <h2>조율 투표 시스템 <span class="b blue">드래그&스냅</span><span class="b green">최신</span></h2>
-    <p>AI 추천 카드를 캘린더로 끌어다 놓으면 자석처럼 스냅되며 팀원 투표가 시작됩니다.
-    3단계 투표(가능/조정/불가), 오프셋 마이크로 인풋, +30분 시프트 연출, 실시간 도트 진척 바까지 실제로 동작해요.</p>
-    <div class="links">
-      <a href="oneui/prototype-vote.html?demo=suggest" onclick="event.stopPropagation()">투표 진행 중 상태</a>
-      <a href="oneui/prototype-vote.html?demo=confirmed&theme=dark" onclick="event.stopPropagation()">확정 · 다크모드</a>
-      <a href="oneui/prototype-vote.html?demo=sheet-adjust" onclick="event.stopPropagation()">수신자 화면</a>
+<div class="content">
+  <div class="topbar">
+    <button class="today">오늘</button>
+    <div class="arrows"><button>‹</button><button>›</button></div>
+    <div class="sp"></div>
+    <div class="layerchip" id="layerchip"><span class="d"></span> 팀의 시간 레이어 · 켜짐</div>
+    <div class="theme-tog" id="theme">
+      <button data-th="light" class="on">라이트</button><button data-th="dark">다크</button>
     </div>
-  </a>
+  </div>
 
-  <a class="card" href="oneui/prototype.html">
-    <h2>One UI 모바일 앱 <span class="b dark">One UI 8.5</span></h2>
-    <p>삼성 One UI 디자인 시스템으로 지은 모바일 버전. 하단 집중 구조, 거대 타이틀, 바텀시트 플로우,
-    콜드 스타트 자동 제안과 히트맵 레이어를 6개 화면 × 라이트/다크로 담았습니다.</p>
-  </a>
+  <div class="work" id="work">
+    <main class="cal" id="cal">
+      <div class="bigt">
+        <div><h1>2026년 7월</h1><div class="sub">13일 – 17일 · 다음 주 · 여섯 분과 1시간</div></div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="dayhead" id="dayhead"></div>
+      <div class="gridwrap"><div class="grid" id="grid"></div></div>
+    </main>
 
-  <a class="card" href="oneui/prototype-desktop.html">
-    <h2>One UI 데스크톱 웹 <span class="b dark">반응형</span></h2>
-    <p>같은 정보 구조를 데스크톱으로 재배치 — 바텀시트는 우측 패널로, FAB는 사이드바 주 버튼으로.
-    모바일과 파편화되지 않는 크로스 플랫폼 대응안입니다.</p>
-  </a>
-
-  <a class="card" href="gcal-prototype/">
-    <h2>팀의 시간 레이어 <span class="b blue">GCalendar 스킨</span></h2>
-    <p>익숙한 구글 캘린더 위에 레이어 하나를 얹으면 조율이 사라진다 — 첫 컨셉 프로토타입.
-    콜드 스타트 확인 카드, 3클릭 플로우, 슬롯 0개 타협 카드.</p>
-    <div class="links">
-      <a href="gcal-prototype/?step=2" onclick="event.stopPropagation()">히트맵 레이어</a>
-      <a href="gcal-prototype/?step=comp" onclick="event.stopPropagation()">타협 카드</a>
-    </div>
-  </a>
-
-  <footer>
-    명세 문서(SPEC.md · VOTE-SPEC.md)는 GitHub 리포지토리에서 볼 수 있어요.<br />
-    Built with Claude Code · 2026
-  </footer>
+    <aside class="aside" id="aside"></aside>
+  </div>
 </div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS=[{w:"월",d:13},{w:"화",d:14},{w:"수",d:15},{w:"목",d:16},{w:"금",d:17}];
+const HOURS=[9,10,11,12,13,14,15,16,17];
+const M=[["x","x","o","x","o.","x","o","o!","x"],["g","r1","g","x","o!","x","r3","o","x"],["x","o","r2","x","x","x","o.","x","x"],["o","x","x","x","o!","o","x","o.","x"],["x","o","o","x","x","x","x","x","o!"]];
+const MY=[{d:0,h:9,t:"위클리 스크럼"},{d:0,h:10,t:"디자인 크리틱"},{d:2,h:14,t:"스프린트 데모"},{d:3,h:10,t:"외근 · 고객사",span:2},{d:4,h:13,t:"외부 미팅"}];
+const PEOPLE=[{nm:"김지민",rl:"프로덕트 디자이너 · 나",c:"#387AFF",req:true,me:true},{nm:"박준호",rl:"개발 리드",c:"#5A8DEF",req:true},{nm:"이서연",rl:"프로덕트 오너",c:"#7C6BF0",req:true},{nm:"최민지",rl:"데이터 분석가",c:"#22A45D",req:false},{nm:"정도윤",rl:"마케터",c:"#E8927C",req:false},{nm:"한하은",rl:"CX 매니저",c:"#D9A03C",req:false}];
+const RECOS=[{rank:1,d:1,h:10,label:"화요일 오전 10시",rs:"꼭 참석할 세 분 모두 편한 시간이에요. 여섯 분 전원이 올 수 있어요."},{rank:2,d:2,h:11,label:"수요일 오전 11시",rs:"여섯 분 전원이 올 수 있어요. 부담스러운 시간이 있는 분도 없어요."},{rank:3,d:1,h:15,label:"화요일 오후 3시",rs:"전원이 올 수 있지만, 도윤 님은 바로 앞에 회의가 있어 조금 빠듯할 수 있어요."}];
+const COMPS=[{ct:"민지 님 없이 진행하면",cd:"수요일 오전 11시에 모일 수 있어요. 회의 내용은 민지 님에게 자동으로 정리해서 보내드릴게요.",btn:"이 시간으로 잡기",mode:"skip"},{ct:"화요일 오후 1시는 어때요?",cd:"준호 님이 외근 직후라 조금 힘들 수 있는 시간이에요. 양해 메시지를 대신 보내드릴까요?",btn:"메시지 보고 잡기",mode:"excuse"},{ct:"30분으로 줄이면",cd:"목요일 오후 2시에 여섯 분 모두 모일 수 있어요.",btn:"30분으로 잡기",mode:"short"}];
+
+const dayhead=document.getElementById("dayhead");
+dayhead.innerHTML=`<div></div>`+DAYS.map((x,i)=>`<div class="dh ${i===1?'today':''}"><div class="wd">${x.w}</div><div class="dn">${x.d}</div></div>`).join("");
+function fmtH(h){return h>=12?"오후 "+(h===12?12:h-12):"오전 "+h;}
+const grid=document.getElementById("grid");
+function renderGrid(){let h="";HOURS.forEach((hr,r)=>{h+=`<div class="tl">${fmtH(hr)}시</div>`;DAYS.forEach((_,d)=>{const v=M[d][r];const st=v[0]==="x"?"s-hard":v[0]==="g"?"s-comfy":v[0]==="r"?"s-reco":"s-ok";let inner="";if(v[0]==="r")inner+=`<span class="rbadge">추천 ${v[1]}</span>`;if(v.includes("!"))inner+=`<span class="wd-dot req"></span>`;if(v.includes("."))inner+=`<span class="wd-dot opt"></span>`;const ev=MY.find(e=>e.d===d&&e.h===hr);if(ev)inner+=`<div class="evt${ev.span===2?" span2":""}">${ev.t}</div>`;const click=v[0]==="r"?`onclick="pickReco(${v[1]-1})"`:"";h+=`<div class="cell s-ok ${st}" id="c-${d}-${hr}" ${click}>${inner}</div>`;});});grid.innerHTML=h;}
+renderGrid();
+
+const legend=document.getElementById("legend");
+legend.innerHTML=`<span><i style="background:var(--hard-bg)"></i>어려워요</span><span><i style="background:var(--s-1);box-shadow:inset 0 0 0 1px var(--line)"></i>가능해요</span><span><i style="background:var(--comfy-bg)"></i>모두 편해요</span><span><i style="background:var(--a-tint);box-shadow:inset 0 0 0 2px var(--a-fill)"></i>추천</span><span><i style="background:var(--burden);border-radius:50%;width:9px;height:9px"></i>조금 힘든 시간</span>`;
+
+const aside=document.getElementById("aside"),body=document.getElementById("body"),
+  layerchip=document.getElementById("layerchip"),cal=document.getElementById("cal");
+function setLayer(on){grid.classList.toggle("layered",on);cal.classList.toggle("layered-on",on);layerchip.classList.toggle("show",on);}
+let placed=null;
+function clearPlaced(){if(placed){placed.remove();placed=null;}}
+function placeEvent(d,h,t){clearPlaced();const c=document.getElementById(`c-${d}-${h}`);const el=document.createElement("div");el.className="evt final";el.textContent=t;c.appendChild(el);placed=el;}
+
+const MINICAL=`<div class="block mini"><div class="mt">2026년 7월<div class="nav"><button>‹</button><button>›</button></div></div>
+  <table><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr>
+  <tr><td class="out"><span>29</span></td><td class="out"><span>30</span></td><td><span>1</span></td><td><span>2</span></td><td><span>3</span></td><td><span>4</span></td><td><span>5</span></td></tr>
+  <tr><td><span>6</span></td><td class="today"><span>7</span></td><td><span>8</span></td><td><span>9</span></td><td><span>10</span></td><td><span>11</span></td><td><span>12</span></td></tr>
+  <tr><td><span>13</span></td><td class="sel f"><span>14</span></td><td class="sel"><span>15</span></td><td class="sel"><span>16</span></td><td class="sel l"><span>17</span></td><td><span>18</span></td><td><span>19</span></td></tr>
+  <tr><td><span>20</span></td><td><span>21</span></td><td><span>22</span></td><td><span>23</span></td><td><span>24</span></td><td><span>25</span></td><td><span>26</span></td></tr>
+  <tr><td><span>27</span></td><td><span>28</span></td><td><span>29</span></td><td><span>30</span></td><td><span>31</span></td><td class="out"><span>1</span></td><td class="out"><span>2</span></td></tr></table></div>`;
+
+function showForm(){
+  setLayer(false); clearPlaced();
+  aside.innerHTML=`
+    <div class="search"><span class="si">⌕</span><input placeholder="회의, 사람 검색" /></div>
+    ${MINICAL}
+    <div class="block form">
+      <div class="fh"><h2>회의 잡기</h2><span class="more">⋯</span></div>
+      <div class="fgroup"><div class="lb">회의 이름</div><input value="팀 킥오프" /></div>
+      <div class="frow">
+        <div class="fgroup"><div class="lb">날짜</div><div class="withic"><span class="ic">▦</span><input value="다음 주" /></div></div>
+        <div class="fgroup"><div class="lb">길이</div><div class="withic"><span class="ic">◷</span><input value="1시간" /></div></div>
+      </div>
+      <div class="fgroup" style="border-bottom:none">
+        <div class="lb">참석자 초대 · 6명</div>
+        <div class="invite">${PEOPLE.map(p=>`<span class="ava" style="background:${p.c}">${p.nm[1]}</span>`).join("")}<button class="add">＋</button></div>
+        <div class="segline"><button class="chip on">꼭 참석 3명</button><button class="chip">가능하면 3명</button></div>
+      </div>
+      <button class="submit" onclick="findTimes()">되는 시간 찾기</button>
+    </div>`;
+}
+function findTimes(){
+  setLayer(true);
+  aside.innerHTML=`
+    <div class="ahead"><h2>이 시간이 좋아요</h2><button class="back" onclick="showForm()">← 회의 잡기</button></div>
+    <div class="peek-note">여섯 분의 캘린더와 컨디션을 겹쳐 봤어요. 캘린더의 파란 칸을 바로 눌러도 돼요.</div>
+    ${RECOS.map((r,i)=>`<div class="reco" onclick="pickReco(${i})"><span class="rk">추천 ${r.rank}</span><div class="tm">${r.label}</div><div class="rs">${r.rs}</div></div>`).join("")}
+    <button class="btn-ghost" onclick="showEdge()">만약 모두 되는 시간이 없다면?</button>`;
+}
+function pickReco(i){const r=RECOS[i];placeEvent(r.d,r.h,"팀 킥오프");doneC(r.label,"여섯 분 모두에게 초대를 보냈어요. 지민 님 캘린더에도 등록해 뒀어요.",null);}
+function doneC(label,sub,extra){
+  aside.innerHTML=`<div class="done"><div class="ck">✓</div><h4>${label}로 잡았어요</h4><p>${sub}</p>${extra?`<div class="extra">${extra}</div>`:""}
+    <button class="btn-primary" onclick="showForm()">완료</button></div>
+    <button class="btn-ghost" onclick="findTimes()">다른 시간 볼게요</button>`;
+}
+function showEdge(){
+  setLayer(true);
+  aside.innerHTML=`<div class="ahead"><h2>다른 방법</h2><button class="back" onclick="findTimes()">← 추천으로</button></div>
+    <div class="comp-head">다음 주엔 모두 모이기 어려워요.<br>대신 이런 방법이 있어요.</div>
+    <div class="comp-sub">무엇을 얻고 무엇을 내려놓는지 함께 보여드려요. 결정은 지민 님이 하면 돼요.</div>
+    ${COMPS.map((c,i)=>`<div class="comp"><div class="ct">${c.ct}</div><div class="cd">${c.cd}</div><button class="btn-tonal" onclick="pickComp(${i})">${c.btn}</button></div>`).join("")}
+    <button class="btn-ghost" onclick="toast('7월 20일 주에서 다시 찾아볼게요')">그다음 주 더 보기</button>`;
+}
+function pickComp(i){const c=COMPS[i];
+  if(c.mode==="skip"){placeEvent(2,11,"팀 킥오프");doneC("수요일 오전 11시","다섯 분에게 초대를 보냈어요.","민지 님에게는 회의가 끝나면 내용을 정리해서 보내드릴게요. '빠졌다'가 아니라 '따라올 수 있다'로 느끼도록요.");}
+  else if(c.mode==="excuse"){placeEvent(1,13,"팀 킥오프");
+    aside.innerHTML=`<div class="done" style="padding-bottom:8px"><div class="ck">✓</div><h4>화요일 오후 1시로 잡았어요</h4><p>여섯 분 모두에게 초대를 보냈어요.</p></div>
+      <div class="msg-prev"><div class="from">준호 님에게 보낼 메시지</div>준호님, 화요일 오후 1시가 외근 직후라 힘드실 것 같아 먼저 양해를 구합니다. 꼭 필요한 이야기만 나누고 1시간 안에 마칠게요. — 지민 드림</div>
+      <button class="btn-primary" style="width:100%;height:52px;border-radius:16px;background:var(--a-fill);color:#fff;font:inherit;font-size:15px;font-weight:700;border:none;cursor:pointer;margin-top:16px" onclick="showForm()">메시지 보내고 완료</button>`;}
+  else{placeEvent(3,14,"팀 킥오프 (30분)");doneC("목요일 오후 2시","여섯 분 모두에게 초대를 보냈어요. 짧아진 만큼 안건을 미리 공유하면 좋아요.",null);}}
+let tT;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(tT);tT=setTimeout(()=>t.classList.remove("show"),2800);}
+
+document.querySelectorAll("#theme button").forEach(b=>b.onclick=()=>{body.setAttribute("data-theme",b.dataset.th);document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x===b));});
+document.querySelectorAll(".rail .item").forEach(b=>b.onclick=()=>{document.querySelectorAll(".rail .item").forEach(x=>x.classList.remove("on"));b.classList.add("on");});
+
+const q=new URLSearchParams(location.search);
+if(q.get("theme")==="dark"){body.setAttribute("data-theme","dark");document.querySelectorAll("#theme button").forEach(x=>x.classList.toggle("on",x.dataset.th==="dark"));}
+const st=q.get("stage");
+if(st==="reco")findTimes();
+else if(st==="edge")showEdge();
+else if(st==="done"){findTimes();pickReco(0);}
+else showForm();
+</script>
 </body>
 </html>
