@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>모여 — 팀 회의 조율 (One UI)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root {
+    --accent: #387AFF; --accent-press: #2E6FF2;
+    --blue50: #EAF1FF; --blue100: #C9DCFF; --blue700: #1B57D6;
+    --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
+    --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
+    --red400: #F2686C; --red50: #FDECEC; --red: #E5484D;
+    --base: #EEF0F3; --s1: #FFFFFF; --s2: #F1F2F4; --s3: #E6E7EA;
+    --tp: #17171A; --ts: #616166; --tm: #8E8E93;
+    --hair: #ECECEE; --dash: #C4C4C9;
+    --drop-tint: #EAF1FF; --rail-sel: #E9EBEF;
+  }
+  [data-theme="dark"] {
+    --accent: #5A8DFF; --accent-press: #387AFF;
+    --blue50: #12233F; --blue100: #1B3560; --blue700: #9CBEFF;
+    --amber50: #3A2E14; --amber900: #FFB43A; --green50: #0C3F23; --red50: #3A1416;
+    --base: #000000; --s1: #1B1B1D; --s2: #242427; --s3: #2C2C30;
+    --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93;
+    --hair: #2C2C30; --dash: #4A4A50;
+    --drop-tint: #12233F; --rail-sel: #2C2C30;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif;
+    background: var(--base); color: var(--tp);
+    -webkit-font-smoothing: antialiased; overflow: hidden;
+    transition: background .3s, color .3s;
+  }
+  .shell { display: flex; height: 100vh; min-height: 640px; padding: 12px; gap: 12px; }
+
+  /* ───────── One UI Navigation Rail ───────── */
+  .rail {
+    width: 208px; flex: none; background: var(--s1); border-radius: 26px;
+    display: flex; flex-direction: column; padding: 14px 12px;
+    transition: width .25s cubic-bezier(.2,.8,.2,1);
+  }
+  .rail-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 14px; }
+  .rail-head .menu, .rail-head .gear { width: 38px; height: 38px; border: none; background: none; border-radius: 12px; font-size: 18px; color: var(--tp); cursor: pointer; }
+  .rail-head .menu:hover, .rail-head .gear:hover { background: var(--s2); }
+  .rail-brand { display: flex; align-items: center; gap: 9px; padding: 2px 8px 16px; }
+  .rail-brand .logo { width: 34px; height: 34px; border-radius: 12px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+  .rail-brand .nm { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+  .rail-item {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 12px 14px; border: none; background: none; border-radius: 16px;
+    font: inherit; font-size: 15px; font-weight: 600; color: var(--ts); cursor: pointer;
+    text-align: left; margin-bottom: 2px;
+  }
+  .rail-item .ic { font-size: 19px; width: 22px; text-align: center; }
+  .rail-item:hover { background: var(--s2); }
+  .rail-item.on { background: var(--rail-sel); color: var(--tp); }
+  .rail-item.on .ic { color: var(--accent); }
+  .rail-item .cntbadge { margin-left: auto; min-width: 20px; height: 20px; border-radius: 10px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 6px; }
+  .rail-div { height: 0; border-top: 1px dashed var(--hair); margin: 10px 8px; }
+  .rail-sp { flex: 1; }
+  .rail.collapsed { width: 76px; }
+  .rail.collapsed .rail-brand .nm, .rail.collapsed .rail-item span.lbl, .rail.collapsed .rail-item .cntbadge { display: none; }
+  .rail.collapsed .rail-item { justify-content: center; padding: 12px 0; }
+
+  /* ───────── stage (view container) ───────── */
+  .stage { flex: 1; min-width: 0; display: flex; gap: 12px; }
+  .view { display: none; flex: 1; min-width: 0; gap: 12px; }
+  .view.on { display: flex; }
+
+  .focus { background: var(--s1); border-radius: 26px; }
+  .main-col { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .aside-col { width: 344px; flex: none; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+  /* topbar inside main */
+  .vhead { display: flex; align-items: flex-end; gap: 12px; padding: 20px 22px 14px; flex: none; }
+  .vhead h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
+  .vhead .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
+  .vhead .sp { flex: 1; }
+  .pill-btn { font: inherit; font-size: 13px; font-weight: 600; color: var(--tp); background: var(--s2); border: none; border-radius: 20px; padding: 9px 15px; cursor: pointer; }
+  .pill-btn.acc { background: var(--blue50); color: var(--accent); }
+  .navchev { display: flex; gap: 2px; }
+  .navchev button { width: 32px; height: 32px; border: none; background: var(--s2); border-radius: 10px; font-size: 15px; color: var(--ts); cursor: pointer; }
+
+  /* ───────── calendar ───────── */
+  .calwrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .dayhead { display: grid; grid-template-columns: 52px repeat(5, 1fr); padding: 4px 16px 8px; }
+  .dayhead .dh { text-align: center; }
+  .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--tm); letter-spacing: 1px; }
+  .dayhead .dnum { font-size: 17px; font-weight: 700; margin-top: 3px; width: 32px; height: 32px; line-height: 32px; border-radius: 50%; display: inline-block; }
+  .dayhead .dh.today .dnum { background: var(--accent); color: #fff; }
+  .gwrap { flex: 1; overflow-y: auto; padding: 4px 16px 16px; }
+  .grid { display: grid; grid-template-columns: 52px repeat(5, 1fr); }
+  .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 8px; transform: translateY(-6px); }
+  .cell { height: 54px; border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair); position: relative; transition: background .2s ease-out, box-shadow .2s; }
+  .evt { position: absolute; inset: 2px 4px; border-radius: 10px; background: var(--s2); color: var(--ts); font-size: 11px; font-weight: 600; padding: 5px 8px; overflow: hidden; z-index: 2; transition: filter .3s, opacity .3s; }
+  .evt.mine { background: var(--accent); color: #fff; }
+  .dropmode .cell.valid { background: var(--drop-tint); cursor: copy; }
+  .dropmode .evt { filter: saturate(.6); opacity: .5; }
+  .cell.near { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .ghost-in-cell { position: absolute; inset: 2px 4px; border-radius: 10px; z-index: 3; background: color-mix(in srgb, var(--blue100) 60%, transparent); border: 1.5px dashed var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .vcard { position: absolute; inset: 2px 4px; border-radius: 10px; z-index: 4; background: var(--blue50); border: 1.5px dashed var(--accent); padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--accent); transition: transform .32s cubic-bezier(.4,0,.2,1), background .3s, border .3s, color .3s; animation: settle .32s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes settle { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
+  .vcard .mini-dots { display: flex; gap: 3px; margin-top: 3px; }
+  .vcard .mini-dots i { width: 6px; height: 6px; border-radius: 50%; background: transparent; border: 1px solid var(--dash); }
+  .vcard .mini-dots i.g { background: var(--green400); border-color: var(--green400); }
+  .vcard .mini-dots i.a { background: var(--amber400); border-color: var(--amber400); }
+  .vcard.confirmed { background: var(--accent); border: 1.5px solid var(--accent); color: #fff; }
+  .vcard.confirmed .mini-dots i { background: rgba(255,255,255,.85); border-color: transparent; }
+  .vcard .shift-tag { position: absolute; top: -10px; right: 6px; font-size: 10px; background: var(--amber50); color: var(--amber900); border-radius: 8px; padding: 2px 7px; font-weight: 700; }
+  .flash { animation: flash .5s ease; }
+  @keyframes flash { 0% { box-shadow: inset 0 0 0 3px var(--accent); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+
+  /* ───────── aside blocks ───────── */
+  .searchbar { display: flex; align-items: center; gap: 10px; background: var(--s1); border-radius: 22px; padding: 13px 18px; }
+  .searchbar .ic { font-size: 16px; color: var(--tm); }
+  .searchbar input { flex: 1; border: none; background: none; font: inherit; font-size: 14px; color: var(--tp); }
+  .searchbar input::placeholder { color: var(--tm); }
+
+  .mini { background: var(--s1); border-radius: 26px; padding: 18px 18px 20px; }
+  .mini .mh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .mini .mh .mt { font-size: 15px; font-weight: 700; }
+  .mini .mh .nav { display: flex; gap: 4px; }
+  .mini .mh button { width: 26px; height: 26px; border: none; background: none; border-radius: 8px; color: var(--ts); cursor: pointer; }
+  .mini table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; }
+  .mini th { color: var(--tm); font-weight: 600; padding: 4px 0; }
+  .mini td { padding: 1px 0; }
+  .mini td span { display: inline-flex; width: 28px; height: 28px; border-radius: 50%; align-items: center; justify-content: center; }
+  .mini td.out span { color: var(--tm); opacity: .5; }
+  .mini td.today span { background: var(--accent); color: #fff; font-weight: 700; }
+  .mini td.sel span { background: var(--blue50); color: var(--accent); font-weight: 700; }
+
+  /* ───────── make-meeting form (ToDoTimeline "Add new list" → One UI) ───────── */
+  .make { background: var(--s1); border-radius: 26px; padding: 20px; }
+  .make .mkh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .make .mkh .t { font-size: 17px; font-weight: 800; }
+  .make .mkh .more { border: none; background: none; font-size: 18px; color: var(--tm); cursor: pointer; }
+  .fld { margin-bottom: 16px; }
+  .fld > label { display: block; font-size: 12px; font-weight: 700; color: var(--tm); margin-bottom: 6px; }
+  .uline { width: 100%; border: none; border-bottom: 1.5px solid var(--hair); background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--tp); padding: 6px 2px; }
+  .uline:focus { outline: none; border-bottom-color: var(--accent); }
+  .uline::placeholder { color: var(--tm); font-weight: 500; }
+  .row2 { display: flex; gap: 16px; }
+  .row2 > .fld { flex: 1; }
+  .fld.icoin { position: relative; }
+  .fld.icoin .fi { position: absolute; right: 2px; bottom: 8px; font-size: 15px; color: var(--tm); }
+  .invite { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 0; }
+  .ichip { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+  .iadd { width: 32px; height: 32px; border-radius: 50%; border: 1.5px dashed var(--dash); background: none; color: var(--tm); font-size: 16px; cursor: pointer; }
+  .submit { width: 100%; height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 700; border: none; cursor: pointer; margin-top: 4px; transition: transform .1s; }
+  .submit:active { transform: scale(.98); }
+
+  /* ───────── AI reco (aside) ───────── */
+  .reco-sec { background: var(--s1); border-radius: 26px; padding: 18px; display: none; }
+  .reco-sec.show { display: block; }
+  .reco-h { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .reco-h .t { font-size: 16px; font-weight: 800; }
+  .reco-h .badge { min-width: 22px; height: 22px; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 7px; }
+  .reco-sub { font-size: 12px; color: var(--ts); line-height: 1.55; margin-bottom: 14px; }
+  .reco { background: var(--s2); border-radius: 20px; padding: 15px; margin-bottom: 10px; cursor: grab; user-select: none; -webkit-user-select: none; transition: transform .16s ease-out, box-shadow .16s ease-out, opacity .2s; touch-action: none; }
+  .reco:last-child { margin-bottom: 0; }
+  .reco:active { cursor: grabbing; }
+  .reco.lifted { transform: scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+  .reco.placeholder { opacity: 0; pointer-events: none; }
+  .reco .chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 13px; background: var(--amber50); color: var(--amber900); font-size: 11.5px; font-weight: 700; margin-bottom: 9px; }
+  .reco .chip.ok { background: var(--green50); color: var(--green); }
+  .reco .tm { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
+  .reco .meta { font-size: 12.5px; color: var(--ts); font-weight: 500; margin: 3px 0 10px; }
+  .dotbar { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
+  .dotbar i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--dash); transition: all .18s; }
+  .dotbar i.g { background: var(--green400); border-color: var(--green400); animation: dotin .18s ease; }
+  .dotbar i.a { background: var(--amber400); border-color: var(--amber400); animation: dotin .18s ease; }
+  @keyframes dotin { from { transform: scale(.6); opacity: .4; } }
+  .dotbar .cnt { font-size: 12px; color: var(--ts); margin-left: 4px; }
+  .avs { display: flex; gap: 5px; }
+  .av { width: 28px; height: 28px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; transition: transform .2s; }
+  .av.pending { background: var(--s3); color: var(--tm); border: 1.5px dashed var(--dash); }
+  .av .st { position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-radius: 50%; font-size: 8px; display: none; align-items: center; justify-content: center; color: #fff; border: 1.5px solid var(--s1); }
+  .av.yes .st { display: flex; background: var(--green400); }
+  .av.adj .st { display: flex; background: var(--amber400); }
+  .av.flip { animation: flip .2s ease; }
+  @keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+  .suggest { margin-top: 11px; padding-top: 11px; border-top: 1px dashed var(--hair); display: none; align-items: center; gap: 8px; animation: rise2 .3s ease; }
+  .suggest.show { display: flex; }
+  @keyframes rise2 { from { transform: translateY(6px); opacity: 0; } }
+  .suggest .q { flex: 1; font-size: 12px; color: var(--ts); line-height: 1.4; }
+  .suggest .q b { color: var(--tp); font-weight: 700; }
+  .suggest button { font: inherit; font-size: 12px; font-weight: 700; color: var(--accent); background: var(--blue50); border: none; border-radius: 12px; padding: 8px 12px; cursor: pointer; white-space: nowrap; }
+  .reco .hint { font-size: 11.5px; color: var(--tm); margin-top: 10px; }
+
+  /* ───────── generic content (home/meetings/team/settings) ───────── */
+  .pad { padding: 4px 22px 22px; overflow-y: auto; flex: 1; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .metric { background: var(--s2); border-radius: 20px; padding: 16px 18px; }
+  .metric .k { font-size: 12.5px; color: var(--ts); font-weight: 600; }
+  .metric .v { font-size: 26px; font-weight: 800; margin-top: 6px; letter-spacing: -.5px; }
+  .metric .v small { font-size: 14px; font-weight: 600; color: var(--tm); }
+  .block { background: var(--s2); border-radius: 20px; padding: 18px 20px; margin-bottom: 12px; }
+  .block h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+  .listrow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--hair); }
+  .listrow:first-of-type { border-top: none; }
+  .listrow .lead { width: 40px; height: 40px; border-radius: 14px; background: var(--blue50); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex: none; }
+  .listrow .body { flex: 1; min-width: 0; }
+  .listrow .body .t { font-size: 14.5px; font-weight: 600; }
+  .listrow .body .s { font-size: 12.5px; color: var(--ts); margin-top: 2px; }
+  .listrow .tail { font-size: 12px; color: var(--tm); font-weight: 600; }
+  .mini-heat { display: flex; gap: 3px; }
+  .mini-heat i { width: 16px; height: 16px; border-radius: 5px; background: var(--s3); }
+  .mini-heat i.free { background: var(--green50); } .mini-heat i.busy { background: var(--s3); } .mini-heat i.pref { background: var(--blue50); }
+  .switch { width: 46px; height: 28px; border-radius: 14px; background: var(--s3); position: relative; cursor: pointer; border: none; transition: background .2s; flex: none; }
+  .switch.on { background: var(--accent); }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .switch.on::after { transform: translateX(18px); }
+  .segset { display: flex; gap: 6px; }
+  .segset button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 14px; border-radius: 16px; border: 1.5px solid var(--hair); background: none; color: var(--ts); cursor: pointer; }
+  .segset button.on { border-color: var(--accent); color: var(--accent); background: var(--blue50); }
+
+  /* drag clone + toast + sheet */
+  #clone { position: fixed; z-index: 100; width: 300px; pointer-events: none; display: none; }
+  #clone .reco { box-shadow: 0 16px 36px rgba(0,0,0,.22); transform: scale(1.03); margin: 0; }
+  .toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 16px); background: var(--tp); color: var(--base); font-size: 13.5px; font-weight: 600; padding: 13px 20px; border-radius: 26px; z-index: 120; display: flex; gap: 14px; align-items: center; opacity: 0; pointer-events: none; transition: all .3s ease; }
+  .toast.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .toast button { font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); background: none; border: none; cursor: pointer; }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 130; display: none; align-items: flex-end; justify-content: center; }
+  .scrim.show { display: flex; }
+  .sheet { width: min(400px, 100%); background: var(--s1); border-radius: 26px 26px 0 0; padding: 10px 20px 24px; animation: sheetup .3s cubic-bezier(.2,.8,.2,1); }
+  @keyframes sheetup { from { transform: translateY(60px); opacity: 0; } }
+  .sheet .grab { width: 32px; height: 4px; border-radius: 2px; background: var(--dash); margin: 0 auto 16px; }
+  .sheet h3 { font-size: 17px; font-weight: 700; line-height: 1.45; }
+  .sheet .ssub { font-size: 13px; color: var(--ts); margin: 6px 0 18px; line-height: 1.5; }
+  .vbtn { width: 100%; font: inherit; font-weight: 700; border: none; cursor: pointer; margin-bottom: 8px; transition: transform .1s; }
+  .vbtn:active { transform: scale(.98); }
+  .vbtn.yes { height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font-size: 15px; }
+  .vbtn.adj { height: 52px; border-radius: 26px; background: var(--blue50); color: var(--blue700); font-size: 15px; }
+  .vbtn.no { height: 44px; border-radius: 22px; background: none; color: var(--ts); font-size: 13.5px; }
+  .offset { display: none; padding-top: 6px; animation: rise2 .28s ease; }
+  .offset.show { display: block; }
+  .offset .q2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+  .offset .chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 10px; }
+  .offset .chips button { font: inherit; font-size: 12.5px; font-weight: 600; height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid var(--hair); background: var(--s1); color: var(--tp); cursor: pointer; }
+  .offset .chips button.on { background: var(--blue50); border-color: var(--accent); color: var(--accent); }
+  .offset input { width: 100%; font: inherit; font-size: 13px; border: none; border-radius: 14px; background: var(--s2); color: var(--tp); padding: 12px 14px; margin-bottom: 12px; }
+  .offset .send { width: 100%; height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 700; border: none; cursor: pointer; }
+  .offset .safe { font-size: 11.5px; color: var(--tm); text-align: center; margin-top: 10px; line-height: 1.5; }
+  .sheet .calm { font-size: 13px; color: var(--ts); text-align: center; padding: 14px 0 4px; line-height: 1.6; display: none; }
+
+  /* responsive */
+  @media (max-width: 980px) {
+    .shell { padding: 8px; gap: 8px; }
+    .rail { width: 76px; }
+    .rail .rail-brand .nm, .rail .rail-item span.lbl, .rail .rail-item .cntbadge { display: none; }
+    .rail .rail-item { justify-content: center; padding: 12px 0; }
+    .aside-col { width: 300px; }
+  }
+  @media (max-width: 760px) {
+    body { overflow: auto; }
+    .shell { flex-direction: column; height: auto; }
+    .rail { width: 100%; flex-direction: row; align-items: center; border-radius: 22px; padding: 8px; overflow-x: auto; }
+    .rail-head, .rail-div, .rail-sp { display: none; }
+    .rail-brand { padding: 4px 10px; }
+    .rail .rail-brand .nm { display: block; }
+    .rail-item { width: auto; margin-bottom: 0; }
+    .rail .rail-item span.lbl { display: none; }
+    .stage { flex-direction: column; }
+    .view { flex-direction: column; }
+    .aside-col { width: 100%; }
+    .main-col { min-height: 460px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- ── Navigation Rail ── -->
+  <nav class="rail" id="rail">
+    <div class="rail-head">
+      <button class="menu" onclick="toggleRail()" aria-label="메뉴">☰</button>
+      <button class="gear" onclick="go('settings')" aria-label="설정">⚙</button>
+    </div>
+    <div class="rail-brand"><span class="logo">모</span><span class="nm">모여</span></div>
+    <button class="rail-item" data-v="home" onclick="go('home')"><span class="ic">▦</span><span class="lbl">홈</span></button>
+    <button class="rail-item on" data-v="calendar" onclick="go('calendar')"><span class="ic">▤</span><span class="lbl">캘린더</span></button>
+    <button class="rail-item" data-v="meetings" onclick="go('meetings')"><span class="ic">◷</span><span class="lbl">회의</span><span class="cntbadge">3</span></button>
+    <button class="rail-item" data-v="team" onclick="go('team')"><span class="ic">◉</span><span class="lbl">팀</span></button>
+    <div class="rail-div"></div>
+    <button class="rail-item" data-v="settings" onclick="go('settings')"><span class="ic">⚙</span><span class="lbl">설정</span></button>
+    <div class="rail-sp"></div>
+    <button class="rail-item" onclick="toggleTheme()"><span class="ic" id="themeIc">◐</span><span class="lbl" id="themeLbl">다크 모드</span></button>
+  </nav>
+
+  <div class="stage">
+    <!-- ═══ CALENDAR (hero) ═══ -->
+    <section class="view on" id="v-calendar">
+      <div class="focus main-col">
+        <div class="vhead">
+          <div><h1>캘린더</h1><div class="sub">7월 13–17 · 다음 주</div></div>
+          <span class="sp"></span>
+          <button class="pill-btn">오늘</button>
+          <div class="navchev"><button>‹</button><button>›</button></div>
+          <button class="pill-btn acc" onclick="openSheet()">수신자 화면</button>
+        </div>
+        <div class="calwrap">
+          <div class="dayhead" id="dayhead"></div>
+          <div class="gwrap"><div class="grid" id="grid"></div></div>
+        </div>
+      </div>
+      <div class="aside-col">
+        <div class="searchbar"><span class="ic">🔍</span><input placeholder="회의·팀원 검색" /></div>
+        <div class="mini">
+          <div class="mh"><span class="mt">2026년 7월</span><span class="nav"><button>‹</button><button>›</button></span></div>
+          <table id="miniCal"></table>
+        </div>
+        <!-- 회의 잡기 폼 (ToDoTimeline Add-new-list → One UI) -->
+        <div class="make" id="makeCard">
+          <div class="mkh"><span class="t">회의 잡기</span><button class="more">⋯</button></div>
+          <div class="fld"><label>제목</label><input class="uline" value="팀 킥오프" /></div>
+          <div class="row2">
+            <div class="fld icoin"><label>날짜</label><input class="uline" value="7월 13–17" /><span class="fi">📅</span></div>
+            <div class="fld icoin"><label>길이</label><input class="uline" value="1시간" /><span class="fi">⏱</span></div>
+          </div>
+          <div class="fld"><label>참석자 초대</label>
+            <div class="invite" id="inviteRow"></div>
+          </div>
+          <button class="submit" onclick="findTimes()">되는 시간 찾기</button>
+        </div>
+        <!-- AI 추천 (submit 후 노출) -->
+        <div class="reco-sec" id="recoSec">
+          <div class="reco-h"><span class="t">✨ AI 추천</span><span class="badge">3</span></div>
+          <p class="reco-sub">모두 되는 시간이 없어서, 조금만 조정하면 되는 시간을 찾았어요. 카드를 캘린더로 끌어다 놓으면 바로 물어봐 드릴게요.</p>
+          <div id="recoList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ HOME ═══ -->
+    <section class="view" id="v-home">
+      <div class="focus main-col">
+        <div class="vhead"><div><h1>안녕하세요, 지민 님</h1><div class="sub">2026년 7월 7일 · 화요일</div></div></div>
+        <div class="pad">
+          <div class="metrics">
+            <div class="metric"><div class="k">다음 회의까지</div><div class="v">2<small>일</small></div></div>
+            <div class="metric"><div class="k">답변 기다리는 투표</div><div class="v">3<small>건</small></div></div>
+            <div class="metric"><div class="k">이번 주 조율 완료</div><div class="v">5<small>건</small></div></div>
+          </div>
+          <div class="block">
+            <h3>지금 조율 중인 회의</h3>
+            <div class="listrow" onclick="go('calendar')" style="cursor:pointer"><div class="lead">킥</div><div class="body"><div class="t">팀 킥오프</div><div class="s">화요일 오후 2시 · 4/6 답했어요</div></div><div class="tail">캘린더 →</div></div>
+            <div class="listrow" onclick="go('meetings')" style="cursor:pointer"><div class="lead">디</div><div class="body"><div class="t">디자인 리뷰</div><div class="s">수요일 오전 11시 · 투표 대기</div></div><div class="tail">회의 →</div></div>
+            <div class="listrow" onclick="go('meetings')" style="cursor:pointer"><div class="lead">스</div><div class="body"><div class="t">스프린트 회고</div><div class="s">금요일 오후 4시 · 확정됨</div></div><div class="tail">회의 →</div></div>
+          </div>
+          <div class="block">
+            <h3>바로 하기</h3>
+            <div class="listrow" onclick="go('calendar')" style="cursor:pointer"><div class="lead">＋</div><div class="body"><div class="t">새 회의 잡기</div><div class="s">여섯 명의 되는 시간을 찾아드려요</div></div><div class="tail">→</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ MEETINGS ═══ -->
+    <section class="view" id="v-meetings">
+      <div class="focus main-col">
+        <div class="vhead"><div><h1>회의</h1><div class="sub">조율 중 2 · 확정 1</div></div></div>
+        <div class="pad" id="meetingsPad"></div>
+      </div>
+    </section>
+
+    <!-- ═══ TEAM ═══ -->
+    <section class="view" id="v-team">
+      <div class="focus main-col">
+        <div class="vhead"><div><h1>팀</h1><div class="sub">프로덕트 스쿼드 · 6명 · 이번 주 여유</div></div></div>
+        <div class="pad" id="teamPad"></div>
+      </div>
+    </section>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <section class="view" id="v-settings">
+      <div class="focus main-col">
+        <div class="vhead"><div><h1>설정</h1><div class="sub">모여를 내 방식대로</div></div></div>
+        <div class="pad">
+          <div class="block">
+            <h3>화면</h3>
+            <div class="listrow"><div class="body"><div class="t">다크 모드</div><div class="s">AMOLED 검정 배경으로 눈이 편해요</div></div><button class="switch" id="swTheme" onclick="toggleTheme()"></button></div>
+            <div class="listrow"><div class="body"><div class="t">자동 태깅</div><div class="s">과거 캘린더로 선호·기피 시간을 알아서 추론해요</div></div><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+          </div>
+          <div class="block">
+            <h3>투표 문구 세트</h3>
+            <div class="listrow"><div class="body"><div class="t">응답 버튼 톤</div><div class="s">가능해요 · 조금만 조정하면 돼요 · 어려워요</div></div>
+              <div class="segset"><button class="on">기본</button><button>스쿼드</button><button>위트</button></div></div>
+          </div>
+          <div class="block">
+            <h3>프라이버시</h3>
+            <div class="listrow"><div class="body"><div class="t">팀원 사정 숨기기</div><div class="s">개인 일정은 '조금 어려운 시간'으로만 집계해서 보여요</div></div><button class="switch on" onclick="this.classList.toggle('on')"></button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="clone"></div>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAct"></button></div>
+
+<div class="scrim" id="scrim" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>회의 제안이 왔어요 — 화요일 오후 2시</h3>
+    <p class="ssub">지민 님이 팀 킥오프(1시간)를 잡고 있어요. 준호 님 답이 필요해요.</p>
+    <div id="voteArea">
+      <button class="vbtn yes" onclick="votePick('yes')">가능해요 😊</button>
+      <button class="vbtn adj" onclick="votePick('adj')">조금만 조정하면 돼요 🤔</button>
+      <button class="vbtn no" onclick="votePick('no')">어려워요, 미안! 🙏</button>
+    </div>
+    <div class="offset" id="offset">
+      <div class="q2">얼마나 옮기면 편해요?</div>
+      <div class="chips" id="offChips">
+        <button onclick="offPick(this)">15분 늦게</button>
+        <button class="on" onclick="offPick(this)">30분 늦게</button>
+        <button onclick="offPick(this)">1시간 뒤</button>
+        <button onclick="offPick(this)">점심 이후로</button>
+      </div>
+      <input placeholder="예: 2시 이후면 언제든 좋아요" />
+      <button class="send" onclick="sendOffset()">이 조건으로 보내기</button>
+      <p class="safe">이 내용은 지민 님에게만 보여요.<br />옮길지는 지민 님이 정해요 — 부담 갖지 마세요.</p>
+    </div>
+    <p class="calm" id="calmMsg"></p>
+  </div>
+</div>
+
+<script>
+const DAYS = [["월",13],["화",14],["수",15],["목",16],["금",17]];
+const HOURS = [9,10,11,12,13,14,15,16,17];
+const EVENTS = [
+  {d:0,h:9,t:"위클리 스크럼",mine:1},{d:0,h:10,t:"디자인 크리틱",mine:1},
+  {d:0,h:14,t:"준호 · 외근"},{d:1,h:9,t:"서연 · 1:1"},{d:1,h:11,t:"전사 타운홀"},
+  {d:2,h:14,t:"스프린트 데모",mine:1},{d:2,h:9,t:"민지 · 분석 리뷰"},
+  {d:3,h:10,t:"외근 · 고객사",mine:1},{d:3,h:11,t:"외근 · 고객사",mine:1},
+  {d:4,h:13,t:"외부 미팅",mine:1},{d:4,h:15,t:"하은 · CX 위클리"}
+];
+const PEOPLE = [["지민","지","#387AFF"],["준호","준","#5A8DFF"],["서연","서","#7C6BF0"],["민지","민","#4FB6A8"],["도윤","도","#E8927C"],["하은","하","#D9A03C"]];
+const RECOS = [
+  {id:0,d:1,h:14,label:"화요일 오후 2시",chip:"준호 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:1,adjName:"준호"},
+  {id:1,d:2,h:11,label:"수요일 오전 11시",chip:"민지 님 없이면 지금도 가능해요",meta:"1시간 · 5명 · 민지 님에겐 요약 전달",adjWho:3,adjName:"민지"},
+  {id:2,d:3,h:15,label:"목요일 오후 3시",chip:"도윤 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:4,adjName:"도윤"}
+];
+
+/* ── nav rail view switch ── */
+function go(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("on"));
+  document.getElementById("v-"+v).classList.add("on");
+  document.querySelectorAll(".rail-item[data-v]").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  history.replaceState(null,"","?v="+v);
+}
+function toggleRail(){ document.getElementById("rail").classList.toggle("collapsed"); }
+
+/* ── calendar ── */
+document.getElementById("dayhead").innerHTML = "<div></div>" + DAYS.map((d,i)=>`<div class="dh${i===1?" today":""}"><div class="dow">${d[0]}</div><div class="dnum">${d[1]}</div></div>`).join("");
+let g = "";
+HOURS.forEach(h=>{
+  g += `<div class="tl">${h>=12?"오후 "+(h===12?12:h-12):"오전 "+h}시</div>`;
+  DAYS.forEach((_,d)=>{ const ev = EVENTS.find(e=>e.d===d&&e.h===h); g += `<div class="cell" id="c-${d}-${h}">${ev?`<div class="evt${ev.mine?" mine":""}">${ev.t}</div>`:""}</div>`; });
+});
+document.getElementById("grid").innerHTML = g;
+
+/* ── mini month ── */
+(function(){
+  const rows = [["",""," ","1","2","3","4"],["5","6","7·","8","9","10","11"],["12","13*","14*","15*","16*","17*","18"],["19","20","21","22","23","24","25"],["26","27","28","29","30","31",""]];
+  let h = "<tr>"+["일","월","화","수","목","금","토"].map(d=>`<th>${d}</th>`).join("")+"</tr>";
+  rows.forEach(r=>{ h += "<tr>"+r.map(c=>{ if(!c.trim()) return "<td></td>"; let cls=""; let n=c; if(c.includes("·")){cls="today";n=c.replace("·","");} if(c.includes("*")){cls="sel";n=c.replace("*","");} return `<td class="${cls}"><span>${n}</span></td>`; }).join("")+"</tr>"; });
+  document.getElementById("miniCal").innerHTML = h;
+})();
+
+/* ── invite chips ── */
+document.getElementById("inviteRow").innerHTML = PEOPLE.map(p=>`<span class="ichip" style="background:${p[2]}">${p[1]}</span>`).join("") + `<button class="iadd">+</button>`;
+
+/* ── reco cards ── */
+const list = document.getElementById("recoList");
+function buildRecos(){
+  list.innerHTML = "";
+  RECOS.forEach(r=>{
+    const el = document.createElement("div");
+    el.className = "reco"; el.id = "reco-"+r.id; el.dataset.rid = r.id;
+    el.innerHTML = `
+      <span class="chip">✨ ${r.chip}</span>
+      <div class="tm">${r.label}</div>
+      <div class="meta">${r.meta}</div>
+      <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
+      <div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="r${r.id}-av-${i}">${p[1]}<span class="st">✓</span></span>`).join("")}</div>
+      <div class="suggest" id="sg-${r.id}"><span class="q">💬 <b>${r.adjName}</b>: 30분 뒤면 가능해요</span><button onclick="applyShift(${r.id})">30분 뒤로 옮기기</button></div>
+      <div class="hint">끌어서 캘린더에 놓거나, 카드를 탭하세요</div>`;
+    list.appendChild(el);
+  });
+  bindDrag();
+}
+function findTimes(){
+  document.getElementById("makeCard").style.display = "none";
+  document.getElementById("recoSec").classList.add("show");
+  buildRecos();
+  toast("여섯 분의 캘린더를 겹쳐 봤어요", "", null);
+}
+
+/* ── drag & snap ── */
+const clone = document.getElementById("clone");
+let drag = null;
+function bindDrag(){
+  document.querySelectorAll("#recoList .reco").forEach(card=>{
+    card.addEventListener("pointerdown", e=>{
+      if (e.target.tagName==="BUTTON" || card.classList.contains("placed")) return;
+      drag = { rid:+card.dataset.rid, card, moved:false, sx:e.clientX, sy:e.clientY };
+      card.setPointerCapture(e.pointerId);
+    });
+    card.addEventListener("pointermove", e=>{
+      if (!drag || drag.card!==card) return;
+      if (!drag.moved && Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy) < 8) return;
+      if (!drag.moved) startDrag(e); moveDrag(e);
+    });
+    card.addEventListener("pointerup", e=>{
+      if (!drag || drag.card!==card) return;
+      drag.moved ? endDrag(e) : tapPlace(drag.rid); drag = null;
+    });
+  });
+}
+function targetCell(rid){ const r = RECOS[rid]; return document.getElementById(`c-${r.d}-${r.h}`); }
+function startDrag(e){
+  drag.moved = true; drag.card.classList.add("placeholder");
+  clone.innerHTML = ""; const c = drag.card.cloneNode(true); c.classList.remove("placeholder"); c.classList.add("lifted"); clone.appendChild(c);
+  clone.style.display = "block";
+  document.getElementById("grid").classList.add("dropmode");
+  targetCell(drag.rid).classList.add("valid");
+  moveDrag(e);
+}
+function moveDrag(e){
+  clone.style.left = (e.clientX-150)+"px"; clone.style.top = (e.clientY-28)+"px";
+  const t = targetCell(drag.rid), r = t.getBoundingClientRect();
+  const near = Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) < Math.max(60, r.width/2+10);
+  t.classList.toggle("near", near);
+  if (near && !t.querySelector(".ghost-in-cell")) { const gh=document.createElement("div"); gh.className="ghost-in-cell"; gh.textContent="여기에 착"; t.appendChild(gh); }
+  if (!near) t.querySelector(".ghost-in-cell")?.remove();
+  drag.near = near;
+}
+function endDrag(){
+  clone.style.display="none"; document.getElementById("grid").classList.remove("dropmode");
+  const t = targetCell(drag.rid); t.classList.remove("valid","near"); t.querySelector(".ghost-in-cell")?.remove();
+  if (drag.near) place(drag.rid); else drag.card.classList.remove("placeholder");
+}
+function tapPlace(rid){ targetCell(rid).scrollIntoView({behavior:"smooth",block:"center"}); document.getElementById("reco-"+rid).classList.add("placeholder"); place(rid); }
+
+/* ── vote sim ── */
+let placedState = {};
+function place(rid){
+  const t = targetCell(rid); if (t.querySelector(".vcard")) return;
+  const v = document.createElement("div"); v.className = "vcard"; v.id = "vc-"+rid;
+  v.innerHTML = `팀 킥오프<div class="mini-dots">${PEOPLE.map(()=>"<i></i>").join("")}</div>`;
+  t.appendChild(v); t.classList.add("flash");
+  const card = document.getElementById("reco-"+rid);
+  card.classList.remove("placeholder"); card.classList.add("placed"); card.style.cursor = "default";
+  card.querySelector(".hint").textContent = "투표가 진행되고 있어요";
+  toast("세 분에게 물어볼게요", "실행 취소", ()=>undoPlace(rid));
+  placedState[rid] = { timers: [] }; runVotes(rid);
+}
+function undoPlace(rid){
+  placedState[rid]?.timers.forEach(clearTimeout);
+  document.getElementById("vc-"+rid)?.remove();
+  const card = document.getElementById("reco-"+rid); card.classList.remove("placed"); card.style.cursor = "grab";
+  card.querySelector(".hint").textContent = "끌어서 캘린더에 놓거나, 카드를 탭하세요";
+  resetVotes(rid); hideToast();
+}
+function resetVotes(rid){
+  document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="");
+  document.getElementById("cnt-"+rid).textContent = "0/6 답했어요";
+  PEOPLE.forEach((_,i)=>{ const a=document.getElementById(`r${rid}-av-${i}`); a.className="av pending"; a.style.background=""; });
+  document.getElementById("sg-"+rid).classList.remove("show");
+}
+function vote(rid, who, kind, idx){
+  const a = document.getElementById(`r${rid}-av-${who}`);
+  a.classList.remove("pending"); a.classList.add("flip", kind==="adj"?"adj":"yes");
+  a.style.background = PEOPLE[who][2]; a.style.border = "none";
+  if (kind==="adj") a.querySelector(".st").textContent = "~";
+  document.querySelectorAll(`#db-${rid} i`)[idx].className = kind==="adj" ? "a" : "g";
+  document.getElementById("cnt-"+rid).textContent = `${idx+1}/6 답했어요`;
+  const mini = document.querySelectorAll(`#vc-${rid} .mini-dots i`); if (mini[idx]) mini[idx].className = kind==="adj" ? "a" : "g";
+}
+function runVotes(rid){
+  const r = RECOS[rid], st = placedState[rid];
+  const order = [0,2,3,5].filter(w=>w!==r.adjWho).slice(0,4);
+  order.forEach((who,k)=> st.timers.push(setTimeout(()=>vote(rid,who,"yes",k), 800+k*700)));
+  const idx = order.length;
+  st.timers.push(setTimeout(()=>{ vote(rid,r.adjWho,"adj",idx); document.getElementById("sg-"+rid).classList.add("show"); toast(`${r.adjName} 님이 30분 뒤면 가능하대요`, "", null); }, 800+idx*700+400));
+}
+function applyShift(rid){
+  const r = RECOS[rid], v = document.getElementById("vc-"+rid);
+  v.style.transform = "translateY(28px)";
+  const tag = document.createElement("span"); tag.className="shift-tag"; tag.textContent="조정됨 +30분"; v.appendChild(tag);
+  document.getElementById("sg-"+rid).classList.remove("show");
+  toast("30분 뒤로 옮겼어요. " + r.adjName + " 님 의견을 반영했어요", "", null);
+  placedState[rid].timers.push(setTimeout(()=>{ vote(rid, r.adjWho===1?4:1, "yes", 5); confirmCard(rid); }, 1400));
+  setTimeout(()=>tag.remove(), 3400);
+}
+function confirmCard(rid){
+  const v = document.getElementById("vc-"+rid); v.classList.add("confirmed");
+  document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="g");
+  document.getElementById("cnt-"+rid).textContent = "6/6 · 확정됐어요";
+  const card = document.getElementById("reco-"+rid);
+  card.querySelector(".chip").className = "chip ok"; card.querySelector(".chip").textContent = "✓ 확정 — 캘린더에 등록해 뒀어요";
+  card.querySelector(".hint").textContent = "모두의 캘린더에 자동으로 들어갔어요";
+  toast("확정됐어요. 모두의 캘린더에 등록해 뒀어요", "", null);
+}
+
+/* ── meetings & team views ── */
+document.getElementById("meetingsPad").innerHTML = `
+  <div class="block"><h3>조율 중</h3>
+    <div class="listrow"><div class="lead">킥</div><div class="body"><div class="t">팀 킥오프</div><div class="s">화요일 오후 2시 · 6명</div></div>
+      <div class="dotbar" style="margin:0"><i class="g"></i><i class="a"></i><i class="g"></i><i class="g"></i><i></i><i></i></div></div>
+    <div class="listrow"><div class="lead">디</div><div class="body"><div class="t">디자인 리뷰</div><div class="s">수요일 오전 11시 · 5명</div></div>
+      <div class="dotbar" style="margin:0"><i class="g"></i><i class="g"></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="block"><h3>확정</h3>
+    <div class="listrow"><div class="lead" style="background:var(--green50);color:var(--green)">스</div><div class="body"><div class="t">스프린트 회고</div><div class="s">금요일 오후 4시 · 6명 전원</div></div><div class="tail" style="color:var(--green)">✓ 확정</div></div>
+  </div>`;
+
+document.getElementById("teamPad").innerHTML = `<div class="block"><h3>이번 주 여유 (월–금)</h3>` + PEOPLE.map((p,i)=>{
+  const pat = [["free","busy","free","pref","busy"],["pref","free","free","busy","free"],["free","free","pref","busy","busy"],["busy","free","free","free","pref"],["free","pref","busy","free","free"],["free","free","free","pref","busy"]][i];
+  const role = ["프로덕트 디자이너 · 나","개발 리드","프로덕트 오너","데이터 분석가","마케터","CX 매니저"][i];
+  return `<div class="listrow"><div class="lead" style="background:${p[2]}22;color:${p[2]}">${p[1]}</div><div class="body"><div class="t">${p[0]}</div><div class="s">${role}</div></div><div class="mini-heat">${pat.map(c=>`<i class="${c}"></i>`).join("")}</div></div>`;
+}).join("") + `</div>
+<div class="block"><h3>표시 범례</h3><div class="listrow" style="border:none;padding-top:0"><div class="mini-heat"><i class="pref"></i><i class="free"></i><i class="busy"></i></div><div class="body" style="margin-left:12px"><div class="s">선호 · 여유 · 어려움 순이에요</div></div></div></div>`;
+
+/* ── toast ── */
+let toastTimer;
+function toast(msg, act, fn){
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  const b = document.getElementById("toastAct"); b.textContent = act||""; b.style.display = act?"block":"none"; b.onclick = fn;
+  t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, act?5000:2600);
+}
+function hideToast(){ document.getElementById("toast").classList.remove("show"); }
+
+/* ── receiver sheet ── */
+function openSheet(){ document.getElementById("scrim").classList.add("show"); resetSheet(); }
+function closeSheet(){ document.getElementById("scrim").classList.remove("show"); }
+function resetSheet(){ document.getElementById("voteArea").style.display="block"; document.getElementById("offset").classList.remove("show"); document.getElementById("calmMsg").style.display="none"; }
+function votePick(kind){
+  if (kind==="adj"){ document.getElementById("voteArea").style.display="none"; document.getElementById("offset").classList.add("show"); }
+  else { document.getElementById("voteArea").style.display="none"; const c=document.getElementById("calmMsg");
+    c.textContent = kind==="no" ? "전할게요. 미안해할 일 아니에요 — 다른 시간을 이미 찾고 있어요." : "답했어요! 지민 님에게 바로 전할게요 😊";
+    c.style.display="block"; setTimeout(closeSheet, 1700); }
+}
+function offPick(b){ document.querySelectorAll("#offChips button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }
+function sendOffset(){ document.getElementById("offset").classList.remove("show"); const c=document.getElementById("calmMsg"); c.textContent="조건을 전했어요. 옮길지는 지민 님이 정할 거예요 — 잘하셨어요 👍"; c.style.display="block"; setTimeout(closeSheet, 1800); }
+
+/* ── theme + deep link ── */
+function toggleTheme(){
+  const dark = document.body.getAttribute("data-theme")==="dark";
+  document.body.setAttribute("data-theme", dark?"light":"dark");
+  document.getElementById("themeLbl").textContent = dark?"다크 모드":"라이트 모드";
+  document.getElementById("themeIc").textContent = dark?"◐":"◑";
+  document.getElementById("swTheme").classList.toggle("on", !dark);
+}
+const q = new URLSearchParams(location.search);
+if (q.get("theme")==="dark") toggleTheme();
+if (q.get("v")) go(q.get("v"));
+if (q.get("demo")==="reco") findTimes();
+
+</script>
+</body>
+</html>
