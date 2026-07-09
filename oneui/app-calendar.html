@@ -524,7 +524,7 @@
 
     <!-- AI 추천 -->
     <div class="reco-wrap" id="recoWrap">
-      <div class="reco-head"><span class="t">✨ AI 추천</span><span class="badge">3</span></div>
+      <div class="reco-head"><span class="t">AI 추천</span><span class="badge">3</span></div>
       <p class="reco-sub">모두 되는 시간이 없어서, 조금만 조정하면 되는 시간을 찾았어요. 카드를 캘린더로 끌어다 놓으면 바로 물어봐 드릴게요.</p>
       <div id="recoList"></div>
       <button class="reset-btn" onclick="resetCreate()">다시 만들기</button>
@@ -689,7 +689,7 @@ function createMeeting(){
   if (createMode === "direct") { placeDirect(createDay, createHour); return; }
   const w = document.getElementById("recoWrap"); w.classList.add("show");
   renderRecos();
-  toast("모두 되는 시간이 없어서, 조정하면 되는 시간을 찾았어요", "", null);
+  toast("모두 되는 시간이 없어서, 조금만 조정하면 되는 시간을 찾았어요", "", null);
   w.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 function resetCreate(){
@@ -750,7 +750,7 @@ function renderRecos(){
     el.style.setProperty("--enter-delay", (i*55)+"ms");
     el.innerHTML = `
       <div class="reco-catrow"><span class="tag tag-${r.catC}">${r.cat}</span></div>
-      <span class="chip">✨ ${r.chip}</span>
+      <span class="chip">${r.chip}</span>
       <div class="tm-row"><svg class="ic"><use href="#i-cal"/></svg><div class="tm">${r.label}</div></div>
       <div class="meta"><svg class="ic"><use href="#i-clock"/></svg>${r.meta}</div>
       <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
@@ -775,7 +775,8 @@ let drag = null;
 function bindDrag(card){
   card.addEventListener("pointerdown", e=>{
     if (e.target.tagName==="BUTTON" || card.classList.contains("placed")) return;
-    drag = { rid:+card.dataset.rid, card, moved:false, sx:e.clientX, sy:e.clientY };
+    const r = card.getBoundingClientRect();
+    drag = { rid:+card.dataset.rid, card, moved:false, sx:e.clientX, sy:e.clientY, dx:e.clientX-r.left, dy:e.clientY-r.top, w:r.width };
     card.setPointerCapture(e.pointerId);
   });
   card.addEventListener("pointermove", e=>{
@@ -792,12 +793,13 @@ function targetCell(rid){ const r=RECOS[rid]; return document.getElementById(`c-
 function startDrag(e){
   drag.moved = true; drag.card.classList.add("placeholder");
   clone.innerHTML=""; const c=drag.card.cloneNode(true); c.classList.remove("placeholder"); c.classList.add("lifted"); clone.appendChild(c);
+  clone.style.width = drag.w+"px";
   clone.style.display="block";
   grid.classList.add("dropmode"); document.querySelector(".gridcard").classList.add("dropmode");
   targetCell(drag.rid).classList.add("valid"); moveDrag(e);
 }
 function moveDrag(e){
-  clone.style.left=(e.clientX-150)+"px"; clone.style.top=(e.clientY-28)+"px";
+  clone.style.left=(e.clientX-drag.dx)+"px"; clone.style.top=(e.clientY-drag.dy)+"px";
   const t=targetCell(drag.rid), r=t.getBoundingClientRect();
   const near = Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) < Math.max(64, r.width/2+12);
   t.classList.toggle("near", near);
@@ -821,7 +823,7 @@ function place(rid){
   t.appendChild(v); t.classList.add("flash");
   const card = document.getElementById("reco-"+rid);
   card.classList.remove("placeholder"); card.classList.add("placed"); card.style.cursor="default";
-  card.querySelector(".hint").textContent = "투표가 진행되고 있어요";
+  card.querySelector(".hint").textContent = "물어보고 있어요";
   toast("세 분에게 물어볼게요", "실행 취소", ()=>undoPlace(rid));
   placedState[rid] = { timers: [] }; runVotes(rid);
 }
@@ -899,7 +901,7 @@ function votePick(kind){
     c.style.display="block"; setTimeout(closeSheet, kind==="no"?1800:1400); }
 }
 function offPick(b){ document.querySelectorAll("#offChips button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }
-function sendOffset(){ document.getElementById("offset").classList.remove("show"); const c=document.getElementById("calmMsg"); c.textContent="조건을 전했어요. 옮길지는 지민 님이 정할 거예요 — 잘하셨어요 👍"; c.style.display="block"; setTimeout(closeSheet, 1800); }
+function sendOffset(){ document.getElementById("offset").classList.remove("show"); const c=document.getElementById("calmMsg"); c.textContent="조건을 전했어요. 옮길지는 지민 님이 정할 거예요 — 편하게 말해줘서 고마워요 👍"; c.style.display="block"; setTimeout(closeSheet, 1800); }
 
 /* theme + deep links (shell이 ?theme, ?demo 전달) */
 const q = new URLSearchParams(location.search);
