@@ -18,6 +18,12 @@
     --shadow-card: 0 12px 28px rgba(23,54,138,.14);
     --shadow-float: 0 16px 36px rgba(23,54,138,.20);
 
+    /* 태그 · 카테고리 컬러 (참고 이미지의 컬러 다양성) — 이벤트 성격을 구분하는 용도로만,
+       주요 액션 버튼의 액센트(파랑)는 그대로 One UI 원칙(액션당 액센트 1개)을 지킨다 */
+    --tag-purple: #7C6BF0; --tag-purple-bg: #EFEDFD;
+    --tag-coral: #E8927C; --tag-coral-bg: #FBEEEA;
+    --tag-mint: #2FA98C; --tag-mint-bg: #E4F5F0;
+
     /* ══ motion tokens (animation-systems: Stripe×Linear×Apple×Vercel) ══
        숫자 자체보다 "어디에 어떤 대역을 쓰는지"가 일관성의 핵심 — 새 모션은
        전부 이 토큰을 참조한다. 히어로 스냅 모먼트(.vcard settle)만 예외적으로
@@ -40,6 +46,12 @@
     --hair: #2C2C30; --dash: #616166; --drop-tint: #12233F;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
+
+    /* 다크모드는 진짜 검정 위에 태그 컬러를 더 비비드하게 — 라이트와 톤이
+       확실히 갈리도록(어둡게 눌린 톤 X, 새까만 배경 위에 선명하게 뜨는 톤) */
+    --tag-purple: #A79BFF; --tag-purple-bg: #241F45;
+    --tag-coral: #FFA98C; --tag-coral-bg: #3A2318;
+    --tag-mint: #4FD9B8; --tag-mint-bg: #103028;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -96,6 +108,11 @@
   .evt .who { font-size: 10px; font-weight: 500; color: var(--tm); }
   .evt.mine { background: var(--accent); color: #fff; }
   .evt.mine .who { color: rgba(255,255,255,.8); }
+  /* 남의 일정도 옅은 컬러로 구분 — 참고 이미지4의 컬러 다양성, One UI 톤은 유지(채도는 낮게) */
+  .evt.c-purple { background: var(--tag-purple-bg); color: var(--tag-purple); }
+  .evt.c-coral { background: var(--tag-coral-bg); color: var(--tag-coral); }
+  .evt.c-mint { background: var(--tag-mint-bg); color: var(--tag-mint); }
+  .evt.c-purple .who, .evt.c-coral .who, .evt.c-mint .who { color: inherit; opacity: .7; }
   .dropmode .cell.valid { background: var(--drop-tint); cursor: copy; }
   .dropmode .evt { filter: saturate(.55); opacity: .5; }
   .cell.near { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 12px; }
@@ -187,11 +204,22 @@
   .dur-seg button.on { background: var(--s1); color: var(--accent); box-shadow: 0 1px 3px rgba(23,54,138,.16); }
   [data-theme="dark"] .dur-seg button.on { background: var(--s3); }
   .invite { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .iav { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: #fff; position: relative; cursor: pointer; transition: transform var(--dur-micro) var(--ease-out); }
+  .iav {
+    width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; color: #fff; position: relative; cursor: pointer; overflow: visible;
+    border: 2.5px solid transparent; transition: transform var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+  }
+  .iav img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
   .iav:hover { transform: translateY(-2px); }
   .iav:active { transform: scale(.92); }
-  .iav .req { position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--s1); display: none; }
-  .iav.req-on .req { display: block; }
+  /* '꼭 참석'으로 선택된 사람: 액센트 링 + 명확한 체크 배지 (사진 위에 얹혀도 항상 읽히도록) */
+  .iav.req-on { border-color: var(--accent); }
+  .iav .req {
+    position: absolute; right: -3px; bottom: -3px; width: 17px; height: 17px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--s1); display: none; align-items: center; justify-content: center;
+    color: #fff; font-size: 10px; font-weight: 900; line-height: 1;
+  }
+  .iav.req-on .req { display: flex; }
   .iav.add { background: var(--s2); color: var(--tm); border: 1.5px dashed var(--dash); }
   .invite-hint { font-size: 11.5px; color: var(--tm); margin-top: 9px; line-height: 1.5; }
   .submit {
@@ -248,14 +276,19 @@
   .avs { display: flex; }
   .av {
     width: 28px; height: 28px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #fff; border: 2px solid var(--s1); margin-left: -8px;
-    transition: transform var(--dur-micro) var(--ease-out), margin var(--dur-micro) var(--ease-out);
+    font-size: 11px; font-weight: 700; color: #fff; border: 2px solid var(--s1); margin-left: -8px; overflow: visible;
+    transition: transform var(--dur-micro) var(--ease-out), margin var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
   }
+  .av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
   .av:first-child { margin-left: 0; }
   .reco:hover .av { margin-left: -3px; }
   .reco:hover .av:first-child { margin-left: 0; }
   .av.pending { background: var(--s2); color: var(--tm); border: 2px dashed var(--dash); }
-  .av .st { position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-radius: 50%; font-size: 8px; display: none; align-items: center; justify-content: center; color: #fff; border: 1.5px solid var(--s1); }
+  .av.pending img { opacity: .45; }
+  /* 응답 상태는 사진 위에서도 항상 보이도록 링(box-shadow)으로 표시 */
+  .av.yes { box-shadow: 0 0 0 2px var(--green400); }
+  .av.adj { box-shadow: 0 0 0 2px var(--amber400); }
+  .av .st { position: absolute; right: -3px; bottom: -3px; width: 14px; height: 14px; border-radius: 50%; font-size: 9px; font-weight: 900; display: none; align-items: center; justify-content: center; color: #fff; border: 1.5px solid var(--s1); }
   .av.yes .st { display: flex; background: var(--green400); }
   .av.adj .st { display: flex; background: var(--amber400); }
   .av.flip { animation: flip .2s ease; }
@@ -298,6 +331,105 @@
   .offset .send { width: 100%; height: 52px; border-radius: 26px; background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 700; border: none; cursor: pointer; }
   .offset .safe, .sheet .calm { font-size: 11.5px; color: var(--tm); text-align: center; margin-top: 10px; line-height: 1.5; }
   .sheet .calm { font-size: 13px; color: var(--ts); padding: 14px 0 4px; display: none; }
+
+  /* ══ 빈 셀 hover + 버튼 (참고 이미지1) ══ */
+  .cell.empty { cursor: pointer; }
+  .cell-add {
+    position: absolute; inset: 5px; border-radius: 12px; border: 1.5px dashed var(--dash);
+    display: flex; align-items: center; justify-content: center; color: var(--tm);
+    opacity: 0; transition: opacity var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+    z-index: 1; pointer-events: none;
+  }
+  .cell.empty:hover .cell-add { opacity: 1; pointer-events: auto; background: var(--blue50); border-color: var(--accent); color: var(--accent); }
+  .cell-add .ic { width: 16px; height: 16px; }
+
+  /* ══ 회의 잡기 트리거 버튼 (사이드바) ══ */
+  .create-trigger {
+    display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
+    border: 1.5px dashed var(--dash); background: var(--s1); transition: border-color var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
+  }
+  .create-trigger:hover { border-color: var(--accent); background: var(--blue50); }
+  .ct-plus { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+  .ct-plus .ic { stroke: #fff; }
+  .ct-txt { display: flex; flex-direction: column; gap: 2px; }
+  .ct-t { font-size: 15px; font-weight: 700; color: var(--tp); }
+  .ct-s { font-size: 12px; color: var(--ts); }
+
+  /* ══ 회의 만들기 모달 ══ */
+  .cscrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 140; display: flex;
+    align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out);
+  }
+  .cscrim.show { opacity: 1; pointer-events: auto; }
+  .cmodal { width: min(440px, calc(100vw - 32px)); max-height: min(720px, calc(100vh - 48px)); overflow-y: auto; background: var(--s1); border-radius: 28px; padding: 22px 24px 26px; }
+  .cscrim.show .cmodal { animation: cmodalIn var(--dur-enter) var(--ease-spring); }
+  @keyframes cmodalIn { from { transform: scale(.94) translateY(10px); opacity: 0; } }
+  .cm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .cm-title { flex: 1; font: inherit; font-size: 20px; font-weight: 800; color: var(--tp); border: none; background: none; letter-spacing: -.3px; min-width: 0; }
+  .cm-title::placeholder { color: var(--tm); }
+  .cm-x { width: 34px; height: 34px; border: none; background: var(--s2); color: var(--ts); border-radius: 50%; cursor: pointer; flex: none; transition: background var(--dur-micro) var(--ease-out); }
+  .cm-x:hover { background: var(--s3); }
+  .cm-field { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 600; color: var(--ts); margin-bottom: 16px; }
+  .cm-field .ic { color: var(--tm); }
+  .cm-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tag { height: 27px; padding: 0 12px; border-radius: 13.5px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; cursor: pointer; transition: transform var(--dur-micro) var(--ease-out); }
+  .tag:active { transform: scale(.95); }
+  .tag-purple { background: var(--tag-purple-bg); color: var(--tag-purple); }
+  .tag-coral { background: var(--tag-coral-bg); color: var(--tag-coral); }
+  .tag-mint { background: var(--tag-mint-bg); color: var(--tag-mint); }
+  .cm-label { font-size: 12px; font-weight: 700; color: var(--tm); margin-bottom: 8px; }
+  .cm-custom-dur { display: none; align-items: center; gap: 8px; margin-top: 8px; }
+  .cm-custom-dur.show { display: flex; }
+  .cm-custom-dur input {
+    width: 84px; height: 40px; font: inherit; font-size: 14px; font-weight: 700; color: var(--tp); text-align: center;
+    border: none; border-radius: 12px; background: var(--s2); -moz-appearance: textfield;
+  }
+  .cm-custom-dur input::-webkit-outer-spin-button, .cm-custom-dur input::-webkit-inner-spin-button { margin: 0; }
+  .cm-custom-dur span { font-size: 13px; color: var(--ts); font-weight: 600; }
+  .cmodal .invite { margin: 4px 0 8px; }
+  .cmodal .invite-hint { margin-bottom: 18px; }
+  .cm-cta {
+    width: 100%; height: 52px; border: none; border-radius: 26px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+  }
+  .cm-cta:hover { box-shadow: var(--shadow-card); }
+  .cm-cta:active { transform: scale(.98); }
+  .cm-cta .ic { transition: transform var(--dur-micro) var(--ease-out); }
+  .cm-cta:hover .ic { transform: translate(1px,-1px) rotate(8deg); }
+
+  /* ══ 팀원 추가 세로 피커 (참고 이미지2 — 의도적으로 다크 톤 고정) ══ */
+  .pscrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; display: flex;
+    align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out);
+  }
+  .pscrim.show { opacity: 1; pointer-events: auto; }
+  .prail {
+    width: 68px; background: #17171A; border-radius: 34px; padding: 14px 0; display: flex; flex-direction: column;
+    align-items: center; gap: 10px; transform: translateY(10px); opacity: 0; transition: transform var(--dur-enter) var(--ease-spring), opacity var(--dur-enter) var(--ease-out);
+  }
+  .pscrim.show .prail { transform: translateY(0); opacity: 1; }
+  .pr-x, .pr-add {
+    width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
+  }
+  .pr-x { background: var(--tag-purple); color: #fff; }
+  .pr-x:hover, .pr-add:hover { transform: scale(1.08); }
+  .pr-add { background: #2C2C30; color: #B8B8BE; }
+  .pr-avs { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+  .pr-av {
+    width: 44px; height: 44px; border-radius: 50%; position: relative; cursor: pointer; overflow: visible;
+    border: 2.5px solid transparent; transition: border-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .pr-av:hover { transform: scale(1.06); }
+  .pr-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+  .pr-av.on { border-color: var(--accent); }
+  .pr-av .chk {
+    position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); border: 2.5px solid #17171A; display: none; align-items: center; justify-content: center;
+    color: #fff; font-size: 10px; font-weight: 900;
+  }
+  .pr-av.on .chk { display: flex; }
 
   /* responsive */
   @media (max-width: 900px) {
@@ -374,32 +506,14 @@
       <div class="privacy-note">팀원의 사정은 그대로 보이지 않아요. ‘조금 어려운 시간’으로만 표시돼요.</div>
     </div>
 
-    <!-- 회의 잡기 (ToDoTimeline "Add new list" 스타일) -->
-    <div class="block" id="createBlock">
-      <div class="create-h"><span class="t">회의 잡기</span></div>
-      <div class="field">
-        <label>회의 이름</label>
-        <div class="inp"><input id="mName" value="팀 킥오프" /></div>
-      </div>
-      <div class="field">
-        <label>날짜</label>
-        <div class="inp"><svg class="ic sm"><use href="#i-cal"/></svg><input id="mDate" value="7월 13일 – 17일 중" /></div>
-      </div>
-      <div class="field">
-        <label>길이</label>
-        <div class="dur-seg">
-          <button onclick="setDur(this,'30분')">30분</button>
-          <button class="on" onclick="setDur(this,'1시간')">1시간</button>
-          <button onclick="setDur(this,'1시간 30분')">1시간 반</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>사람 초대 · 톡하면 ‘꼭 참석’</label>
-        <div class="invite" id="invite"></div>
-        <p class="invite-hint">파란 점이 붙은 사람은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
-      </div>
-      <button class="submit" onclick="createMeeting()"><svg class="ic sm" style="stroke:#fff"><use href="#i-sparkle"/></svg>되는 시간 찾기</button>
-    </div>
+    <!-- 회의 잡기 트리거 (누르면 모달로 펼쳐짐) -->
+    <button class="block create-trigger" id="createTrigger" onclick="openCreate('search')">
+      <span class="ct-plus"><svg class="ic sm"><use href="#i-plus"/></svg></span>
+      <span class="ct-txt">
+        <span class="ct-t">회의 잡기</span>
+        <span class="ct-s">참석자를 고르면 되는 시간을 찾아드려요</span>
+      </span>
+    </button>
 
     <!-- AI 추천 -->
     <div class="reco-wrap" id="recoWrap">
@@ -440,17 +554,71 @@
   </div>
 </div>
 
+<!-- 회의 만들기 모달 — 레일 +, 빈 셀 +, 사이드바 '회의 잡기' 버튼이 전부 여길 연다 -->
+<div class="cscrim" id="createScrim" onclick="if(event.target===this)closeCreate()">
+  <div class="cmodal" id="createModal">
+    <div class="cm-head">
+      <input class="cm-title" id="mName" value="팀 킥오프" placeholder="회의 이름" />
+      <button class="cm-x" onclick="closeCreate()" aria-label="닫기">✕</button>
+    </div>
+    <div class="cm-field"><svg class="ic sm"><use href="#i-cal"/></svg><span id="cmDateTxt">7월 13일 – 17일 중</span></div>
+
+    <div class="cm-tags">
+      <span class="tag tag-purple">디자인</span>
+      <span class="tag tag-coral">기획</span>
+      <span class="tag tag-mint">개발</span>
+    </div>
+
+    <div class="cm-label">길이</div>
+    <div class="dur-seg" id="durSeg">
+      <button onclick="setDur(this,30)">30분</button>
+      <button class="on" onclick="setDur(this,60)">1시간</button>
+      <button onclick="setDur(this,90)">1시간 반</button>
+      <button onclick="setDur(this,-1)">직접 설정</button>
+    </div>
+    <div class="cm-custom-dur" id="customDur">
+      <input type="number" id="customDurInput" min="15" max="240" step="15" value="45" oninput="onCustomDur(this.value)" /><span>분</span>
+    </div>
+
+    <div class="cm-label">참석자 · 톡하면 ‘꼭 참석’</div>
+    <div class="invite" id="invite"></div>
+    <p class="invite-hint">파란 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
+
+    <button class="cm-cta" id="cmCta" onclick="createMeeting()">
+      <svg class="ic sm" style="stroke:#fff"><use href="#i-sparkle"/></svg><span id="cmCtaTxt">되는 시간 찾기</span>
+    </button>
+  </div>
+</div>
+
+<!-- 팀원 추가 세로 피커 -->
+<div class="pscrim" id="pickerScrim" onclick="if(event.target===this)closePicker()">
+  <div class="prail">
+    <button class="pr-x" onclick="closePicker()" aria-label="닫기">✕</button>
+    <div class="pr-avs" id="prAvs"></div>
+    <button class="pr-add" onclick="pickerAddMore()" aria-label="더 추가"><svg class="ic sm"><use href="#i-plus"/></svg></button>
+  </div>
+</div>
+
 <script>
 const DAYS = [["월",13],["화",14],["수",15],["목",16],["금",17]];
 const HOURS = [9,10,11,12,13,14,15,16,17];
+function fmtH(h){ return h>=12 ? "오후 "+(h===12?12:h-12)+"시" : "오전 "+h+"시"; }
 const EVENTS = [
   {d:0,h:9,t:"위클리 스크럼",who:"나",mine:1},{d:0,h:10,t:"디자인 크리틱",who:"나",mine:1},
-  {d:0,h:14,t:"외근",who:"준호"},{d:1,h:9,t:"1:1",who:"서연"},{d:1,h:11,t:"전사 타운홀",who:"전원"},
-  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1},{d:2,h:9,t:"분석 리뷰",who:"민지"},
+  {d:0,h:14,t:"외근",who:"준호",c:"coral"},{d:1,h:9,t:"1:1",who:"서연",c:"purple"},{d:1,h:11,t:"전사 타운홀",who:"전원",c:"mint"},
+  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1},{d:2,h:9,t:"분석 리뷰",who:"민지",c:"mint"},
   {d:3,h:10,t:"외근 · 고객사",who:"나",mine:1},{d:3,h:11,t:"외근 · 고객사",who:"나",mine:1},
-  {d:4,h:13,t:"외부 미팅",who:"나",mine:1},{d:4,h:15,t:"CX 위클리",who:"하은"}
+  {d:4,h:13,t:"외부 미팅",who:"나",mine:1},{d:4,h:15,t:"CX 위클리",who:"하은",c:"coral"}
 ];
-const PEOPLE = [["지","김지민","#387AFF",1],["준","박준호","#5A8DFF",1],["서","이서연","#7C6BF0",1],["민","최민지","#4FB6A8",0],["도","정도윤","#E8927C",0],["하","한하은","#D9A03C",0]];
+const PEOPLE = [
+  ["지","김지민","#387AFF",1,"https://i.pravatar.cc/96?img=12"],
+  ["준","박준호","#5A8DFF",1,"https://i.pravatar.cc/96?img=52"],
+  ["서","이서연","#7C6BF0",1,"https://i.pravatar.cc/96?img=47"],
+  ["민","최민지","#4FB6A8",0,"https://i.pravatar.cc/96?img=25"],
+  ["도","정도윤","#E8927C",0,"https://i.pravatar.cc/96?img=33"],
+  ["하","한하은","#D9A03C",0,"https://i.pravatar.cc/96?img=44"],
+];
+function avImg(p){ return `<img src="${p[4]}" alt="${p[1]}" loading="lazy" onerror="this.remove()" />`; }
 const RECOS = [
   {id:0,d:1,h:14,label:"화요일 오후 2시",chip:"준호 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:1,adjName:"준호"},
   {id:1,d:2,h:11,label:"수요일 오전 11시",chip:"민지 님 없이면 지금도 가능해요",meta:"1시간 · 5명 · 민지 님에겐 요약 전달",adjWho:3,adjName:"민지"},
@@ -460,12 +628,16 @@ const RECOS = [
 /* grid */
 const grid = document.getElementById("grid");
 document.getElementById("dayhead").innerHTML = "<div></div>" + DAYS.map(d=>`<div class="dh"><div class="dow">${d[0]}</div><div class="dnum">${d[1]}</div></div>`).join("");
+function cellAddInner(){ return `<div class="cell-add" aria-hidden="true"><svg class="ic"><use href="#i-plus"/></svg></div>`; }
 let g = "";
 HOURS.forEach(h=>{
   g += `<div class="tl">${h>=12?"오후 "+(h===12?12:h-12):"오전 "+h}시</div>`;
   DAYS.forEach((_,d)=>{
     const ev = EVENTS.find(e=>e.d===d&&e.h===h);
-    g += `<div class="cell" id="c-${d}-${h}">${ev?`<div class="evt${ev.mine?" mine":""}"><span>${ev.t}</span><span class="who">${ev.who}</span></div>`:""}</div>`;
+    const cls = ev ? "cell" : "cell empty";
+    const click = ev ? "" : ` onclick="openCreate('direct',${d},${h})"`;
+    const evCls = ev ? (ev.mine ? " mine" : ev.c ? " c-"+ev.c : "") : "";
+    g += `<div class="${cls}" id="c-${d}-${h}"${click}>${ev?`<div class="evt${evCls}"><span>${ev.t}</span><span class="who">${ev.who}</span></div>`:cellAddInner()}</div>`;
   });
 });
 grid.innerHTML = g;
@@ -476,27 +648,96 @@ let mt = "<tr>" + ["일","월","화","수","목","금","토"].map(d=>`<th>${d}</
 for (let w=0; w<5; w++){ mt += "<tr>"; for (let i=0;i<7;i++){ const [n,s]=mc[w*7+i]; let cls=s===0?"out":s===2?"today":s===3?"sel":""; if(s===3){ const idx=w*7+i; if(mc[idx-1]?.[1]!==3)cls+=" f"; if(mc[idx+1]?.[1]!==3)cls+=" l"; } mt += `<td class="${cls}"><span>${n}</span></td>`; } mt += "</tr>"; }
 document.getElementById("miniCal").innerHTML = mt;
 
-/* invite avatars */
-document.getElementById("invite").innerHTML = PEOPLE.map((p,i)=>`<span class="iav${p[3]?" req-on":""}" id="iav-${i}" style="background:${p[2]}" onclick="toggleReq(${i})" title="${p[1]}">${p[0]}<span class="req"></span></span>`).join("") + `<span class="iav add"><svg class="ic sm"><use href="#i-plus"/></svg></span>`;
+/* invite avatars (모달 안, 참석자 피커와 상태 공유) */
+document.getElementById("invite").innerHTML = PEOPLE.map((p,i)=>`<span class="iav${p[3]?" req-on":""}" id="iav-${i}" style="background:${p[2]}" onclick="toggleReq(${i})" title="${p[1]}">${avImg(p)}${p[0]}<span class="req">✓</span></span>`).join("") + `<span class="iav add" onclick="openPicker()" title="팀원 추가"><svg class="ic sm"><use href="#i-plus"/></svg></span>`;
 let reqState = PEOPLE.map(p=>p[3]);
 function toggleReq(i){ reqState[i]=!reqState[i]; document.getElementById("iav-"+i).classList.toggle("req-on", reqState[i]); }
-function setDur(b){ document.querySelectorAll(".dur-seg button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); }
 
-/* create → reco */
+/* 길이: 프리셋 칩 + 직접 설정 */
+let currentDurMin = 60;
+function setDur(b, min){
+  document.querySelectorAll(".dur-seg button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  const custom = document.getElementById("customDur");
+  if (min === -1) { custom.classList.add("show"); currentDurMin = +document.getElementById("customDurInput").value || 45; }
+  else { custom.classList.remove("show"); currentDurMin = min; }
+}
+function onCustomDur(v){ currentDurMin = Math.max(15, +v || 45); }
+function durLabel(){ return currentDurMin >= 60 ? (currentDurMin%60===0 ? `${currentDurMin/60}시간` : `${Math.floor(currentDurMin/60)}시간 ${currentDurMin%60}분`) : `${currentDurMin}분`; }
+
+/* ══ 회의 만들기 모달 — 레일 +, 빈 셀 +, 사이드바 버튼이 전부 이걸 연다 ══ */
+let createMode = "search", createDay = null, createHour = null;
+function openCreate(mode, day, hour){
+  createMode = mode; createDay = day; createHour = hour;
+  document.getElementById("cmDateTxt").textContent = mode === "direct"
+    ? `${DAYS[day][0]}요일 ${fmtH(hour)}` : "7월 13일 – 17일 중";
+  document.getElementById("cmCtaTxt").textContent = mode === "direct" ? "이 시간으로 잡기" : "되는 시간 찾기";
+  document.getElementById("createScrim").classList.add("show");
+}
+function closeCreate(){ document.getElementById("createScrim").classList.remove("show"); }
+
+/* create → reco(검색 모드) 또는 즉시 배치(직접 모드) */
 function createMeeting(){
-  document.getElementById("createBlock").style.display = "none";
+  closeCreate();
+  if (createMode === "direct") { placeDirect(createDay, createHour); return; }
+  document.getElementById("createTrigger").style.display = "none";
   const w = document.getElementById("recoWrap"); w.classList.add("show");
   renderRecos();
   toast("모두 되는 시간이 없어서, 조정하면 되는 시간을 찾았어요", "", null);
   w.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 function resetCreate(){
-  document.getElementById("createBlock").style.display = "block";
+  document.getElementById("createTrigger").style.display = "";
   const w = document.getElementById("recoWrap"); w.classList.remove("show");
   document.getElementById("recoList").innerHTML = "";
   document.querySelectorAll(".vcard").forEach(v=>v.remove());
   placedState = {};
 }
+
+/* 빈 셀을 직접 클릭해 바로 잡기 — 검색 없이 그 시간으로 확정, 참석자에게 실시간 투표 */
+let directTimers = [];
+function placeDirect(day, hour){
+  const cell = document.getElementById(`c-${day}-${hour}`);
+  if (!cell || cell.querySelector(".vcard")) return;
+  const title = document.getElementById("mName").value.trim() || "회의";
+  const attendees = PEOPLE.map((_,i)=>i).filter(i=>reqState[i]);
+  cell.classList.remove("empty"); cell.removeAttribute("onclick"); cell.querySelector(".cell-add")?.remove();
+  const v = document.createElement("div"); v.className = "vcard"; v.id = "vc-direct";
+  v.innerHTML = `${title}<div class="mini-dots">${attendees.map(()=>"<i></i>").join("")}</div>`;
+  cell.appendChild(v); cell.classList.add("flash");
+  toast(`${attendees.length}분에게 물어볼게요 · ${durLabel()}`, "실행 취소", undoDirect);
+  directTimers.forEach(clearTimeout); directTimers = [];
+  attendees.forEach((_,k)=>{
+    directTimers.push(setTimeout(()=>{
+      const dots = v.querySelectorAll(".mini-dots i");
+      if (dots[k]) dots[k].className = "g";
+      if (k === attendees.length-1) directTimers.push(setTimeout(()=>{
+        v.classList.add("confirmed");
+        toast("확정됐어요. 모두의 캘린더에 등록해 뒀어요", "", null);
+      }, 500));
+    }, 700 + k*550));
+  });
+}
+function undoDirect(){
+  directTimers.forEach(clearTimeout); directTimers = [];
+  const v = document.getElementById("vc-direct");
+  if (v) {
+    const cell = v.parentElement; v.remove();
+    cell.classList.add("empty"); cell.setAttribute("onclick", `openCreate('direct',${cell.id.split("-")[1]},${cell.id.split("-")[2]})`);
+    cell.insertAdjacentHTML("beforeend", cellAddInner());
+  }
+  hideToast();
+}
+
+/* ══ 팀원 추가 세로 피커 — invite 아바타와 같은 reqState를 공유 ══ */
+function renderPicker(){
+  document.getElementById("prAvs").innerHTML = PEOPLE.map((p,i)=>`
+    <span class="pr-av${reqState[i]?" on":""}" id="pr-av-${i}" onclick="pickerToggle(${i})" title="${p[1]}">${avImg(p)}<span class="chk">✓</span></span>`).join("");
+}
+function openPicker(){ renderPicker(); document.getElementById("pickerScrim").classList.add("show"); }
+function closePicker(){ document.getElementById("pickerScrim").classList.remove("show"); }
+function pickerToggle(i){ toggleReq(i); document.getElementById("pr-av-"+i).classList.toggle("on", reqState[i]); }
+function pickerAddMore(){ toast("이 팀엔 6명이 전부예요", "", null); }
 function renderRecos(){
   const list = document.getElementById("recoList"); list.innerHTML = "";
   RECOS.forEach((r,i)=>{
@@ -507,7 +748,7 @@ function renderRecos(){
       <div class="tm-row"><svg class="ic"><use href="#i-cal"/></svg><div class="tm">${r.label}</div></div>
       <div class="meta"><svg class="ic"><use href="#i-clock"/></svg>${r.meta}</div>
       <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
-      <div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="r${r.id}-av-${i}">${p[0]}<span class="st">✓</span></span>`).join("")}</div>
+      <div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="r${r.id}-av-${i}">${avImg(p)}${p[0]}<span class="st">✓</span></span>`).join("")}</div>
       <div class="suggest" id="sg-${r.id}"><span class="q">💬 <b>${r.adjName}</b>: 30분 뒤면 가능해요</span><button onclick="applyShift(${r.id})">30분 뒤로 옮기기</button></div>
       <div class="hint">끌어서 캘린더에 놓거나, 카드를 탭하세요</div>`;
     list.appendChild(el);
@@ -651,12 +892,19 @@ function sendOffset(){ document.getElementById("offset").classList.remove("show"
 const q = new URLSearchParams(location.search);
 function applyTheme(t){ document.body.setAttribute("data-theme", t==="dark"?"dark":"light"); }
 applyTheme(q.get("theme"));
-window.addEventListener("message", e=>{ if(e.data?.theme) applyTheme(e.data.theme); });
+window.addEventListener("message", e=>{
+  if(e.data?.theme) applyTheme(e.data.theme);
+  if(e.data?.openCreate) openCreate("search");
+});
 const demo = q.get("demo");
 if (demo==="reco"){ createMeeting(); }
 else if (demo==="voting"){ createMeeting(); tapPlace(0); }
 else if (demo==="confirmed"){ createMeeting(); tapPlace(0); setTimeout(()=>{ placedState[0].timers.forEach(clearTimeout); [0,2,3,5].slice(0,4).forEach((w,k)=>vote(0,w,"yes",k)); vote(0,1,"adj",4); applyShift(0); placedState[0].timers.forEach(clearTimeout); vote(0,4,"yes",5); confirmCard(0); hideToast(); }, 150); }
 else if (demo==="sheet"){ openSheet(); }
+else if (demo==="create"){ openCreate("search"); }
+else if (demo==="direct"){ openCreate("direct",1,13); }
+else if (demo==="picker"){ openPicker(); }
+else if (demo==="placed"){ placeDirect(1,13); }
 </script>
 </body>
 </html>
