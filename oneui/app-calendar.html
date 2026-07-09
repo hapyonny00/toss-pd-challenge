@@ -740,7 +740,7 @@ function renderPicker(){
   document.getElementById("prAvs").innerHTML = PEOPLE.map((p,i)=>`
     <span class="pr-av${reqState[i]?" on":""}" id="pr-av-${i}" onclick="pickerToggle(${i})" title="${p[1]}">${avImg(p)}<span class="chk">✓</span></span>`).join("");
 }
-function openPicker(){ renderPicker(); document.getElementById("pickerScrim").classList.add("show"); }
+function openPicker(){ closeCreate(); renderPicker(); document.getElementById("pickerScrim").classList.add("show"); }
 function closePicker(){ document.getElementById("pickerScrim").classList.remove("show"); }
 function pickerToggle(i){ toggleReq(i); document.getElementById("pr-av-"+i).classList.toggle("on", reqState[i]); }
 function pickerAddMore(){ toast("이 팀엔 6명이 전부예요", "", null); }
@@ -921,6 +921,7 @@ else if (demo==="sheet"){ openSheet(); }
 else if (demo==="create"){ openCreate("search"); }
 else if (demo==="direct"){ openCreate("direct",1,13); }
 else if (demo==="picker"){ openPicker(); }
+else if (demo==="picker-over-create"){ openCreate("search"); openPicker(); }
 else if (demo==="placed"){ placeDirect(1,13); }
 else if (demo==="hl"){ createMeeting(); highlightSlot(1,14,true); }
 </script>
