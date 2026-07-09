@@ -121,10 +121,12 @@
   .aside { width: 372px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
   .aside::-webkit-scrollbar { width: 0; }
   .search {
-    display: flex; align-items: center; gap: 10px; height: 52px; background: var(--s1);
-    border-radius: 26px; padding: 0 18px; color: var(--tm);
+    display: flex; align-items: center; gap: 10px; height: 64px; background: var(--s1);
+    border-radius: 26px; padding: 0 20px; color: var(--tm);
+    transition: box-shadow var(--dur-ui) var(--ease-out);
   }
-  .search input { flex: 1; border: none; background: none; font: inherit; font-size: 14px; color: var(--tp); }
+  .search:focus-within { box-shadow: inset 0 0 0 1.5px var(--accent); }
+  .search input { flex: 1; border: none; background: none; font: inherit; font-size: 15px; color: var(--tp); height: 100%; }
   .search input::placeholder { color: var(--tm); }
 
   .block { background: var(--s1); border-radius: 26px; padding: 20px; }
@@ -141,6 +143,31 @@
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
   table.mini td.sel.f span { border-radius: 15px 0 0 15px; }
   table.mini td.sel.l span { border-radius: 0 15px 15px 0; }
+
+  /* 내 캘린더 (gcal-prototype에서 병합) */
+  .mycal-row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; font-size: 13.5px; font-weight: 500; }
+  .mycal-row .cb { width: 15px; height: 15px; border-radius: 5px; background: var(--accent); position: relative; flex: none; }
+  .mycal-row .cb.green { background: var(--green); }
+  .mycal-row .cb.gray { background: var(--dash); }
+  .mycal-row .cb::after { content: "✓"; color: #fff; font-size: 10px; font-weight: 700; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+
+  /* 콜드 스타트 제안 카드 — 이전엔 화면 우하단 고정 오버레이였던 것을 사이드바 인라인으로 */
+  .coldcard { background: var(--blue50); border-radius: 18px; padding: 14px 16px; margin-top: 14px; display: none; }
+  .coldcard.show { display: block; animation: recoEnter var(--dur-enter) var(--ease-out); }
+  .coldcard .tag { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--s1); display: inline-block; padding: 3px 9px; border-radius: 7px; margin-bottom: 8px; }
+  .coldcard h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--tp); line-height: 1.4; }
+  .coldcard p { font-size: 12px; color: var(--ts); line-height: 1.55; }
+  .coldcard .acts { display: flex; gap: 8px; margin-top: 12px; }
+  .coldcard .acts button {
+    flex: 1; font: inherit; font-size: 12px; font-weight: 700; border-radius: 11px; padding: 9px 0;
+    cursor: pointer; border: none; transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
+  }
+  .coldcard .acts button:active { transform: scale(.96); }
+  .coldcard .yes { background: var(--accent); color: #fff; }
+  .coldcard .no { background: var(--s1); color: var(--ts); }
+  .coldcard .no:hover { background: var(--s2); }
+
+  .privacy-note { margin-top: 14px; font-size: 11.5px; line-height: 1.6; color: var(--tm); background: var(--s2); border-radius: 14px; padding: 12px 14px; }
 
   /* 회의 잡기 (ToDoTimeline "add new list" style) */
   .create-h { display: flex; align-items: center; margin-bottom: 18px; }
@@ -184,6 +211,13 @@
   .reco-head .t { font-size: 16px; font-weight: 800; }
   .reco-head .badge { min-width: 22px; height: 22px; border-radius: 11px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 7px; }
   .reco-sub { font-size: 12px; color: var(--ts); line-height: 1.55; padding: 0 6px 12px; }
+  .reset-btn {
+    width: 100%; height: 46px; border: none; border-radius: 23px; background: var(--s2); color: var(--ts);
+    font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; margin-top: 4px;
+    transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .reset-btn:hover { background: var(--s3); color: var(--tp); }
+  .reset-btn:active { transform: scale(.98); }
   .reco {
     background: var(--s1); border-radius: 20px; padding: 16px; margin-bottom: 12px; cursor: grab;
     user-select: none; -webkit-user-select: none; touch-action: none;
@@ -199,17 +233,28 @@
   @keyframes recoEnter { from { opacity: 0; transform: translateY(14px); } }
   .reco .chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 13px; background: var(--amber50); color: var(--amber900); font-size: 11.5px; font-weight: 700; margin-bottom: 9px; }
   .reco .chip.ok { background: var(--green50); color: var(--green); }
+  .reco .tm-row { display: flex; align-items: center; gap: 6px; }
+  .reco .tm-row .ic { width: 15px; height: 15px; color: var(--tm); }
   .reco .tm { font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
-  .reco .meta { font-size: 13px; color: var(--ts); font-weight: 500; margin: 3px 0 10px; }
+  .reco .meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ts); font-weight: 500; margin: 3px 0 10px; }
+  .reco .meta .ic { width: 14px; height: 14px; color: var(--tm); flex: none; }
   .dotbar { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
   .dotbar i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--dash); transition: all .18s; }
   .dotbar i.g { background: var(--green400); border-color: var(--green400); animation: dotin .18s ease; }
   .dotbar i.a { background: var(--amber400); border-color: var(--amber400); animation: dotin .18s ease; }
   @keyframes dotin { from { transform: scale(.6); opacity: .4; } }
   .dotbar .cnt { font-size: 12px; color: var(--ts); margin-left: 4px; }
-  .avs { display: flex; gap: 5px; }
-  .av { width: 28px; height: 28px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
-  .av.pending { background: var(--s2); color: var(--tm); border: 1.5px dashed var(--dash); }
+  /* 아바타 스택 — 4번째 참고 이미지의 겹친 아바타 로우 */
+  .avs { display: flex; }
+  .av {
+    width: 28px; height: 28px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; border: 2px solid var(--s1); margin-left: -8px;
+    transition: transform var(--dur-micro) var(--ease-out), margin var(--dur-micro) var(--ease-out);
+  }
+  .av:first-child { margin-left: 0; }
+  .reco:hover .av { margin-left: -3px; }
+  .reco:hover .av:first-child { margin-left: 0; }
+  .av.pending { background: var(--s2); color: var(--tm); border: 2px dashed var(--dash); }
   .av .st { position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-radius: 50%; font-size: 8px; display: none; align-items: center; justify-content: center; color: #fff; border: 1.5px solid var(--s1); }
   .av.yes .st { display: flex; background: var(--green400); }
   .av.adj .st { display: flex; background: var(--amber400); }
@@ -309,6 +354,26 @@
       <table class="mini" id="miniCal"></table>
     </div>
 
+    <!-- 내 캘린더 + 콜드 스타트 제안 (gcal-prototype에서 병합) -->
+    <div class="block">
+      <div class="mini-h"><span class="m">내 캘린더</span></div>
+      <div class="mycal-row"><span class="cb"></span>김지민</div>
+      <div class="mycal-row"><span class="cb green"></span>프로덕트팀</div>
+      <div class="mycal-row"><span class="cb gray"></span>회사 일정</div>
+
+      <div class="coldcard show" id="coldcard">
+        <span class="tag">캘린더를 읽어봤어요</span>
+        <h4>목요일 오전엔 외근이 잦으시네요</h4>
+        <p>외근에서 돌아온 다음 시간은 피해서 회의를 추천해 드릴까요?</p>
+        <div class="acts">
+          <button class="yes" onclick="coldYes()">네, 피해주세요</button>
+          <button class="no" onclick="coldNo()">이번 주는 괜찮아요</button>
+        </div>
+      </div>
+
+      <div class="privacy-note">팀원의 사정은 그대로 보이지 않아요. ‘조금 어려운 시간’으로만 표시돼요.</div>
+    </div>
+
     <!-- 회의 잡기 (ToDoTimeline "Add new list" 스타일) -->
     <div class="block" id="createBlock">
       <div class="create-h"><span class="t">회의 잡기</span></div>
@@ -341,7 +406,7 @@
       <div class="reco-head"><span class="t">✨ AI 추천</span><span class="badge">3</span></div>
       <p class="reco-sub">모두 되는 시간이 없어서, 조금만 조정하면 되는 시간을 찾았어요. 카드를 캘린더로 끌어다 놓으면 바로 물어봐 드릴게요.</p>
       <div id="recoList"></div>
-      <button class="today-btn" style="width:100%;background:var(--s2)" onclick="resetCreate()">다시 만들기</button>
+      <button class="reset-btn" onclick="resetCreate()">다시 만들기</button>
     </div>
   </aside>
 </div>
@@ -439,8 +504,8 @@ function renderRecos(){
     el.style.setProperty("--enter-delay", (i*55)+"ms");
     el.innerHTML = `
       <span class="chip">✨ ${r.chip}</span>
-      <div class="tm">${r.label}</div>
-      <div class="meta">${r.meta}</div>
+      <div class="tm-row"><svg class="ic"><use href="#i-cal"/></svg><div class="tm">${r.label}</div></div>
+      <div class="meta"><svg class="ic"><use href="#i-clock"/></svg>${r.meta}</div>
       <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
       <div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="r${r.id}-av-${i}">${p[0]}<span class="st">✓</span></span>`).join("")}</div>
       <div class="suggest" id="sg-${r.id}"><span class="q">💬 <b>${r.adjName}</b>: 30분 뒤면 가능해요</span><button onclick="applyShift(${r.id})">30분 뒤로 옮기기</button></div>
@@ -559,6 +624,16 @@ function toast(msg, act, fn){
   t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(hideToast, act?5000:2600);
 }
 function hideToast(){ document.getElementById("toast").classList.remove("show"); }
+
+/* 콜드 스타트 제안 (gcal-prototype에서 병합) */
+function coldYes(){
+  document.getElementById("coldcard").classList.remove("show");
+  toast("알겠어요. 목요일 외근 다음 시간은 피해서 추천할게요", "", null);
+}
+function coldNo(){
+  document.getElementById("coldcard").classList.remove("show");
+  toast("이번 주는 그대로 둘게요. 언제든 바꿀 수 있어요", "", null);
+}
 
 function openSheet(){ document.getElementById("scrim").classList.add("show"); resetSheet(); }
 function closeSheet(){ document.getElementById("scrim").classList.remove("show"); }
