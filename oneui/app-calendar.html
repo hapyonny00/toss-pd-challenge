@@ -74,20 +74,21 @@
 
   /* ══ calendar (LEFT) ══ */
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .topbar { display: flex; align-items: center; gap: 12px; padding: 2px 4px 16px; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 18px 20px 16px; border-bottom: 1px solid var(--hair); }
   .topbar .titles h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
   .topbar .titles .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
   .topbar .sp { flex: 1; }
   .navbtns { display: flex; align-items: center; gap: 2px; }
-  .navbtns button, .icobtn {
-    width: 40px; height: 40px; border: none; background: var(--s1); color: var(--tp);
+  .navbtns button {
+    width: 40px; height: 40px; border: none; background: var(--s2); color: var(--tp);
     border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
   }
-  .navbtns button:hover, .icobtn:hover { background: var(--s2); }
-  .navbtns button:active, .icobtn:active, .today-btn:active, .mini-h button:active { transform: scale(.94); }
-  .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s1); color: var(--tp); border-radius: 14px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-  .today-btn:hover, .mini-h button:hover { background: var(--s2); }
+  .navbtns button:hover { background: var(--s3); }
+  .navbtns button:active, .today-btn:active, .mini-h button:active { transform: scale(.94); }
+  .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s2); color: var(--tp); border-radius: 14px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+  .today-btn:hover { background: var(--s3); }
+  .mini-h button:hover { background: var(--s2); }
   /* 회의 잡기 CTA — 참고 카드의 파란 알약형 버튼 스타일을 캘린더 상단으로 */
   .cal-cta {
     display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 18px 0 16px; margin-left: 8px;
@@ -468,22 +469,22 @@
 <div class="app">
   <!-- ══ calendar left ══ -->
   <main class="main">
-    <div class="topbar">
-      <div class="titles">
-        <h1>7월 13–17</h1>
-        <div class="sub">다음 주 · 팀 킥오프 조율 중</div>
-      </div>
-      <span class="sp"></span>
-      <button class="today-btn">오늘</button>
-      <div class="navbtns">
-        <button aria-label="이전 주"><svg class="ic"><use href="#i-chev-l"/></svg></button>
-        <button aria-label="다음 주"><svg class="ic"><use href="#i-chev-r"/></svg></button>
-      </div>
-      <button class="cal-cta" id="calCta" onclick="openCreate('search')">
-        <svg class="ic sm"><use href="#i-plus"/></svg>회의 잡기
-      </button>
-    </div>
     <div class="gridcard">
+      <div class="topbar">
+        <div class="titles">
+          <h1>7월 13–17</h1>
+          <div class="sub">다음 주 · 팀 킥오프 조율 중</div>
+        </div>
+        <span class="sp"></span>
+        <button class="today-btn">오늘</button>
+        <div class="navbtns">
+          <button aria-label="이전 주"><svg class="ic"><use href="#i-chev-l"/></svg></button>
+          <button aria-label="다음 주"><svg class="ic"><use href="#i-chev-r"/></svg></button>
+        </div>
+        <button class="cal-cta" id="calCta" onclick="openCreate('search')">
+          <svg class="ic sm"><use href="#i-plus"/></svg>회의 잡기
+        </button>
+      </div>
       <div class="dayhead" id="dayhead"></div>
       <div class="gwrap"><div class="grid" id="grid"></div></div>
     </div>
@@ -910,6 +911,7 @@ applyTheme(q.get("theme"));
 window.addEventListener("message", e=>{
   if(e.data?.theme) applyTheme(e.data.theme);
   if(e.data?.openCreate) openCreate("search");
+  if(e.data?.openPicker) openPicker();
 });
 const demo = q.get("demo");
 if (demo==="reco"){ createMeeting(); }
