@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    --accent: #387AFF; --accent-press: #2E6FF2;
+    --accent: #1F88FF; --accent-press: #1A7AF0;
     --blue50: #EAF1FF; --blue100: #C9DCFF; --blue700: #1B57D6;
     --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
     --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
@@ -38,12 +38,13 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #5A8DFF; --accent-press: #387AFF;
-    --blue50: #12233F; --blue100: #1B3560; --blue700: #9CBEFF;
+    --accent: #3D92FF; --accent-press: #1F88FF;
+    --blue50: #14263F; --blue100: #1D3A63; --blue700: #9CBEFF;
     --amber50: #3A2E14; --amber900: #FFB43A; --green50: #0C3F23;
-    --base: #000000; --s1: #1B1B1D; --s2: #242427; --s3: #2C2C30;
+    /* 다크 네이비 베이스(#0d111b) — 순검정 대신 깊은 남색 톤으로 눈부심 없이 */
+    --base: #0D111B; --s1: #151C2B; --s2: #1C2436; --s3: #253048;
     --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #2C2C30; --dash: #616166; --drop-tint: #12233F;
+    --hair: #232D42; --dash: #616166; --drop-tint: #14263F;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
 
@@ -89,15 +90,26 @@
   .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s2); color: var(--tp); border-radius: 14px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
   .today-btn:hover { background: var(--s3); }
   .mini-h button:hover { background: var(--s2); }
-  /* 회의 잡기 CTA — 참고 카드의 파란 알약형 버튼 스타일을 캘린더 상단으로 */
-  .cal-cta {
-    display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 18px 0 16px; margin-left: 8px;
-    border: none; border-radius: 20px; background: var(--accent); color: #fff; font: inherit; font-size: 13.5px; font-weight: 700;
-    cursor: pointer; transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+
+  /* ══ 고정형 바텀 버튼 — 캘린더 뷰 하단에 항상 노출되는 주 CTA ══ */
+  .bottombar { flex: none; padding-top: 12px; }
+  .bottom-cta {
+    width: 100%; height: 54px; border: none; border-radius: 18px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 15.5px; font-weight: 800; letter-spacing: -.2px;
+    display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+    transition: transform var(--dur-micro) var(--ease-out), background var(--dur-ui) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
   }
-  .cal-cta .ic { stroke: #fff; }
-  .cal-cta:hover { box-shadow: var(--shadow-card); }
-  .cal-cta:active { transform: scale(.96); }
+  .bottom-cta .ic { stroke: #fff; }
+  .bottom-cta:hover { box-shadow: var(--shadow-card); }
+  .bottom-cta:active { transform: scale(.985); }
+  /* 날짜를 고르면 링 펄스로 "다음 행동은 나" 라고 말하는 활성 상태 */
+  .bottom-cta.armed { animation: armPulse 1.5s var(--ease-out) infinite; }
+  @keyframes armPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+  /* 확정 완료 변형(Variant) — 같은 버튼이 결과 상태까지 책임진다 */
+  .bottom-cta.done { background: var(--green); animation: none; }
+  @media (max-width: 900px) {
+    .bottombar { position: sticky; bottom: 0; z-index: 60; padding: 10px 0 6px; background: var(--base); }
+  }
 
   /* gridcard: 1px 내부 하이라이트로 은은한 깊이 (One UI 방식 — 블러/글래스 없이 표면 명도만으로) */
   .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 0 0 1px var(--hair); }
@@ -123,6 +135,52 @@
   .evt.c-coral { background: var(--tag-coral-bg); color: var(--tag-coral); }
   .evt.c-mint { background: var(--tag-mint-bg); color: var(--tag-mint); }
   .evt.c-purple .who, .evt.c-coral .who, .evt.c-mint .who { color: inherit; opacity: .7; }
+  /* 일정 카드 안 아바타 스택 — 누가 오는지 카드에서 바로 보이게 (3명 + 남은 인원 배지) */
+  .ev-avs { position: absolute; right: 6px; bottom: 5px; display: flex; }
+  .ev-av {
+    width: 16px; height: 16px; border-radius: 50%; margin-left: -5px; flex: none; overflow: hidden;
+    border: 1.5px solid var(--s1); background: var(--s2);
+  }
+  .ev-av:first-child { margin-left: 0; }
+  .ev-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ev-av.more {
+    overflow: visible; display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 800; color: var(--ts); background: var(--s2);
+  }
+  .evt.mine .ev-av { border-color: var(--accent); }
+  .evt.mine .ev-av.more { background: rgba(255,255,255,.28); color: #fff; }
+
+  /* ══ 일정 호버 툴팁 — 상세 의제·메타·화상회의 CTA가 카드 아래로 확장 ══ */
+  .evtip {
+    position: absolute; top: calc(100% + 4px); left: 2px; width: 236px; z-index: 40;
+    background: var(--s1); border-radius: 18px; padding: 15px 16px; box-shadow: var(--shadow-float);
+    border: 1px solid var(--hair); cursor: default; text-align: left;
+    opacity: 0; pointer-events: none; transform: translateY(-5px);
+    transition: opacity var(--dur-ui) var(--ease-out), transform var(--dur-ui) var(--ease-out);
+  }
+  .evtip.left { left: auto; right: 2px; }
+  .evtip.up { top: auto; bottom: calc(100% + 4px); transform: translateY(5px); }
+  .cell.has-ev:hover .evtip { opacity: 1; pointer-events: auto; transform: none; transition-delay: .18s; }
+  .tt-k { font-size: 11px; font-weight: 600; color: var(--tm); margin-bottom: 3px; }
+  .tt-t { font-size: 16px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 10px; }
+  .tt-avrow { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .tt-avs { display: flex; }
+  .tt-av { width: 22px; height: 22px; border-radius: 50%; margin-left: -7px; flex: none; overflow: hidden; border: 2px solid var(--s1); background: var(--s2); }
+  .tt-av:first-child { margin-left: 0; }
+  .tt-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tt-av.more { overflow: visible; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--ts); }
+  .tt-time { font-size: 11.5px; font-weight: 700; color: var(--ts); background: var(--s2); border-radius: 9px; padding: 3px 8px; }
+  .tt-agenda { font-size: 12px; color: var(--ts); line-height: 1.5; padding-bottom: 10px; border-bottom: 1px solid var(--hair); }
+  .tt-meta { display: flex; gap: 12px; padding: 9px 0 11px; font-size: 11.5px; font-weight: 600; color: var(--tm); }
+  .tt-join {
+    width: 100%; height: 40px; border: none; border-radius: 14px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
+  }
+  .tt-join .ic { stroke: #fff; }
+  .tt-join:hover { background: var(--accent-press); }
+  .tt-join:active { transform: scale(.97); }
   .dropmode .cell.valid { background: var(--drop-tint); cursor: copy; }
   .dropmode .evt { filter: saturate(.55); opacity: .5; }
   .cell.near { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 12px; }
@@ -171,6 +229,8 @@
   table.mini td.out span { color: var(--tm); opacity: .5; }
   table.mini td.today span { background: var(--accent); color: #fff; font-weight: 700; }
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
+  table.mini td:not(.out) { cursor: pointer; }
+  table.mini td.picked span { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 50% !important; color: var(--accent); font-weight: 700; }
   table.mini td.sel.f span { border-radius: 15px 0 0 15px; }
   table.mini td.sel.l span { border-radius: 0 15px 15px 0; }
 
@@ -287,6 +347,10 @@
   .dotbar i.a { background: var(--amber400); border-color: var(--amber400); animation: dotin .18s ease; }
   @keyframes dotin { from { transform: scale(.6); opacity: .4; } }
   .dotbar .cnt { font-size: 12px; color: var(--ts); margin-left: 4px; }
+  /* 투표 진척도 바 — 답이 모일수록 실시간으로 차오른다 */
+  .pbar { height: 4px; border-radius: 2px; background: var(--s2); margin-bottom: 10px; overflow: hidden; }
+  .pbar i { display: block; height: 100%; width: 0; border-radius: 2px; background: var(--accent); transition: width .45s var(--ease-out); }
+  .pbar i.full { background: var(--green400); }
   /* 아바타 스택 — 4번째 참고 이미지의 겹친 아바타 로우 */
   .avs { display: flex; }
   .av {
@@ -358,18 +422,6 @@
   .cell.empty:hover .cell-add { opacity: 1; pointer-events: auto; background: var(--blue50); border-color: var(--accent); color: var(--accent); }
   .cell-add .ic { width: 16px; height: 16px; }
 
-  /* ══ 회의 잡기 트리거 버튼 (사이드바) ══ */
-  .create-trigger {
-    display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer;
-    border: 1.5px dashed var(--dash); background: var(--s1); transition: border-color var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
-  }
-  .create-trigger:hover { border-color: var(--accent); background: var(--blue50); }
-  .ct-plus { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
-  .ct-plus .ic { stroke: #fff; }
-  .ct-txt { display: flex; flex-direction: column; gap: 2px; }
-  .ct-t { font-size: 15px; font-weight: 700; color: var(--tp); }
-  .ct-s { font-size: 12px; color: var(--ts); }
-
   /* ══ 회의 만들기 모달 ══ */
   .cscrim {
     position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 140; display: flex;
@@ -414,16 +466,18 @@
   .cm-cta:hover .ic { transform: translate(1px,-1px) rotate(8deg); }
 
   /* ══ 팀원 추가 세로 피커 (참고 이미지2 — 의도적으로 다크 톤 고정) ══ */
+  /* 화면 왼쪽 레일 옆에 붙어 슬라이드-인 — Nav Rail의 연장선처럼 보이는 위치 */
   .pscrim {
     position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; display: flex;
-    align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out);
+    align-items: center; justify-content: flex-start; padding-left: 20px;
+    opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out);
   }
   .pscrim.show { opacity: 1; pointer-events: auto; }
   .prail {
     width: 68px; background: #17171A; border-radius: 34px; padding: 14px 0; display: flex; flex-direction: column;
-    align-items: center; gap: 10px; transform: translateY(10px); opacity: 0; transition: transform var(--dur-enter) var(--ease-spring), opacity var(--dur-enter) var(--ease-out);
+    align-items: center; gap: 10px; transform: translateX(-18px); opacity: 0; transition: transform var(--dur-enter) var(--ease-spring), opacity var(--dur-enter) var(--ease-out);
   }
-  .pscrim.show .prail { transform: translateY(0); opacity: 1; }
+  .pscrim.show .prail { transform: translateX(0); opacity: 1; }
   .pr-x, .pr-add {
     width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center; transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
@@ -446,6 +500,35 @@
   }
   .pr-av.on .chk { display: flex; }
 
+  /* ══ 화상회의 룸 — 툴팁 CTA 클릭 시 원클릭 입장하는 가상 미팅 룸 ══ */
+  .mscrim {
+    position: fixed; inset: 0; background: rgba(5,8,15,.72); z-index: 160; display: flex;
+    align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out);
+  }
+  .mscrim.show { opacity: 1; pointer-events: auto; }
+  .meet {
+    width: min(600px, calc(100vw - 40px)); background: #0D111B; border-radius: 26px; padding: 20px 20px 18px;
+    border: 1px solid #232D42; transform: scale(.96); opacity: 0; transition: transform var(--dur-enter) var(--ease-spring), opacity var(--dur-enter) var(--ease-out);
+  }
+  .mscrim.show .meet { transform: scale(1); opacity: 1; }
+  .m-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; color: #fff; font-size: 15px; font-weight: 800; }
+  .m-live { font-size: 10.5px; font-weight: 800; color: #FF6B6E; background: rgba(255,107,110,.14); border-radius: 8px; padding: 3px 8px; letter-spacing: .5px; }
+  .m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .m-tile { position: relative; aspect-ratio: 4/3; border-radius: 14px; overflow: hidden; background: #1C2436; }
+  .m-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .m-tile span {
+    position: absolute; left: 7px; bottom: 6px; font-size: 10.5px; font-weight: 700; color: #fff;
+    background: rgba(5,8,15,.55); border-radius: 7px; padding: 2px 7px; backdrop-filter: blur(4px);
+  }
+  .m-ctl { display: flex; justify-content: center; gap: 10px; }
+  .m-ctl button {
+    height: 42px; border: none; border-radius: 21px; cursor: pointer; font: inherit; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .m-ctl button:active { transform: scale(.94); }
+  .m-ctl .tool { width: 42px; background: #1C2436; }
+  .m-ctl .end { padding: 0 22px; background: #E5484D; color: #fff; font-size: 13px; font-weight: 700; }
+
   /* responsive */
   @media (max-width: 900px) {
     .app { flex-direction: column; overflow-y: auto; height: auto; min-height: 100vh; }
@@ -464,6 +547,7 @@
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM9.5 19a2.5 2.5 0 0 0 5 0"/></symbol>
   <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="12.5" height="10" rx="3"/><path d="M15.5 10.5L21 8v8l-5.5-2.5"/></symbol>
 </defs></svg>
 
 <div class="app">
@@ -481,12 +565,15 @@
           <button aria-label="이전 주"><svg class="ic"><use href="#i-chev-l"/></svg></button>
           <button aria-label="다음 주"><svg class="ic"><use href="#i-chev-r"/></svg></button>
         </div>
-        <button class="cal-cta" id="calCta" onclick="openCreate('search')">
-          <svg class="ic sm"><use href="#i-plus"/></svg>회의 잡기
-        </button>
       </div>
       <div class="dayhead" id="dayhead"></div>
       <div class="gwrap"><div class="grid" id="grid"></div></div>
+    </div>
+    <!-- 고정형 바텀 버튼: 날짜 선택 → 활성화, 확정 → 완료 변형까지 한 버튼이 담당 -->
+    <div class="bottombar">
+      <button class="bottom-cta" id="bottomCta" onclick="openCreate('search')">
+        <svg class="ic sm"><use href="#i-plus"/></svg><span id="bottomCtaTxt">회의 일정 잡기</span>
+      </button>
     </div>
   </main>
 
@@ -562,7 +649,20 @@
   </div>
 </div>
 
-<!-- 회의 만들기 모달 — 레일 +, 빈 셀 +, 사이드바 '회의 잡기' 버튼이 전부 여길 연다 -->
+<!-- 화상회의 룸 — 일정 툴팁의 '화상회의 참여' 클릭 시 원클릭 입장 -->
+<div class="mscrim" id="meetScrim" onclick="if(event.target===this)closeMeet()">
+  <div class="meet">
+    <div class="m-head"><span class="m-live">● LIVE</span><span id="meetTitle">팀 킥오프 · 화상회의</span></div>
+    <div class="m-grid" id="meetGrid"></div>
+    <div class="m-ctl">
+      <button class="tool" aria-label="마이크">🎙️</button>
+      <button class="tool" aria-label="카메라">📷</button>
+      <button class="end" onclick="closeMeet()">나가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 회의 만들기 모달 — 레일 +, 빈 셀 +, 바텀 버튼이 전부 여길 연다 -->
 <div class="cscrim" id="createScrim" onclick="if(event.target===this)closeCreate()">
   <div class="cmodal" id="createModal">
     <div class="cm-head">
@@ -611,12 +711,20 @@
 const DAYS = [["월",13],["화",14],["수",15],["목",16],["금",17]];
 const HOURS = [9,10,11,12,13,14,15,16,17];
 function fmtH(h){ return h>=12 ? "오후 "+(h===12?12:h-12)+"시" : "오전 "+h+"시"; }
+/* av: 참석자 인덱스(PEOPLE) — 카드 안 아바타 스택과 호버 툴팁이 공유
+   k: 툴팁 카테고리 라벨 · ag: 의제 요약 · cm/lk/mn: 코멘트·링크·멘션 메타 */
 const EVENTS = [
-  {d:0,h:9,t:"위클리 스크럼",who:"나",mine:1},{d:0,h:10,t:"디자인 크리틱",who:"나",mine:1},
-  {d:0,h:14,t:"외근",who:"준호",c:"coral"},{d:1,h:9,t:"1:1",who:"서연",c:"purple"},{d:1,h:11,t:"전사 타운홀",who:"전원",c:"mint"},
-  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1},{d:2,h:9,t:"분석 리뷰",who:"민지",c:"mint"},
-  {d:3,h:10,t:"외근 · 고객사",who:"나",mine:1},{d:3,h:11,t:"외근 · 고객사",who:"나",mine:1},
-  {d:4,h:13,t:"외부 미팅",who:"나",mine:1},{d:4,h:15,t:"CX 위클리",who:"하은",c:"coral"}
+  {d:0,h:9,t:"위클리 스크럼",who:"나",mine:1,av:[0,1,2,3,4,5],k:"프로덕트팀",ag:"지난주 진행 상황 공유 · 이번 주 우선순위 정렬",cm:5,lk:3,mn:1},
+  {d:0,h:10,t:"디자인 크리틱",who:"나",mine:1,av:[0,2,3],k:"디자인",ag:"온보딩 플로우 시안 2종 리뷰",cm:8,lk:12,mn:2},
+  {d:0,h:14,t:"외근",who:"준호",c:"coral",av:[1],k:"기획",ag:"고객사 방문 — 오후 내 연락 어려움",cm:1,lk:1,mn:0},
+  {d:1,h:9,t:"1:1",who:"서연",c:"purple",av:[0,2],k:"피플",ag:"분기 목표 중간 점검",cm:2,lk:1,mn:0},
+  {d:1,h:11,t:"전사 타운홀",who:"전원",c:"mint",av:[0,1,2,3,4,5],k:"전사",ag:"상반기 회고 · 하반기 로드맵 발표",cm:14,lk:6,mn:3},
+  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1,av:[0,1,4,5],k:"프로덕트팀",ag:"스프린트 결과물 시연 · 피드백 수집",cm:6,lk:9,mn:1},
+  {d:2,h:9,t:"분석 리뷰",who:"민지",c:"mint",av:[3,4],k:"데이터",ag:"주간 지표 리뷰 · 이상치 원인 분석",cm:3,lk:5,mn:1},
+  {d:3,h:10,t:"외근 · 고객사",who:"나",mine:1,av:[0,1],k:"영업",ag:"고객사 미팅 — 요구사항 청취",cm:2,lk:2,mn:0},
+  {d:3,h:11,t:"외근 · 고객사",who:"나",mine:1,av:[0,1],k:"영업",ag:"고객사 미팅 — 제안서 리뷰",cm:2,lk:4,mn:1},
+  {d:4,h:13,t:"외부 미팅",who:"나",mine:1,av:[0,5],k:"파트너십",ag:"제휴 파트너 킥오프 사전 논의",cm:4,lk:2,mn:0},
+  {d:4,h:15,t:"CX 위클리",who:"하은",c:"coral",av:[5,3],k:"CX",ag:"VOC 하이라이트 · 대응 우선순위",cm:7,lk:3,mn:2}
 ];
 const PEOPLE = [
   ["지","김지민","#387AFF",1,"https://i.pravatar.cc/96?img=12"],
@@ -633,6 +741,28 @@ const RECOS = [
   {id:2,d:3,h:15,label:"목요일 오후 3시",chip:"도윤 님 하나만 조정하면 돼요",meta:"1시간 · 팀 킥오프 · 6명 전원",adjWho:4,adjName:"도윤",cat:"개발",catC:"mint"}
 ];
 
+/* 아바타 스택 헬퍼 — 카드 안(16px)과 툴팁 안(22px)에서 같은 규칙: 3명 + '+N' */
+function evStack(av){
+  if (!av || !av.length) return "";
+  const shown = av.slice(0,3);
+  return `<span class="ev-avs">${shown.map(i=>`<span class="ev-av">${avImg(PEOPLE[i])}</span>`).join("")}${av.length>3?`<span class="ev-av more">+${av.length-3}</span>`:""}</span>`;
+}
+function tipStack(av){
+  const shown = (av||[]).slice(0,3);
+  return `<span class="tt-avs">${shown.map(i=>`<span class="tt-av">${avImg(PEOPLE[i])}</span>`).join("")}${av.length>3?`<span class="tt-av more">+${av.length-3}</span>`:""}</span>`;
+}
+/* 호버 툴팁 — 의제·메타(코멘트/링크/멘션)·화상회의 CTA. 오른쪽 열은 왼쪽으로, 아래쪽 행은 위로 연다 */
+function tipHtml(o){
+  return `<div class="evtip${o.left?" left":""}${o.up?" up":""}">
+    <div class="tt-k">${o.k}</div>
+    <div class="tt-t">${o.t}</div>
+    <div class="tt-avrow">${tipStack(o.av)}<span class="tt-time">${o.time}</span></div>
+    <div class="tt-agenda">${o.ag}</div>
+    <div class="tt-meta"><span>💬 ${o.cm}</span><span>🔗 ${o.lk}</span><span>@ ${o.mn} 멘션</span></div>
+    <button class="tt-join" onclick="openMeet('${o.t}')"><svg class="ic sm"><use href="#i-cam"/></svg>화상회의 참여</button>
+  </div>`;
+}
+
 /* grid */
 const grid = document.getElementById("grid");
 document.getElementById("dayhead").innerHTML = "<div></div>" + DAYS.map(d=>`<div class="dh"><div class="dow">${d[0]}</div><div class="dnum">${d[1]}</div></div>`).join("");
@@ -642,19 +772,49 @@ HOURS.forEach(h=>{
   g += `<div class="tl">${h>=12?"오후 "+(h===12?12:h-12):"오전 "+h}시</div>`;
   DAYS.forEach((_,d)=>{
     const ev = EVENTS.find(e=>e.d===d&&e.h===h);
-    const cls = ev ? "cell" : "cell empty";
+    const cls = ev ? "cell has-ev" : "cell empty";
     const click = ev ? "" : ` onclick="openCreate('direct',${d},${h})"`;
     const evCls = ev ? (ev.mine ? " mine" : ev.c ? " c-"+ev.c : "") : "";
-    g += `<div class="${cls}" id="c-${d}-${h}"${click}>${ev?`<div class="evt${evCls}"><span>${ev.t}</span><span class="who">${ev.who}</span></div>`:cellAddInner()}</div>`;
+    const inner = ev
+      ? `<div class="evt${evCls}"><span>${ev.t}</span><span class="who">${ev.who}</span>${evStack(ev.av)}</div>`
+        + tipHtml({k:ev.k, t:ev.t, av:ev.av||[], time:`${DAYS[d][0]} ${fmtH(h)} · 1시간`, ag:ev.ag, cm:ev.cm??2, lk:ev.lk??1, mn:ev.mn??0, left:d>=3, up:h>=15})
+      : cellAddInner();
+    g += `<div class="${cls}" id="c-${d}-${h}"${click}>${inner}</div>`;
   });
 });
 grid.innerHTML = g;
 
+/* 화상회의 룸 — 원클릭 입장 */
+function openMeet(title){
+  document.getElementById("meetTitle").textContent = title + " · 화상회의";
+  document.getElementById("meetGrid").innerHTML = PEOPLE.map(p=>`<div class="m-tile"><img src="${p[4]}" alt="${p[1]}" onerror="this.remove()"/><span>${p[1]}</span></div>`).join("");
+  document.getElementById("meetScrim").classList.add("show");
+}
+function closeMeet(){ document.getElementById("meetScrim").classList.remove("show"); }
+
 /* mini calendar (July 2026) */
 const mc = [[29,0],[30,0],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,2],[8,1],[9,1],[10,1],[11,1],[12,1],[13,3],[14,3],[15,3],[16,3],[17,3],[18,1],[19,1],[20,1],[21,1],[22,1],[23,1],[24,1],[25,1],[26,1],[27,1],[28,1],[29,1],[30,1],[31,1],[1,0],[2,0]];
 let mt = "<tr>" + ["일","월","화","수","목","금","토"].map(d=>`<th>${d}</th>`).join("") + "</tr>";
-for (let w=0; w<5; w++){ mt += "<tr>"; for (let i=0;i<7;i++){ const [n,s]=mc[w*7+i]; let cls=s===0?"out":s===2?"today":s===3?"sel":""; if(s===3){ const idx=w*7+i; if(mc[idx-1]?.[1]!==3)cls+=" f"; if(mc[idx+1]?.[1]!==3)cls+=" l"; } mt += `<td class="${cls}"><span>${n}</span></td>`; } mt += "</tr>"; }
+for (let w=0; w<5; w++){ mt += "<tr>"; for (let i=0;i<7;i++){ const [n,s]=mc[w*7+i]; let cls=s===0?"out":s===2?"today":s===3?"sel":""; if(s===3){ const idx=w*7+i; if(mc[idx-1]?.[1]!==3)cls+=" f"; if(mc[idx+1]?.[1]!==3)cls+=" l"; } const click=s===0?"":` onclick="pickDate(${n},this)"`; mt += `<td class="${cls}"${click}><span>${n}</span></td>`; } mt += "</tr>"; }
 document.getElementById("miniCal").innerHTML = mt;
+
+/* 날짜 선택 → 바텀 버튼이 펄스와 함께 활성화(armed) — "다음 행동은 이 버튼" */
+function pickDate(n, td){
+  document.querySelectorAll("table.mini td.picked").forEach(x=>x.classList.remove("picked"));
+  td.classList.add("picked");
+  const b = document.getElementById("bottomCta");
+  if (b && !b.classList.contains("done")) {
+    b.classList.add("armed");
+    document.getElementById("bottomCtaTxt").textContent = `7월 ${n}일 · 회의 일정 잡기`;
+  }
+}
+/* 확정 완료 → 같은 버튼이 결과 상태로 변형 */
+function setBottomDone(msg){
+  const b = document.getElementById("bottomCta");
+  if (!b) return;
+  b.classList.remove("armed"); b.classList.add("done");
+  b.innerHTML = `✓ ${msg}`;
+}
 
 /* invite avatars (모달 안, 참석자 피커와 상태 공유) */
 document.getElementById("invite").innerHTML = PEOPLE.map((p,i)=>`<span class="iav${p[3]?" req-on":""}" id="iav-${i}" style="background:${p[2]}" onclick="toggleReq(${i})" title="${p[1]}">${avImg(p)}${p[0]}<span class="req">✓</span></span>`).join("") + `<span class="iav add" onclick="openPicker()" title="팀원 추가"><svg class="ic sm"><use href="#i-plus"/></svg></span>`;
@@ -719,6 +879,11 @@ function placeDirect(day, hour){
       if (dots[k]) dots[k].className = "g";
       if (k === attendees.length-1) directTimers.push(setTimeout(()=>{
         v.classList.add("confirmed");
+        if (!cell.querySelector(".evtip")) {
+          cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:title, av:attendees, time:`${DAYS[day][0]} ${fmtH(hour)} · ${durLabel()}`, ag:"안건 요약은 시작 10분 전에 도착해요", cm:0, lk:0, mn:0, left:day>=3, up:hour>=15}));
+          cell.classList.add("has-ev");
+        }
+        setBottomDone(`${title} 확정 — 캘린더에 등록됨`);
         toast("확정됐어요. 모두의 캘린더에 등록해 뒀어요", "", null);
       }, 500));
     }, 700 + k*550));
@@ -729,8 +894,11 @@ function undoDirect(){
   const v = document.getElementById("vc-direct");
   if (v) {
     const cell = v.parentElement; v.remove();
+    cell.querySelector(".evtip")?.remove(); cell.classList.remove("has-ev");
     cell.classList.add("empty"); cell.setAttribute("onclick", `openCreate('direct',${cell.id.split("-")[1]},${cell.id.split("-")[2]})`);
     cell.insertAdjacentHTML("beforeend", cellAddInner());
+    const b=document.getElementById("bottomCta");
+    if (b){ b.classList.remove("done","armed"); b.innerHTML=`<svg class="ic sm"><use href="#i-plus"/></svg><span id="bottomCtaTxt">회의 일정 잡기</span>`; }
   }
   hideToast();
 }
@@ -755,6 +923,7 @@ function renderRecos(){
       <div class="tm-row"><svg class="ic"><use href="#i-cal"/></svg><div class="tm">${r.label}</div></div>
       <div class="meta"><svg class="ic"><use href="#i-clock"/></svg>${r.meta}</div>
       <div class="dotbar" id="db-${r.id}">${PEOPLE.map(()=>"<i></i>").join("")}<span class="cnt" id="cnt-${r.id}">0/6 답했어요</span></div>
+      <div class="pbar"><i id="pb-${r.id}"></i></div>
       <div class="avs">${PEOPLE.map((p,i)=>`<span class="av pending" id="r${r.id}-av-${i}">${avImg(p)}${p[0]}<span class="st">✓</span></span>`).join("")}</div>
       <div class="suggest" id="sg-${r.id}"><span class="q">💬 <b>${r.adjName}</b>: 30분 뒤면 가능해요</span><button onclick="applyShift(${r.id})">30분 뒤로 옮기기</button></div>
       <div class="hint">끌어서 캘린더에 놓거나, 카드를 탭하세요</div>`;
@@ -837,6 +1006,7 @@ function undoPlace(rid){
 function resetVotes(rid){
   document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="");
   document.getElementById("cnt-"+rid).textContent="0/6 답했어요";
+  const pb=document.getElementById("pb-"+rid); if(pb){ pb.style.width="0"; pb.classList.remove("full"); }
   PEOPLE.forEach((_,i)=>{ const a=document.getElementById(`r${rid}-av-${i}`); a.className="av pending"; a.style.background=""; });
   document.getElementById("sg-"+rid).classList.remove("show");
 }
@@ -846,6 +1016,7 @@ function vote(rid, who, kind, idx){
   if (kind==="adj") a.querySelector(".st").textContent="~";
   const dots=document.querySelectorAll(`#db-${rid} i`); dots[idx].className = kind==="adj"?"a":"g";
   document.getElementById("cnt-"+rid).textContent=`${idx+1}/6 답했어요`;
+  const pb=document.getElementById("pb-"+rid); if(pb) pb.style.width=((idx+1)/6*100)+"%";
   const mini=document.querySelectorAll(`#vc-${rid} .mini-dots i`); if (mini[idx]) mini[idx].className = kind==="adj"?"a":"g";
 }
 function runVotes(rid){
@@ -868,9 +1039,17 @@ function confirmCard(rid){
   const v=document.getElementById("vc-"+rid); v.classList.add("confirmed");
   document.querySelectorAll(`#db-${rid} i`).forEach(i=>i.className="g");
   document.getElementById("cnt-"+rid).textContent="6/6 · 확정됐어요";
+  const pb=document.getElementById("pb-"+rid); if(pb){ pb.style.width="100%"; pb.classList.add("full"); }
   const card=document.getElementById("reco-"+rid);
   card.querySelector(".chip").className="chip ok"; card.querySelector(".chip").textContent="✓ 확정 — 캘린더에 등록해 뒀어요";
   card.querySelector(".hint").textContent="모두의 캘린더에 자동으로 들어갔어요";
+  /* 확정된 카드도 호버하면 화상회의 툴팁이 열린다 — 일정 잡기 → 회의 참여까지 한 흐름 */
+  const r=RECOS[rid], cell=v.parentElement;
+  if (cell && !cell.querySelector(".evtip")) {
+    cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:"팀 킥오프", av:[0,1,2,3,4,5], time:`${DAYS[r.d][0]} ${fmtH(r.h)} · 1시간`, ag:"목표 정렬 · 역할 분담 · 일정 합의", cm:3, lk:2, mn:1, left:r.d>=3, up:r.h>=15}));
+    cell.classList.add("has-ev");
+  }
+  setBottomDone("팀 킥오프 확정 — 모두의 캘린더에 등록됨");
   toast("확정됐어요. 모두의 캘린더에 등록해 뒀어요", "", null);
 }
 
@@ -922,6 +1101,9 @@ else if (demo==="create"){ openCreate("search"); }
 else if (demo==="direct"){ openCreate("direct",1,13); }
 else if (demo==="picker"){ openPicker(); }
 else if (demo==="picker-over-create"){ openCreate("search"); openPicker(); }
+else if (demo==="tip"){ const e=document.querySelector("#c-1-11 .evtip"); if(e){ e.style.opacity=1; e.style.pointerEvents="auto"; e.style.transform="none"; } }
+else if (demo==="meet"){ openMeet("팀 킥오프"); }
+else if (demo==="armed"){ const td=document.querySelector("table.mini td.sel"); if(td) pickDate(14, td); }
 else if (demo==="placed"){ placeDirect(1,13); }
 else if (demo==="hl"){ createMeeting(); highlightSlot(1,14,true); }
 </script>
