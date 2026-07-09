@@ -15,6 +15,21 @@
     --base: #F4F4F6; --s1: #FFFFFF; --s2: #ECECEE; --s3: #E4E4E7;
     --tp: #17171A; --ts: #616166; --tm: #8E8E93;
     --hair: #ECECEE; --dash: #B8B8BE; --drop-tint: #EAF1FF;
+    --shadow-card: 0 12px 28px rgba(23,54,138,.14);
+    --shadow-float: 0 16px 36px rgba(23,54,138,.20);
+
+    /* ══ motion tokens (animation-systems: Stripe×Linear×Apple×Vercel) ══
+       숫자 자체보다 "어디에 어떤 대역을 쓰는지"가 일관성의 핵심 — 새 모션은
+       전부 이 토큰을 참조한다. 히어로 스냅 모먼트(.vcard settle)만 예외적으로
+       스프링 이징을 쓰고, 그 외 전부 절제된 ease-out/ease-in. */
+    --dur-micro: 140ms;   /* hover/press */
+    --dur-ui: 200ms;      /* 토글·선택 상태 변화 */
+    --dur-pop: 260ms;     /* 팝오버·토스트 */
+    --dur-enter: 480ms;   /* 카드·섹션 진입 */
+    --ease-out: cubic-bezier(.16,1,.3,1);
+    --ease-in: cubic-bezier(.7,0,.84,0);
+    --ease-spring: cubic-bezier(.34,1.56,.64,1);
+    --stagger: 55ms;
   }
   [data-theme="dark"] {
     --accent: #5A8DFF; --accent-press: #387AFF;
@@ -23,7 +38,16 @@
     --base: #000000; --s1: #1B1B1D; --s2: #242427; --s3: #2C2C30;
     --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93;
     --hair: #2C2C30; --dash: #616166; --drop-tint: #12233F;
+    --shadow-card: 0 12px 28px rgba(0,0,0,.45);
+    --shadow-float: 0 16px 36px rgba(0,0,0,.55);
   }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important; scroll-behavior: auto !important;
+    }
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
@@ -34,32 +58,36 @@
   .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .ic.sm { width: 18px; height: 18px; }
 
-  .app { display: flex; height: 100vh; min-height: 620px; gap: 16px; padding: 16px; }
+  .app { display: flex; height: 100vh; height: 100dvh; min-height: 620px; gap: 16px; padding: 16px; }
 
   /* ══ calendar (LEFT) ══ */
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .topbar { display: flex; align-items: center; gap: 12px; padding: 2px 4px 16px; }
-  .topbar .titles h1 { font-size: 25px; font-weight: 800; letter-spacing: -.4px; }
+  .topbar .titles h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
   .topbar .titles .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
   .topbar .sp { flex: 1; }
   .navbtns { display: flex; align-items: center; gap: 2px; }
   .navbtns button, .icobtn {
     width: 40px; height: 40px; border: none; background: var(--s1); color: var(--tp);
     border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
   }
   .navbtns button:hover, .icobtn:hover { background: var(--s2); }
-  .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s1); color: var(--tp); border-radius: 14px; cursor: pointer; }
+  .navbtns button:active, .icobtn:active, .today-btn:active, .mini-h button:active { transform: scale(.94); }
+  .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s1); color: var(--tp); border-radius: 14px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+  .today-btn:hover, .mini-h button:hover { background: var(--s2); }
 
-  .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; }
+  /* gridcard: 1px 내부 하이라이트로 은은한 깊이 (One UI 방식 — 블러/글래스 없이 표면 명도만으로) */
+  .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 0 0 1px var(--hair); }
   .dayhead { display: grid; grid-template-columns: 56px repeat(5, 1fr); padding: 16px 16px 10px; }
   .dayhead .dh { text-align: center; }
   .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--tm); letter-spacing: 1px; }
-  .dayhead .dnum { font-size: 18px; font-weight: 700; margin-top: 3px; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; display: inline-block; }
+  .dayhead .dnum { font-size: 18px; font-weight: 700; margin-top: 3px; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; display: inline-block; font-variant-numeric: tabular-nums; transition: background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out); }
   .dayhead .dh.today .dnum { background: var(--accent); color: #fff; }
   .gwrap { flex: 1; overflow-y: auto; padding: 8px 16px 16px; }
   .grid { display: grid; grid-template-columns: 56px repeat(5, 1fr); }
-  .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 10px; transform: translateY(-6px); }
-  .cell { height: 58px; border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair); position: relative; transition: background .2s ease-out; }
+  .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 10px; transform: translateY(-6px); font-variant-numeric: tabular-nums; }
+  .cell { height: 58px; border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair); position: relative; transition: background var(--dur-ui) var(--ease-out); }
   .evt {
     position: absolute; inset: 3px 5px; border-radius: 12px; background: var(--s2); color: var(--ts);
     font-size: 11px; font-weight: 600; padding: 6px 9px; overflow: hidden; z-index: 2; transition: filter .3s, opacity .3s;
@@ -75,8 +103,8 @@
   .vcard {
     position: absolute; inset: 3px 5px; border-radius: 12px; z-index: 4; background: var(--blue50);
     border: 1.5px dashed var(--accent); padding: 5px 9px; font-size: 11px; font-weight: 700; color: var(--accent);
-    transition: transform .32s cubic-bezier(.4,0,.2,1), background .3s, border .3s, color .3s;
-    animation: settle .32s cubic-bezier(.34,1.56,.64,1); display: flex; flex-direction: column; gap: 3px;
+    transition: transform var(--dur-enter) var(--ease-spring), background var(--dur-ui) var(--ease-out), border var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out);
+    animation: settle var(--dur-enter) var(--ease-spring); display: flex; flex-direction: column; gap: 3px;
   }
   @keyframes settle { 0% { transform: scale(.9); } 100% { transform: scale(1); } }
   .vcard .mini-dots { display: flex; gap: 3px; }
@@ -128,17 +156,26 @@
   .row2 { display: flex; gap: 10px; }
   .row2 .field { flex: 1; }
   .dur-seg { display: flex; background: var(--s2); border-radius: 14px; padding: 3px; }
-  .dur-seg button { flex: 1; font: inherit; font-size: 13px; font-weight: 600; color: var(--ts); border: none; background: none; height: 38px; border-radius: 11px; cursor: pointer; }
-  .dur-seg button.on { background: var(--s1); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .dur-seg button { flex: 1; font: inherit; font-size: 13px; font-weight: 600; color: var(--ts); border: none; background: none; height: 38px; border-radius: 11px; cursor: pointer; transition: background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out); }
+  .dur-seg button.on { background: var(--s1); color: var(--accent); box-shadow: 0 1px 3px rgba(23,54,138,.16); }
   [data-theme="dark"] .dur-seg button.on { background: var(--s3); }
   .invite { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .iav { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: #fff; position: relative; }
+  .iav { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: #fff; position: relative; cursor: pointer; transition: transform var(--dur-micro) var(--ease-out); }
+  .iav:hover { transform: translateY(-2px); }
+  .iav:active { transform: scale(.92); }
   .iav .req { position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid var(--s1); display: none; }
   .iav.req-on .req { display: block; }
   .iav.add { background: var(--s2); color: var(--tm); border: 1.5px dashed var(--dash); }
   .invite-hint { font-size: 11.5px; color: var(--tm); margin-top: 9px; line-height: 1.5; }
-  .submit { width: 100%; height: 52px; border: none; border-radius: 26px; background: var(--accent); color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px; transition: transform .12s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .submit {
+    width: 100%; height: 52px; border: none; border-radius: 26px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
+  }
+  .submit:hover { box-shadow: var(--shadow-card); }
+  .submit:hover .ic { transform: translate(1px,-1px) rotate(8deg); }
   .submit:active { transform: scale(.98); }
+  .submit .ic { transition: transform var(--dur-micro) var(--ease-out); }
 
   /* AI 추천 */
   .reco-wrap { display: none; }
@@ -150,13 +187,16 @@
   .reco {
     background: var(--s1); border-radius: 20px; padding: 16px; margin-bottom: 12px; cursor: grab;
     user-select: none; -webkit-user-select: none; touch-action: none;
-    transition: transform .16s ease-out, box-shadow .16s ease-out, opacity .2s;
+    transition: transform var(--dur-micro) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out), opacity var(--dur-ui) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
     border: 1px solid var(--hair);
   }
   [data-theme="dark"] .reco { border-color: var(--s3); }
+  .reco:hover:not(.placed):not(.placeholder) { transform: translateY(-3px); box-shadow: var(--shadow-card); border-color: transparent; }
   .reco:active { cursor: grabbing; }
-  .reco.lifted { transform: scale(1.03); box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+  .reco.lifted { transform: scale(1.03); box-shadow: var(--shadow-float); }
   .reco.placeholder { opacity: 0; pointer-events: none; }
+  .reco.enter { animation: recoEnter var(--dur-enter) var(--ease-out) backwards; animation-delay: var(--enter-delay, 0ms); }
+  @keyframes recoEnter { from { opacity: 0; transform: translateY(14px); } }
   .reco .chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 10px; border-radius: 13px; background: var(--amber50); color: var(--amber900); font-size: 11.5px; font-weight: 700; margin-bottom: 9px; }
   .reco .chip.ok { background: var(--green50); color: var(--green); }
   .reco .tm { font-size: 17px; font-weight: 700; letter-spacing: -.2px; }
@@ -184,15 +224,16 @@
   .reco .hint { font-size: 11.5px; color: var(--tm); margin-top: 10px; }
 
   #clone { position: fixed; z-index: 100; width: 300px; pointer-events: none; display: none; }
-  #clone .reco { box-shadow: 0 16px 36px rgba(0,0,0,.22); transform: scale(1.03); margin: 0; }
-  .toast { position: fixed; left: calc(50% - 200px); bottom: 30px; transform: translateY(16px); background: var(--tp); color: var(--base); font-size: 13.5px; font-weight: 600; padding: 13px 20px; border-radius: 26px; z-index: 120; display: flex; gap: 14px; align-items: center; opacity: 0; pointer-events: none; transition: all .3s ease; }
+  #clone .reco { box-shadow: var(--shadow-float); transform: scale(1.03); margin: 0; }
+  .toast { position: fixed; left: calc(50% - 200px); bottom: 30px; transform: translateY(16px); background: var(--tp); color: var(--base); font-size: 13.5px; font-weight: 600; padding: 13px 20px; border-radius: 26px; z-index: 120; display: flex; gap: 14px; align-items: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out), transform var(--dur-pop) var(--ease-out); }
   .toast.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
   .toast button { font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); background: none; border: none; cursor: pointer; }
 
   /* receiver sheet */
-  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 130; display: none; align-items: flex-end; justify-content: center; }
-  .scrim.show { display: flex; }
-  .sheet { width: min(420px, 100%); background: var(--s1); border-radius: 28px 28px 0 0; padding: 10px 22px 26px; animation: sheetup .3s cubic-bezier(.2,.8,.2,1); }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 130; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--dur-pop) var(--ease-out); }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .sheet { width: min(420px, 100%); background: var(--s1); border-radius: 28px 28px 0 0; padding: 10px 22px 26px; }
+  .scrim.show .sheet { animation: sheetup var(--dur-enter) cubic-bezier(.2,.8,.2,1); }
   @keyframes sheetup { from { transform: translateY(60px); opacity: 0; } }
   .sheet .grab { width: 32px; height: 4px; border-radius: 2px; background: var(--dash); margin: 0 auto 16px; }
   .sheet h3 { font-size: 18px; font-weight: 700; line-height: 1.45; }
@@ -393,8 +434,9 @@ function resetCreate(){
 }
 function renderRecos(){
   const list = document.getElementById("recoList"); list.innerHTML = "";
-  RECOS.forEach(r=>{
-    const el = document.createElement("div"); el.className="reco"; el.id="reco-"+r.id; el.dataset.rid=r.id;
+  RECOS.forEach((r,i)=>{
+    const el = document.createElement("div"); el.className="reco enter"; el.id="reco-"+r.id; el.dataset.rid=r.id;
+    el.style.setProperty("--enter-delay", (i*55)+"ms");
     el.innerHTML = `
       <span class="chip">✨ ${r.chip}</span>
       <div class="tm">${r.label}</div>
