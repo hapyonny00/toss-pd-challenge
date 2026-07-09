@@ -79,6 +79,7 @@
   <symbol id="n-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="n-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></symbol>
   <symbol id="n-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="n-user-plus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M4 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M18 8v4M16 10h4"/></symbol>
 </defs></svg>
 
 <div class="shell">
@@ -86,6 +87,7 @@
     <div class="logo">모임</div>
     <button class="fab" onclick="quickCreate()" aria-label="회의 잡기"><svg class="ic"><use href="#n-plus"/></svg></button>
     <button class="item on" data-src="oneui/app-calendar.html" onclick="nav(this)"><svg class="ic"><use href="#n-cal"/></svg><span class="lb">캘린더</span></button>
+    <button class="item" onclick="addTeammate()"><svg class="ic"><use href="#n-user-plus"/></svg><span class="lb">팀원 추가</span></button>
     <span class="sp"></span>
     <div class="foot">
       <button class="fbtn" id="themeBtn" onclick="toggleTheme()" aria-label="다크 모드"><svg class="ic"><use href="#n-moon" id="themeIcon"/></svg></button>
@@ -116,6 +118,9 @@ view.addEventListener("load", ()=>{ loading.classList.remove("show"); try{ view.
 
 function quickCreate(){
   try{ view.contentWindow.postMessage({openCreate:true}, "*"); }catch(e){}
+}
+function addTeammate(){
+  try{ view.contentWindow.postMessage({openPicker:true}, "*"); }catch(e){}
 }
 function nav(btn){
   document.querySelectorAll(".rail .item").forEach(b=>b.classList.remove("on"));
