@@ -116,8 +116,10 @@
   .side-cta.done { background: var(--green); color: #fff; animation: none; }
   .side-cta.done .ic { stroke: #fff; }
 
-  /* gridcard: 상단 ~176px는 라임→라벤더 그라데이션 밴드(레퍼런스의 October 헤더), 아래는 표면색 */
-  .gridcard { flex: 1; min-height: 0; background: var(--grad-band) no-repeat top / 100% 176px, var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; }
+  /* gridcard: 상단 밴드(실제 요소)가 라임→라벤더 그라데이션, 아래는 표면색.
+     배경 멀티레이어 shorthand는 브라우저별로 어긋나서 밴드를 요소로 분리 */
+  .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; }
+  .band { background: var(--grad-band); flex: none; }
   .dayhead { display: grid; grid-template-columns: 56px repeat(5, 1fr); padding: 6px 16px 14px; gap: 8px; }
   .dayhead .dh { text-align: center; background: rgba(255,255,255,.38); border-radius: 18px; padding: 8px 0 9px; color: #17171A; transition: background var(--dur-ui) var(--ease-out); }
   .dayhead .dh.today { background: #FFFFFF; box-shadow: 0 6px 16px rgba(42,33,80,.14); }
@@ -125,12 +127,28 @@
   .dayhead .dnum { font-size: 18px; font-weight: 700; margin-top: 3px; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; display: inline-block; font-variant-numeric: tabular-nums; transition: background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out); }
   .dayhead .dh.today .dnum { color: var(--accent); }
   .dayhead .dh.today .dow { color: var(--accent); }
+  /* 카테고리 필터 칩 */
+  .catbar { display: flex; gap: 8px; padding: 12px 16px 4px; flex-wrap: wrap; }
+  .catchip {
+    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 13px;
+    border: none; border-radius: 16px; background: var(--s2); color: var(--ts);
+    font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: background var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+  }
+  .catchip i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .catchip:hover:not(.on) { background: var(--s3); }
+  .catchip:active { transform: scale(.95); }
+  .catchip.on { background: #17171A; color: #fff; }
+  [data-theme="dark"] .catchip.on { background: #F4F4F6; color: #17171A; }
+  .evt.dim { opacity: .12; filter: grayscale(.5); pointer-events: none; }
+
   .gwrap { flex: 1; overflow-y: auto; padding: 8px 16px 16px; }
   .grid { display: grid; grid-template-columns: 56px repeat(5, 1fr); }
   .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 10px; transform: translateY(-6px); font-variant-numeric: tabular-nums; }
   .cell { height: 58px; border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair); position: relative; transition: background var(--dur-ui) var(--ease-out); }
+  /* 높이는 회의 길이(dur)에 따라 인라인으로 — 30분·45분·1시간·1시간 반·2시간 */
   .evt {
-    position: absolute; inset: 3px 5px; border-radius: 12px; background: var(--s2); color: var(--ts);
+    position: absolute; top: 3px; left: 5px; right: 5px; height: 52px; border-radius: 12px; background: var(--s2); color: var(--ts);
     font-size: 11px; font-weight: 600; padding: 6px 9px; overflow: hidden; z-index: 2; transition: filter .3s, opacity .3s;
     display: flex; flex-direction: column; gap: 2px;
   }
@@ -634,6 +652,7 @@
   <!-- ══ calendar left ══ -->
   <main class="main">
     <div class="gridcard">
+      <div class="band">
       <div class="topbar">
         <div class="titles">
           <h1>7월 13–17</h1>
@@ -647,6 +666,9 @@
         </div>
       </div>
       <div class="dayhead" id="dayhead"></div>
+      </div>
+      <!-- 카테고리 필터 칩 — 기획/디자인/개발 등으로 일정을 골라 본다 -->
+      <div class="catbar" id="catbar"></div>
       <div class="gwrap"><div class="grid" id="grid"></div></div>
     </div>
   </main>
@@ -797,19 +819,20 @@ const HOURS = [9,10,11,12,13,14,15,16,17];
 function fmtH(h){ return h>=12 ? "오후 "+(h===12?12:h-12)+"시" : "오전 "+h+"시"; }
 /* av: 참석자 인덱스(PEOPLE) — 카드 안 아바타 스택과 호버 툴팁이 공유
    k: 툴팁 카테고리 라벨 · ag: 의제 요약 · cm/lk/mn: 코멘트·링크·멘션 메타 */
+/* dur: 회의 길이(분) — 30·45·60·90·120. cat: 카테고리 필터 칩과 연결 */
 const EVENTS = [
-  {d:0,h:9,t:"위클리 스크럼",who:"나",mine:1,av:[0,1,2,3,4,5],k:"프로덕트팀",ag:"지난주 진행 상황 공유 · 이번 주 우선순위 정렬",cm:5,lk:3,mn:1},
-  {d:0,h:10,t:"디자인 크리틱",who:"나",mine:1,av:[0,2,3],k:"디자인",ag:"온보딩 플로우 시안 2종 리뷰",cm:8,lk:12,mn:2},
-  {d:0,h:14,t:"외근",who:"준호",c:"coral",av:[1],k:"기획",ag:"고객사 방문 — 오후 내 연락 어려움",cm:1,lk:1,mn:0,loc:"성수 고객사 라운지"},
-  {d:1,h:9,t:"1:1",who:"서연",c:"purple",av:[0,2],k:"피플",ag:"분기 목표 중간 점검",cm:2,lk:1,mn:0},
-  {d:1,h:11,t:"전사 타운홀",who:"전원",c:"mint",av:[0,1,2,3,4,5],k:"전사",ag:"상반기 회고 · 하반기 로드맵 발표",cm:14,lk:6,mn:3,loc:"본사 10층 대강당"},
-  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1,av:[0,1,4,5],k:"프로덕트팀",ag:"스프린트 결과물 시연 · 피드백 수집",cm:6,lk:9,mn:1},
-  {d:2,h:9,t:"분석 리뷰",who:"민지",c:"mint",av:[3,4],k:"데이터",ag:"주간 지표 리뷰 · 이상치 원인 분석",cm:3,lk:5,mn:1},
-  {d:3,h:10,t:"외근 · 고객사",who:"나",mine:1,av:[0,1],k:"영업",ag:"고객사 미팅 — 요구사항 청취",cm:2,lk:2,mn:0,loc:"판교 고객사 2층 회의실"},
-  {d:3,h:11,t:"외근 · 고객사",who:"나",mine:1,av:[0,1],k:"영업",ag:"고객사 미팅 — 제안서 리뷰",cm:2,lk:4,mn:1,loc:"판교 고객사 2층 회의실"},
-  {d:4,h:13,t:"외부 미팅",who:"나",mine:1,av:[0,5],k:"파트너십",ag:"제휴 파트너 킥오프 사전 논의",cm:4,lk:2,mn:0,loc:"강남 파트너스 라운지"},
-  {d:4,h:15,t:"CX 위클리",who:"하은",c:"coral",av:[5,3],k:"CX",ag:"VOC 하이라이트 · 대응 우선순위",cm:7,lk:3,mn:2}
+  {d:0,h:9,t:"위클리 스크럼",who:"나",mine:1,dur:30,cat:"개발",av:[0,1,2,3,4,5],k:"프로덕트팀",ag:"지난주 진행 상황 공유 · 이번 주 우선순위 정렬",cm:5,lk:3,mn:1},
+  {d:0,h:10,t:"디자인 크리틱",who:"나",mine:1,dur:60,cat:"디자인",av:[0,2,3],k:"디자인",ag:"온보딩 플로우 시안 2종 리뷰",cm:8,lk:12,mn:2},
+  {d:0,h:14,t:"외근",who:"준호",c:"coral",dur:120,cat:"기획",av:[1],k:"기획",ag:"고객사 방문 — 오후 내 연락 어려움",cm:1,lk:1,mn:0,loc:"성수 고객사 라운지"},
+  {d:1,h:9,t:"1:1",who:"서연",c:"purple",dur:30,cat:"디자인",av:[0,2],k:"피플",ag:"분기 목표 중간 점검",cm:2,lk:1,mn:0},
+  {d:1,h:11,t:"전사 타운홀",who:"전원",c:"mint",dur:90,cat:"전사",av:[0,1,2,3,4,5],k:"전사",ag:"상반기 회고 · 하반기 로드맵 발표",cm:14,lk:6,mn:3,loc:"본사 10층 대강당"},
+  {d:2,h:14,t:"스프린트 데모",who:"나",mine:1,dur:90,cat:"개발",av:[0,1,4,5],k:"프로덕트팀",ag:"스프린트 결과물 시연 · 피드백 수집",cm:6,lk:9,mn:1},
+  {d:2,h:9,t:"분석 리뷰",who:"민지",c:"mint",dur:45,cat:"데이터",av:[3,4],k:"데이터",ag:"주간 지표 리뷰 · 이상치 원인 분석",cm:3,lk:5,mn:1},
+  {d:3,h:10,t:"외근 · 고객사",who:"나",mine:1,dur:120,cat:"기획",av:[0,1],k:"영업",ag:"고객사 미팅 — 요구사항 청취 · 제안서 리뷰",cm:4,lk:6,mn:1,loc:"판교 고객사 2층 회의실"},
+  {d:4,h:13,t:"외부 미팅",who:"나",mine:1,dur:60,cat:"기획",av:[0,5],k:"파트너십",ag:"제휴 파트너 킥오프 사전 논의",cm:4,lk:2,mn:0,loc:"강남 파트너스 라운지"},
+  {d:4,h:15,t:"CX 위클리",who:"하은",c:"coral",dur:45,cat:"CX",av:[5,3],k:"CX",ag:"VOC 하이라이트 · 대응 우선순위",cm:7,lk:3,mn:2}
 ];
+function minLabel(m){ return m % 60 === 0 ? (m/60) + "시간" : m < 60 ? m + "분" : Math.floor(m/60) + "시간 " + (m%60) + "분"; }
 const PEOPLE = [
   ["지","김지민","#387AFF",1,"https://i.pravatar.cc/96?img=12"],
   ["준","박준호","#5A8DFF",1,"https://i.pravatar.cc/96?img=52"],
@@ -857,22 +880,42 @@ function openPlace(loc){ toast("지도를 열게요 — " + loc, "", null); }
 const grid = document.getElementById("grid");
 document.getElementById("dayhead").innerHTML = "<div></div>" + DAYS.map(d=>`<div class="dh"><div class="dow">${d[0]}</div><div class="dnum">${d[1]}</div></div>`).join("");
 function cellAddInner(){ return `<div class="cell-add" aria-hidden="true"><svg class="ic"><use href="#i-plus"/></svg></div>`; }
+/* 이벤트가 여러 시간대를 덮으면(90분·2시간) 그 아래 칸은 빈칸 어포던스 없이 잠근다 */
+const isCovered = (d,h) => EVENTS.some(e => e.d===d && h>e.h && h < e.h + Math.ceil((e.dur||60)/60));
 let g = "";
 HOURS.forEach(h=>{
   g += `<div class="tl">${h>=12?"오후 "+(h===12?12:h-12):"오전 "+h}시</div>`;
   DAYS.forEach((_,d)=>{
     const ev = EVENTS.find(e=>e.d===d&&e.h===h);
-    const cls = ev ? "cell has-ev" : "cell empty";
-    const click = ev ? "" : ` onclick="openCreate('direct',${d},${h})"`;
-    const evCls = ev ? (ev.mine ? " mine" : ev.c ? " c-"+ev.c : "") : "";
-    const inner = ev
-      ? `<div class="evt${evCls}"><span>${ev.t}</span><span class="who">${ev.who}</span>${evStack(ev.av)}</div>`
-        + tipHtml({k:ev.k, t:ev.t, av:ev.av||[], time:`${DAYS[d][0]} ${fmtH(h)} · 1시간`, ag:ev.ag, loc:ev.loc, cm:ev.cm??2, lk:ev.lk??1, mn:ev.mn??0, left:d>=3, up:h>=15})
-      : cellAddInner();
+    let cls, click = "", inner = "";
+    if (ev) {
+      cls = "cell has-ev";
+      const evCls = ev.mine ? " mine" : ev.c ? " c-"+ev.c : "";
+      const dur = ev.dur || 60;
+      const hgt = Math.round(dur/60*58) - 6;
+      inner = `<div class="evt${evCls}" data-cat="${ev.cat||""}" style="height:${hgt}px"><span>${ev.t}</span><span class="who">${ev.who} · ${minLabel(dur)}</span>${evStack(ev.av)}</div>`
+        + tipHtml({k:ev.k, t:ev.t, av:ev.av||[], time:`${DAYS[d][0]} ${fmtH(h)} · ${minLabel(dur)}`, ag:ev.ag, loc:ev.loc, cm:ev.cm??2, lk:ev.lk??1, mn:ev.mn??0, left:d>=3, up:h>=15});
+    } else if (isCovered(d,h)) {
+      cls = "cell";
+    } else {
+      cls = "cell empty";
+      click = ` onclick="openCreate('direct',${d},${h})"`;
+      inner = cellAddInner();
+    }
     g += `<div class="${cls}" id="c-${d}-${h}"${click}>${inner}</div>`;
   });
 });
 grid.innerHTML = g;
+
+/* ══ 카테고리 필터 칩 — 누르면 해당 카테고리 일정만 또렷하게 ══ */
+const CATS = [["전체",null],["기획","#C74E86"],["디자인","#6C57D6"],["개발","#1F8A68"],["데이터","#5B8DEF"],["CX","#E58BB4"],["전사","#8FA83B"]];
+document.getElementById("catbar").innerHTML = CATS.map(([c,col],i)=>
+  `<button class="catchip${i===0?" on":""}" onclick="filterCat('${c}',this)">${col?`<i style="background:${col}"></i>`:""}${c}</button>`).join("");
+function filterCat(cat, btn){
+  document.querySelectorAll(".catchip").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  document.querySelectorAll(".evt").forEach(e=>e.classList.toggle("dim", cat!=="전체" && e.dataset.cat!==cat));
+}
 
 /* 화상회의 룸 — 원클릭 입장 */
 function openMeet(title){
