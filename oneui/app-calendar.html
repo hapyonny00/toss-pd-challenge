@@ -7,22 +7,27 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    --accent: #1F88FF; --accent-press: #1A7AF0;
-    --blue50: #EAF1FF; --blue100: #C9DCFF; --blue700: #1B57D6;
+    /* ══ calendar.me 디자인 시스템 — 다크 크롬 + 라이트 캔버스, 라벤더 primary + 라임 하이라이트 ══ */
+    --accent: #8B79E8; --accent-press: #7A66DE;
+    --lime: #D9F158; --lime-deep: #C2DE38; --lime-text: #2A3105;
+    --blue50: #EFEBFF; --blue100: #DCD4FB; --blue700: #5B48C2;
     --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
     --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
     --red400: #F2686C;
-    --base: #F4F4F6; --s1: #FFFFFF; --s2: #ECECEE; --s3: #E4E4E7;
-    --tp: #17171A; --ts: #616166; --tm: #8E8E93;
-    --hair: #ECECEE; --dash: #B8B8BE; --drop-tint: #EAF1FF;
-    --shadow-card: 0 12px 28px rgba(23,54,138,.14);
-    --shadow-float: 0 16px 36px rgba(23,54,138,.20);
+    --base: #EFEEEA; --s1: #FFFFFF; --s2: #E9E7E1; --s3: #DEDCD4;
+    --tp: #17171A; --ts: #5F5F66; --tm: #93939B;
+    --hair: #E9E7E1; --dash: #B9B9C0; --drop-tint: #EFEBFF;
+    --shadow-card: 0 12px 28px rgba(42,33,80,.13);
+    --shadow-float: 0 16px 36px rgba(42,33,80,.18);
+    /* 다크 크롬 패널 (레일·사이드바 — 라이트 테마에서도 검정) */
+    --panel: #101013; --panel2: #1B1B1F; --panel3: #26262B;
+    --grad-band: linear-gradient(105deg, #DFF460 0%, #CDE7EF 48%, #DCD2F9 100%);
 
-    /* 태그 · 카테고리 컬러 (참고 이미지의 컬러 다양성) — 이벤트 성격을 구분하는 용도로만,
-       주요 액션 버튼의 액센트(파랑)는 그대로 One UI 원칙(액션당 액센트 1개)을 지킨다 */
-    --tag-purple: #7C6BF0; --tag-purple-bg: #EFEDFD;
-    --tag-coral: #E8927C; --tag-coral-bg: #FBEEEA;
-    --tag-mint: #2FA98C; --tag-mint-bg: #E4F5F0;
+    /* 파스텔 이벤트 블록 — 어두운 텍스트가 올라가는 저채도 면 */
+    --tag-purple: #6C57D6; --tag-purple-bg: #DCD4FB;
+    --tag-coral: #C74E86; --tag-coral-bg: #F8D9E8;
+    --tag-mint: #1F8A68; --tag-mint-bg: #D3EFE4;
+    --ev-mine: #BCAAF6; --ev-mine-text: #2A2150;
 
     /* ══ motion tokens (animation-systems: Stripe×Linear×Apple×Vercel) ══
        숫자 자체보다 "어디에 어떤 대역을 쓰는지"가 일관성의 핵심 — 새 모션은
@@ -38,21 +43,21 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #3D92FF; --accent-press: #1F88FF;
-    --blue50: #14263F; --blue100: #1D3A63; --blue700: #9CBEFF;
-    --amber50: #3A2E14; --amber900: #FFB43A; --green50: #0C3F23;
-    /* 다크 네이비 베이스(#0d111b) — 순검정 대신 깊은 남색 톤으로 눈부심 없이 */
-    --base: #0D111B; --s1: #151C2B; --s2: #1C2436; --s3: #253048;
-    --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #232D42; --dash: #616166; --drop-tint: #14263F;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
+    --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
+    --base: #0B0B0D; --s1: #17171A; --s2: #222226; --s3: #2D2D33;
+    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
+    --hair: #26262B; --dash: #55555C; --drop-tint: #2A2653;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
+    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
 
-    /* 다크모드는 진짜 검정 위에 태그 컬러를 더 비비드하게 — 라이트와 톤이
-       확실히 갈리도록(어둡게 눌린 톤 X, 새까만 배경 위에 선명하게 뜨는 톤) */
-    --tag-purple: #A79BFF; --tag-purple-bg: #241F45;
-    --tag-coral: #FFA98C; --tag-coral-bg: #3A2318;
-    --tag-mint: #4FD9B8; --tag-mint-bg: #103028;
+    /* 다크에서도 파스텔 이벤트는 그대로 — 그라데이션·라임 하이라이트가 다크 위에서 더 도드라진다 */
+    --tag-purple: #CFC2FF; --tag-purple-bg: #39325F;
+    --tag-coral: #F9A8CC; --tag-coral-bg: #47263A;
+    --tag-mint: #6FDDB6; --tag-mint-bg: #14382C;
+    --ev-mine: #BCAAF6; --ev-mine-text: #2A2150;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -75,46 +80,51 @@
 
   /* ══ calendar (LEFT) ══ */
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .topbar { display: flex; align-items: center; gap: 12px; padding: 18px 20px 16px; border-bottom: 1px solid var(--hair); }
+  /* topbar — 그라데이션 밴드 위에 얹힘: 텍스트·버튼은 항상 어두운 톤 */
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 18px 20px 16px; color: #17171A; }
   .topbar .titles h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
-  .topbar .titles .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
+  .topbar .titles .sub { font-size: 13px; color: rgba(23,23,26,.6); font-weight: 500; margin-top: 3px; }
   .topbar .sp { flex: 1; }
-  .navbtns { display: flex; align-items: center; gap: 2px; }
+  .navbtns { display: flex; align-items: center; gap: 6px; }
   .navbtns button {
-    width: 40px; height: 40px; border: none; background: var(--s2); color: var(--tp);
-    border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border: none; background: rgba(255,255,255,.55); color: #17171A;
+    border-radius: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
   }
-  .navbtns button:hover { background: var(--s3); }
+  .navbtns button:hover { background: rgba(255,255,255,.85); }
   .navbtns button:active, .today-btn:active, .mini-h button:active { transform: scale(.94); }
-  .today-btn { font: inherit; font-size: 13px; font-weight: 600; height: 40px; padding: 0 16px; border: none; background: var(--s2); color: var(--tp); border-radius: 14px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-  .today-btn:hover { background: var(--s3); }
+  /* '오늘' = 레퍼런스의 Today 검정 알약 */
+  .today-btn { font: inherit; font-size: 13px; font-weight: 700; height: 40px; padding: 0 18px; border: none; background: #17171A; color: #fff; border-radius: 20px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+  .today-btn:hover { background: #2A2A30; }
   .mini-h button:hover { background: var(--s2); }
 
   /* ══ 주 CTA — 미니 캘린더 카드 하단에 안착 (참고 이미지 Submit List 자리) ══ */
   .side-cta {
     display: flex; align-items: center; justify-content: center; gap: 7px;
     margin: 16px 0 4px; height: 46px; width: 100%;
-    border: none; border-radius: 23px; background: var(--accent); color: #fff;
+    border: none; border-radius: 23px; background: var(--lime); color: var(--lime-text);
     font: inherit; font-size: 14px; font-weight: 800; letter-spacing: -.2px; cursor: pointer; white-space: nowrap;
     transition: transform var(--dur-micro) var(--ease-out), background var(--dur-ui) var(--ease-out), box-shadow var(--dur-micro) var(--ease-out);
   }
-  .side-cta .ic { stroke: #fff; }
-  .side-cta:hover { box-shadow: var(--shadow-card); }
+  .side-cta .ic { stroke: var(--lime-text); }
+  .side-cta:hover { background: var(--lime-deep); }
   .side-cta:active { transform: scale(.97); }
   /* 날짜를 고르면 링 펄스로 "다음 행동은 나" 라고 말하는 활성 상태 */
   .side-cta.armed { animation: armPulse 1.5s var(--ease-out) infinite; }
-  @keyframes armPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+  @keyframes armPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lime) 55%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
   /* 확정 완료 변형(Variant) — 같은 버튼이 결과 상태까지 책임진다 */
-  .side-cta.done { background: var(--green); animation: none; }
+  .side-cta.done { background: var(--green); color: #fff; animation: none; }
+  .side-cta.done .ic { stroke: #fff; }
 
-  /* gridcard: 1px 내부 하이라이트로 은은한 깊이 (One UI 방식 — 블러/글래스 없이 표면 명도만으로) */
-  .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 0 0 1px var(--hair); }
-  .dayhead { display: grid; grid-template-columns: 56px repeat(5, 1fr); padding: 16px 16px 10px; }
-  .dayhead .dh { text-align: center; }
-  .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--tm); letter-spacing: 1px; }
+  /* gridcard: 상단 ~176px는 라임→라벤더 그라데이션 밴드(레퍼런스의 October 헤더), 아래는 표면색 */
+  .gridcard { flex: 1; min-height: 0; background: var(--grad-band) no-repeat top / 100% 176px, var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; }
+  .dayhead { display: grid; grid-template-columns: 56px repeat(5, 1fr); padding: 6px 16px 14px; gap: 8px; }
+  .dayhead .dh { text-align: center; background: rgba(255,255,255,.38); border-radius: 18px; padding: 8px 0 9px; color: #17171A; transition: background var(--dur-ui) var(--ease-out); }
+  .dayhead .dh.today { background: #FFFFFF; box-shadow: 0 6px 16px rgba(42,33,80,.14); }
+  .dayhead .dow { font-size: 11px; font-weight: 700; color: rgba(23,23,26,.55); letter-spacing: 1px; }
   .dayhead .dnum { font-size: 18px; font-weight: 700; margin-top: 3px; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; display: inline-block; font-variant-numeric: tabular-nums; transition: background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out); }
-  .dayhead .dh.today .dnum { background: var(--accent); color: #fff; }
+  .dayhead .dh.today .dnum { color: var(--accent); }
+  .dayhead .dh.today .dow { color: var(--accent); }
   .gwrap { flex: 1; overflow-y: auto; padding: 8px 16px 16px; }
   .grid { display: grid; grid-template-columns: 56px repeat(5, 1fr); }
   .tl { font-size: 11px; color: var(--tm); font-weight: 600; text-align: right; padding-right: 10px; transform: translateY(-6px); font-variant-numeric: tabular-nums; }
@@ -125,9 +135,10 @@
     display: flex; flex-direction: column; gap: 2px;
   }
   .evt .who { font-size: 10px; font-weight: 500; color: var(--tm); }
-  .evt.mine { background: var(--accent); color: #fff; }
-  .evt.mine .who { color: rgba(255,255,255,.8); }
-  /* 남의 일정도 옅은 컬러로 구분 — 참고 이미지4의 컬러 다양성, One UI 톤은 유지(채도는 낮게) */
+  /* 내 일정 = 라벤더 파스텔 + 어두운 텍스트 (레퍼런스의 이벤트 블록) */
+  .evt.mine { background: var(--ev-mine); color: var(--ev-mine-text); }
+  .evt.mine .who { color: var(--ev-mine-text); opacity: .65; }
+  /* 남의 일정도 저채도 파스텔로 — 어두운 텍스트가 올라간다 */
   .evt.c-purple { background: var(--tag-purple-bg); color: var(--tag-purple); }
   .evt.c-coral { background: var(--tag-coral-bg); color: var(--tag-coral); }
   .evt.c-mint { background: var(--tag-mint-bg); color: var(--tag-mint); }
@@ -144,8 +155,8 @@
     overflow: visible; display: flex; align-items: center; justify-content: center;
     font-size: 8px; font-weight: 800; color: var(--ts); background: var(--s2);
   }
-  .evt.mine .ev-av { border-color: var(--accent); }
-  .evt.mine .ev-av.more { background: rgba(255,255,255,.28); color: #fff; }
+  .evt.mine .ev-av { border-color: var(--ev-mine); }
+  .evt.mine .ev-av.more { background: rgba(255,255,255,.45); color: var(--ev-mine-text); }
 
   /* ══ 일정 호버 툴팁 — 상세 의제·메타·화상회의 CTA가 카드 아래로 확장 ══ */
   .evtip {
@@ -206,8 +217,22 @@
   .flash { animation: flash .5s ease; }
   @keyframes flash { 0% { box-shadow: inset 0 0 0 3px var(--accent); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
 
-  /* ══ sidebar (RIGHT) ══ */
-  .aside { width: 372px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  /* ══ sidebar (RIGHT) — 레퍼런스의 다크 크롬 패널: 라이트 테마에서도 검정.
+     내부 토큰을 다크 값으로 재할당해 마크업·기능은 그대로, 표면만 뒤집는다 ══ */
+  .aside {
+    width: 372px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+    background: var(--panel); border-radius: 28px; padding: 14px; color: var(--tp);
+    --s1: var(--panel2); --s2: var(--panel3); --s3: #303036;
+    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
+    --hair: #2C2C31; --dash: #55555C;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
+    --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --tag-purple: #CFC2FF; --tag-purple-bg: #39325F;
+    --tag-coral: #F9A8CC; --tag-coral-bg: #47263A;
+    --tag-mint: #6FDDB6; --tag-mint-bg: #14382C;
+    --shadow-card: 0 12px 28px rgba(0,0,0,.4);
+  }
   .aside::-webkit-scrollbar { width: 0; }
   .search {
     display: flex; align-items: center; gap: 10px; height: 64px; background: var(--s1);
@@ -228,7 +253,7 @@
   table.mini td { padding: 2px 0; }
   table.mini td span { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 500; }
   table.mini td.out span { color: var(--tm); opacity: .5; }
-  table.mini td.today span { background: var(--accent); color: #fff; font-weight: 700; }
+  table.mini td.today span { background: var(--lime); color: var(--lime-text); font-weight: 700; }
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
   table.mini td:not(.out) { cursor: pointer; }
   table.mini td.picked span { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 50% !important; color: var(--accent); font-weight: 700; }
