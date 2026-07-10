@@ -7,55 +7,60 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    --accent: #1F88FF; --blue50: #EAF1FF;
-    --base: #F4F4F6; --s1: #FFFFFF; --s2: #ECECEE;
-    --tp: #17171A; --ts: #616166; --tm: #8E8E93; --hair: #ECECEE;
+    /* calendar.me 디자인 시스템 — 다크 크롬 레일 + 라이트 캔버스, 라벤더·라임 액센트 */
+    --accent: #8B79E8; --accent-soft: #BCAAF6; --lime: #D9F158; --lime-text: #2A3105;
+    --base: #EFEEEA; --s1: #FFFFFF; --s2: #E9E7E1;
+    --tp: #17171A; --ts: #5F5F66; --tm: #93939B; --hair: #E9E7E1;
+    --panel: #101013; --panel2: #1B1B1F; --panel3: #26262B;
   }
   [data-theme="dark"] {
-    --accent: #3D92FF; --blue50: #14263F;
-    --base: #0D111B; --s1: #151C2B; --s2: #1C2436;
-    --tp: #FFFFFF; --ts: #B8B8BE; --tm: #8E8E93; --hair: #232D42;
+    --accent: #A78BFF; --accent-soft: #BCAAF6;
+    --base: #0B0B0D; --s1: #17171A; --s2: #222226;
+    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
+    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; background: var(--base); color: var(--tp); overflow: hidden; transition: background .3s, color .3s; }
   .shell { display: flex; height: 100vh; }
 
-  /* ══ One UI Navigation Rail ══ */
+  /* ══ Navigation Rail — 레퍼런스의 다크 크롬: 라이트 테마에서도 검정 슬래브 ══ */
   .rail {
     width: 88px; flex: none; display: flex; flex-direction: column; align-items: center;
-    padding: 16px 0 14px; gap: 4px; background: var(--base);
+    padding: 16px 0 14px; gap: 4px; background: var(--panel);
+    border-radius: 0 28px 28px 0;
   }
-  /* Moim 지오메트릭 로고 — 사각(모이는 자리) + 원(사람)이 겹치는 마크 */
+  /* Moim 지오메트릭 로고 — 사각(라벤더, 모이는 자리) + 원(라임, 사람) */
   .rail .logo {
     width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
     margin-bottom: 12px;
   }
   .rail .logo svg { display: block; }
-  .rail .logo .lg-sq { fill: var(--accent); }
+  .rail .logo .lg-sq { fill: var(--accent-soft); }
+  .rail .logo .lg-dot { fill: var(--lime); opacity: 1; }
   .rail .fab {
-    width: 50px; height: 50px; border-radius: 25px; background: var(--accent); color: #fff; border: none;
+    width: 50px; height: 50px; border-radius: 25px; background: var(--accent-soft); color: #2A2150; border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
-    box-shadow: 0 6px 16px rgba(31,136,255,.32); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
+    box-shadow: 0 6px 16px rgba(139,121,232,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
   }
   .rail .fab:hover { border-radius: 18px; }
   .rail .fab:active { transform: scale(.92); }
-  .rail .fab .ic { width: 24px; height: 24px; stroke: #fff; stroke-width: 2; fill: none; stroke-linecap: round; }
+  .rail .fab .ic { width: 24px; height: 24px; stroke: #2A2150; stroke-width: 2; fill: none; stroke-linecap: round; }
   .rail .item {
     width: 68px; padding: 9px 0 7px; border: none; background: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 20px;
-    color: var(--tm); transition: background .18s, color .18s;
+    color: #8E8E93; transition: background .18s, color .18s;
   }
-  .rail .item:hover { background: var(--s2); }
-  .rail .item.on { background: var(--blue50); color: var(--accent); }
+  .rail .item:hover { background: var(--panel3); }
+  .rail .item.on { background: #2A2653; color: #CFC2FF; }
   .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
   .rail .sp { flex: 1; }
   .rail .foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--s1); color: var(--ts); border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .rail .fbtn:hover { background: var(--s2); }
+  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--panel2); color: #B8B8BE; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .rail .fbtn:hover { background: var(--panel3); }
   .rail .fbtn .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#7C6BF0,#1F88FF); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#BCAAF6,#D9F158); color: #2A2150; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
 
   /* ══ content ══ */
   .content { flex: 1; min-width: 0; padding: 12px 12px 12px 0; }
@@ -88,7 +93,7 @@
 <div class="shell">
   <nav class="rail">
     <div class="logo" role="img" aria-label="모임">
-      <svg width="38" height="38" viewBox="0 0 30 30"><rect class="lg-sq" x="2" y="2" width="17" height="17" rx="6"/><circle cx="20" cy="20" r="8" fill="#93C5FD" opacity=".9"/></svg>
+      <svg width="38" height="38" viewBox="0 0 30 30"><rect class="lg-sq" x="2" y="2" width="17" height="17" rx="6"/><circle class="lg-dot" cx="20" cy="20" r="8"/></svg>
     </div>
     <button class="fab" onclick="quickCreate()" aria-label="회의 잡기"><svg class="ic"><use href="#n-plus"/></svg></button>
     <button class="item on" data-src="oneui/app-calendar.html" onclick="nav(this)"><svg class="ic"><use href="#n-cal"/></svg><span class="lb">캘린더</span></button>
