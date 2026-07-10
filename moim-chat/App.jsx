@@ -1,12 +1,14 @@
 /* ══════════════════════════════════════════════════════════════════
-   Moim(모임) — 온·오프라인 맥락과 이동 시간까지 조율하는 대화형 일정 솔루션
-   좌: 챗룸(투표 엔진) · 우: 캘린더 스케줄러(온/오프라인 토글 + 장소 입력)
+   Moim(모임) — 대화 속에서 일정이 확정되는 채팅 중심 조율 솔루션
+   좌: 1:1 챗룸 · 우: 팀 채팅방(회의 카드 게시 + 투표 + 메시지 전송)
+   캘린더·스케줄러 기능은 메인 캘린더 프로토타입과 중복이라 제거하고,
+   팀원들이 대화하고 회의 카드를 주고받는 채팅방으로 교체
    토스 UX 라이팅: 해요체 · 구체적 수치 · 단문
    ══════════════════════════════════════════════════════════════════ */
 const { useState, useEffect, useRef, useCallback } = React;
 const {
-  Search, ChevronLeft, ChevronRight, MoreHorizontal, Calendar, Clock,
-  MapPin, Users, Check, Loader2, Play, Video, Phone, Mic, Send, Footprints,
+  MoreHorizontal, Calendar, Clock, MapPin, Check, Loader2,
+  Play, Video, Phone, Mic, Send, Footprints, Plus,
 } = LucideReact;
 
 /* ── 데모 딥링크: ?demo=card(카드 게시) | confirmed(확정까지 자동 진행) ── */
@@ -127,10 +129,8 @@ function MeetingCard({ card, onApprove, onAlt }) {
   );
 }
 
-/* ── 좌측: 챗룸 ── */
-function ChatPane({ card, feed, onApprove, onAlt }) {
-  const endRef = useRef(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [card, feed]);
+/* ── 좌측: 1:1 챗룸 (Mira) ── */
+function ChatPane() {
   return (
     <section className="flex-1 min-w-0 bg-white rounded-[28px] flex flex-col overflow-hidden shadow-sm">
       {/* header */}
@@ -176,25 +176,7 @@ function ChatPane({ card, feed, onApprove, onAlt }) {
           <div className="bg-gray-100 text-gray-700 text-[13px] leading-relaxed rounded-2xl rounded-bl-md px-3.5 py-2.5 self-start max-w-[260px]">
             Okay, I can't wait to start! 😊
           </div>
-
-          {/* dynamic: meeting card + feed */}
-          {card && <MeetingCard card={card} onApprove={onApprove} onAlt={onAlt} />}
-          {feed.map((m, i) =>
-            m.side === "out" ? (
-              <div key={i} className="animate-fadeup bg-royal text-white text-[13px] leading-relaxed rounded-2xl rounded-br-md px-3.5 py-2.5 self-end max-w-[260px]">{m.text}</div>
-            ) : (
-              <div key={i} className="animate-fadeup flex items-end gap-2 self-start max-w-[280px]">
-                {m.bot ? (
-                  <span className="w-6 h-6 rounded-full bg-royal text-white text-[10px] font-extrabold flex items-center justify-center flex-none">M</span>
-                ) : (
-                  <img src={AVATAR.mira} alt="" className="w-6 h-6 rounded-full object-cover flex-none" />
-                )}
-                <div className="bg-gray-100 text-gray-700 text-[13px] leading-relaxed rounded-2xl rounded-bl-md px-3.5 py-2.5">{m.text}</div>
-              </div>
-            )
-          )}
         </div>
-        <div ref={endRef} />
       </div>
 
       {/* composer */}
@@ -207,168 +189,144 @@ function ChatPane({ card, feed, onApprove, onAlt }) {
   );
 }
 
-/* ── 우측: 캘린더 스케줄러 ── */
-function SchedulerPane({ onSubmit, confirmedDay, meetingType, setMeetingType, place, setPlace, title, setTitle, time, setTime }) {
-  /* 2020년 1월: 1일 = 수요일. 참고 이미지의 점 표기 재현 */
-  const lead = [29, 30, 31];
-  const dots = new Set([8, 9, 12, 14, 16, 22, 23]);
+/* ── 우측: 팀 채팅방 — 회의 카드가 게시되고 투표가 오가는 곳 ── */
+function TeamChatPane({ card, feed, onApprove, onAlt, onSend, onPostCard }) {
+  const [draft, setDraft] = useState("");
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [card, feed]);
+
+  const send = () => {
+    const text = draft.trim();
+    if (!text) return;
+    onSend(text);
+    setDraft("");
+  };
+
   return (
-    <section className="w-[340px] flex-none bg-royal rounded-[28px] flex flex-col overflow-hidden shadow-sm">
-      {/* search */}
-      <div className="px-5 pt-5">
-        <div className="flex items-center gap-2.5 h-10 rounded-full bg-white/15 px-4 text-white/80">
-          <Search size={15} />
-          <span className="text-[12.5px] font-semibold">Search</span>
-        </div>
-      </div>
-      {/* month grid */}
-      <div className="px-5 pt-4 pb-3 text-white">
-        <div className="flex items-center mb-3">
-          <span className="text-[15px] font-extrabold tracking-tight flex-1">January 2020</span>
-          <button aria-label="이전 달" className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center"><ChevronLeft size={15} /></button>
-          <button aria-label="다음 달" className="w-7 h-7 rounded-full hover:bg-white/15 flex items-center justify-center"><ChevronRight size={15} /></button>
-        </div>
-        <div className="grid grid-cols-7 gap-y-1 text-center">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <span key={d} className="text-[10px] font-bold text-white/60 py-1">{d}</span>
-          ))}
-          {lead.map((n) => (
-            <span key={"l" + n} className="text-[12px] font-semibold text-white/40 py-1.5">{n}</span>
-          ))}
-          {Array.from({ length: 31 }, (_, i) => i + 1).map((n) => (
-            <span key={n} className="relative py-1.5 flex flex-col items-center">
-              <span
-                className={
-                  "w-7 h-7 flex items-center justify-center rounded-full text-[12px] font-semibold " +
-                  (n === 6 ? "bg-white text-royal font-extrabold" : "text-white")
-                }
-              >
-                {n}
-              </span>
-              {confirmedDay === n ? (
-                <span className="absolute -bottom-0.5 w-1.5 h-1.5 rounded-full bg-emerald-300 ring-2 ring-emerald-300/30" />
-              ) : dots.has(n) ? (
-                <span className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-white/50" />
-              ) : null}
-            </span>
+    <section className="w-[340px] flex-none bg-white rounded-[28px] flex flex-col overflow-hidden shadow-sm">
+      {/* header: 멤버 아바타 스택 + 방 이름 */}
+      <header className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100">
+        <div className="flex">
+          {[AVATAR.you, AVATAR.mira, AVATAR.sim].map((src, i) => (
+            <img key={i} src={src} alt="" className={"w-8 h-8 rounded-full object-cover border-2 border-white " + (i > 0 ? "-ml-2.5" : "")} />
           ))}
         </div>
-        {confirmedDay && (
-          <div className="animate-fadeup mt-2 flex items-center gap-1.5 text-[11.5px] font-bold text-emerald-200">
-            <Check size={12} strokeWidth={3} /> 1월 {confirmedDay}일 {time} · {title} 확정
+        <div className="flex-1 min-w-0">
+          <div className="text-[14px] font-extrabold text-gray-900 tracking-tight">프로젝트 팀</div>
+          <div className="text-[10.5px] font-semibold text-gray-400">나 · Mira · 김토스</div>
+        </div>
+        <button aria-label="영상통화" className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500"><Video size={17} /></button>
+      </header>
+
+      {/* messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2.5">
+        <div className="text-center text-[10.5px] font-bold text-gray-300 py-1">오늘</div>
+
+        <div className="flex items-end gap-2 self-start max-w-[280px]">
+          <img src={AVATAR.sim} alt="" className="w-6 h-6 rounded-full object-cover flex-none" />
+          <div>
+            <div className="text-[10px] font-bold text-gray-400 mb-0.5 ml-1">김토스</div>
+            <div className="bg-gray-100 text-gray-700 text-[13px] leading-relaxed rounded-2xl rounded-bl-md px-3.5 py-2.5">
+              킥오프 언제 하죠? 이번 주는 좀 빡빡해요
+            </div>
           </div>
+        </div>
+        <div className="flex items-end gap-2 self-start max-w-[280px]">
+          <img src={AVATAR.mira} alt="" className="w-6 h-6 rounded-full object-cover flex-none" />
+          <div>
+            <div className="text-[10px] font-bold text-gray-400 mb-0.5 ml-1">Mira Brown</div>
+            <div className="bg-gray-100 text-gray-700 text-[13px] leading-relaxed rounded-2xl rounded-bl-md px-3.5 py-2.5">
+              저는 월·화 오후가 편해요!
+            </div>
+          </div>
+        </div>
+        <div className="bg-royal text-white text-[13px] leading-relaxed rounded-2xl rounded-br-md px-3.5 py-2.5 self-end max-w-[260px]">
+          제가 시간이랑 장소 모아볼게요. 잠깐만요 🙌
+        </div>
+
+        {/* dynamic: meeting card + feed */}
+        {card && <MeetingCard card={card} onApprove={onApprove} onAlt={onAlt} />}
+        {feed.map((m, i) =>
+          m.side === "out" ? (
+            <div key={i} className="animate-fadeup bg-royal text-white text-[13px] leading-relaxed rounded-2xl rounded-br-md px-3.5 py-2.5 self-end max-w-[260px]">{m.text}</div>
+          ) : (
+            <div key={i} className="animate-fadeup flex items-end gap-2 self-start max-w-[280px]">
+              {m.bot ? (
+                <span className="w-6 h-6 rounded-full bg-royal text-white text-[10px] font-extrabold flex items-center justify-center flex-none">M</span>
+              ) : (
+                <img src={AVATAR[m.who] || AVATAR.mira} alt="" className="w-6 h-6 rounded-full object-cover flex-none" />
+              )}
+              <div className="bg-gray-100 text-gray-700 text-[13px] leading-relaxed rounded-2xl rounded-bl-md px-3.5 py-2.5">{m.text}</div>
+            </div>
+          )
         )}
+        <div ref={endRef} />
       </div>
 
-      {/* Add new list */}
-      <div className="bg-white rounded-t-[24px] flex-1 px-5 pt-4 pb-5 flex flex-col">
-        <div className="flex items-center mb-3">
-          <span className="text-[14.5px] font-extrabold text-gray-900 flex-1">Add new list</span>
-          <button aria-label="옵션" className="text-gray-300"><MoreHorizontal size={17} /></button>
-        </div>
-        <input
-          value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title"
-          className="w-full border-b border-gray-200 focus:border-royal outline-none text-[13px] py-2.5 placeholder:text-gray-300 transition-colors"
-        />
-        <div className="flex gap-4">
-          <label className="flex-1 flex items-center gap-1.5 border-b border-gray-200 py-2.5 text-[13px] text-gray-700">
-            <span className="flex-1">1월 6일</span><Calendar size={13} className="text-gray-300" />
-          </label>
-          <label className="flex-1 flex items-center gap-1.5 border-b border-gray-200 py-2.5">
-            <input value={time} onChange={(e) => setTime(e.target.value)} className="w-full outline-none text-[13px] text-gray-700" />
-            <Clock size={13} className="text-gray-300" />
-          </label>
-        </div>
-        <label className="flex items-center gap-1.5 border-b border-gray-200 py-2.5 text-[13px] text-gray-400">
-          <span className="flex-1">Mira, 김토스 외 1명</span><Users size={13} className="text-gray-300" />
-        </label>
-
-        {/* 온라인/오프라인 세그먼트 — 오프라인이면 장소 필드 확장 */}
-        <div className="mt-4 p-1 rounded-full bg-gray-100 flex" role="tablist" aria-label="미팅 방식">
-          {[["online", "온라인"], ["offline", "오프라인"]].map(([v, label]) => (
-            <button
-              key={v} role="tab" aria-selected={meetingType === v}
-              onClick={() => setMeetingType(v)}
-              className={
-                "flex-1 h-9 rounded-full text-[12.5px] font-bold transition-all " +
-                (meetingType === v ? "bg-white text-royal shadow-sm" : "text-gray-400")
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        {meetingType === "offline" && (
-          <div className="animate-expand overflow-hidden">
-            <label className="flex items-center gap-1.5 border-b border-gray-200 py-2.5 mt-1">
-              <MapPin size={13} className="text-royal flex-none" />
-              <input
-                value={place} onChange={(e) => setPlace(e.target.value)} placeholder="만날 장소"
-                className="w-full outline-none text-[13px] text-gray-700 placeholder:text-gray-300"
-              />
-            </label>
-            <p className="text-[10.5px] text-gray-400 pt-1.5">멤버 3명의 위치 기준으로 이동 시간을 계산해요</p>
-          </div>
-        )}
-
-        <span className="flex-1" />
+      {/* composer: + 로 회의 카드를 게시, 입력·전송이 실제로 동작 */}
+      <footer className="flex items-center gap-2 px-4 py-3 border-t border-gray-100">
         <button
-          onClick={onSubmit}
-          className="self-center mt-4 h-11 px-8 rounded-full bg-royal text-white text-[13.5px] font-bold shadow-lg shadow-blue-500/25 active:scale-[.97] transition"
+          onClick={onPostCard} aria-label="회의 카드 보내기" title="회의 카드 보내기"
+          className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-royal flex-none active:scale-95 transition"
         >
-          Submit List
+          <Plus size={17} strokeWidth={2.5} />
         </button>
-      </div>
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          placeholder="팀에게 메시지 보내기"
+          className="flex-1 min-w-0 h-10 rounded-full bg-gray-100 px-4 text-[13px] outline-none placeholder:text-gray-400"
+        />
+        <button onClick={send} aria-label="보내기" className="w-10 h-10 rounded-full bg-royal flex items-center justify-center text-white flex-none active:scale-95 transition"><Send size={15} /></button>
+      </footer>
     </section>
   );
 }
 
 /* ── 앱 루트 ── */
 function App() {
-  const [meetingType, setMeetingType] = useState("online");
-  const [place, setPlace] = useState("강남역");
-  const [title, setTitle] = useState("팀 킥오프");
-  const [time, setTime] = useState("오후 3시");
   const [card, setCard] = useState(null);
   const [feed, setFeed] = useState([]);
-  const [confirmedDay, setConfirmedDay] = useState(null);
 
-  const submit = useCallback(() => {
+  /* + 버튼 → 회의 카드 게시 (이동 시간이 계산된 오프라인 제안) */
+  const postCard = useCallback(() => {
     setCard({
-      type: meetingType,
-      title: title.trim() || "팀 킥오프",
-      place: place.trim() || "강남역",
-      date: "1월 6일 (월)",
-      time,
+      type: "offline", title: "팀 킥오프", place: "강남역",
+      date: "1월 6일 (월)", time: "오후 3시",
       votes: { mira: "yes", sim: "pending", you: "wait" },
       confirmed: false,
     });
     setFeed([]);
-    setConfirmedDay(null);
-  }, [meetingType, place, title, time]);
+  }, []);
 
   const approve = useCallback(() => {
     setCard((c) => c && { ...c, votes: { ...c.votes, you: "yes" } });
     setTimeout(() => {
       setCard((c) => c && { ...c, votes: { ...c.votes, sim: "yes" }, confirmed: true });
-      setFeed((f) => [...f, { side: "in", bot: true, text: "장소와 일정이 확정되었어요. 캘린더에 등록할게요!" }]);
-      setConfirmedDay(6);
+      setFeed((f) => [...f, { side: "in", bot: true, text: "장소와 일정이 확정됐어요. 캘린더에 등록할게요!" }]);
     }, SIM_DELAY);
   }, []);
 
   const suggestAlt = useCallback(() => {
     setFeed((f) => [...f, { side: "out", text: "오후 4시는 어때요? 3시엔 리뷰가 하나 있어요." }]);
     setTimeout(() => {
-      setTime("오후 4시");
       setCard((c) => c && { ...c, time: "오후 4시" });
-      setFeed((f) => [...f, { side: "in", text: "좋아요, 오후 4시로 다시 모을게요 👍" }]);
+      setFeed((f) => [...f, { side: "in", who: "mira", text: "좋아요, 오후 4시로 다시 모을게요 👍" }]);
+    }, SIM_DELAY);
+  }, []);
+
+  /* 메시지 전송 — 보내면 팀원이 잠시 뒤 답장 */
+  const sendMessage = useCallback((text) => {
+    setFeed((f) => [...f, { side: "out", text }]);
+    setTimeout(() => {
+      setFeed((f) => [...f, { side: "in", who: "sim", text: "넵, 확인했어요 👍" }]);
     }, SIM_DELAY);
   }, []);
 
   /* 데모 딥링크 자동 진행 */
   useEffect(() => {
     if (!DEMO) return;
-    setMeetingType("offline");
     const t1 = setTimeout(() => {
       setCard({
         type: "offline", title: "팀 킥오프", place: "강남역",
@@ -380,8 +338,7 @@ function App() {
     if (DEMO === "confirmed") {
       t2 = setTimeout(() => {
         setCard((c) => c && { ...c, votes: { mira: "yes", sim: "yes", you: "yes" }, confirmed: true });
-        setFeed([{ side: "in", bot: true, text: "장소와 일정이 확정되었어요. 캘린더에 등록할게요!" }]);
-        setConfirmedDay(6);
+        setFeed([{ side: "in", bot: true, text: "장소와 일정이 확정됐어요. 캘린더에 등록할게요!" }]);
       }, 350);
     }
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -389,13 +346,11 @@ function App() {
 
   return (
     <main className="h-screen flex gap-4 p-4 max-w-[1100px] mx-auto font-sans">
-      <ChatPane card={card} feed={feed} onApprove={approve} onAlt={suggestAlt} />
-      <SchedulerPane
-        onSubmit={submit} confirmedDay={confirmedDay}
-        meetingType={meetingType} setMeetingType={setMeetingType}
-        place={place} setPlace={setPlace}
-        title={title} setTitle={setTitle}
-        time={time} setTime={setTime}
+      <ChatPane />
+      <TeamChatPane
+        card={card} feed={feed}
+        onApprove={approve} onAlt={suggestAlt}
+        onSend={sendMessage} onPostCard={postCard}
       />
     </main>
   );
