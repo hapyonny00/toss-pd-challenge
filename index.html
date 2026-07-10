@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    /* calendar.me 디자인 시스템 — 다크 크롬 레일 + 라이트 캔버스, 라벤더·라임 액센트 */
-    --accent: #8B79E8; --accent-soft: #BCAAF6; --lime: #D9F158; --lime-text: #2A3105;
-    --base: #EFEEEA; --s1: #FFFFFF; --s2: #E9E7E1;
-    --tp: #17171A; --ts: #5F5F66; --tm: #93939B; --hair: #E9E7E1;
-    --panel: #101013; --panel2: #1B1B1F; --panel3: #26262B;
+    /* Dei 디자인 시스템 — 아이시 민트 캔버스 + 블랙 크롬, 핑크·민트 파스텔 액센트 */
+    --accent: #2FB56B; --accent-soft: #F5C9EF; --lime: #7EE29B; --lime-text: #123B23;
+    --base: #D9EDF2; --s1: #FFFFFF; --s2: #ECF4F6;
+    --tp: #17171A; --ts: #5C6467; --tm: #93999C; --hair: #E6EFF1;
+    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
   }
   [data-theme="dark"] {
-    --accent: #A78BFF; --accent-soft: #BCAAF6;
+    --accent: #4ADE87; --accent-soft: #F5C9EF;
     --base: #0B0B0D; --s1: #17171A; --s2: #222226;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
     --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
@@ -39,20 +39,20 @@
   .rail .logo .lg-sq { fill: var(--accent-soft); }
   .rail .logo .lg-dot { fill: var(--lime); opacity: 1; }
   .rail .fab {
-    width: 50px; height: 50px; border-radius: 25px; background: var(--accent-soft); color: #2A2150; border: none;
+    width: 50px; height: 50px; border-radius: 25px; background: var(--lime); color: var(--lime-text); border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
-    box-shadow: 0 6px 16px rgba(139,121,232,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
+    box-shadow: 0 6px 16px rgba(47,181,107,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
   }
   .rail .fab:hover { border-radius: 18px; }
   .rail .fab:active { transform: scale(.92); }
-  .rail .fab .ic { width: 24px; height: 24px; stroke: #2A2150; stroke-width: 2; fill: none; stroke-linecap: round; }
+  .rail .fab .ic { width: 24px; height: 24px; stroke: var(--lime-text); stroke-width: 2; fill: none; stroke-linecap: round; }
   .rail .item {
     width: 68px; padding: 9px 0 7px; border: none; background: none; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 20px;
     color: #8E8E93; transition: background .18s, color .18s;
   }
   .rail .item:hover { background: var(--panel3); }
-  .rail .item.on { background: #2A2653; color: #CFC2FF; }
+  .rail .item.on { background: #143327; color: #A9F0C6; }
   .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
   .rail .sp { flex: 1; }
@@ -60,7 +60,7 @@
   .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--panel2); color: #B8B8BE; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .rail .fbtn:hover { background: var(--panel3); }
   .rail .fbtn .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#BCAAF6,#D9F158); color: #2A2150; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#F5C9EF,#7EE29B); color: #123B23; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
 
   /* ══ content ══ */
   .content { flex: 1; min-width: 0; }

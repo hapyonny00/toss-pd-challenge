@@ -7,27 +7,29 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    /* ══ calendar.me 디자인 시스템 — 다크 크롬 + 라이트 캔버스, 라벤더 primary + 라임 하이라이트 ══ */
-    --accent: #8B79E8; --accent-press: #7A66DE;
-    --lime: #D9F158; --lime-deep: #C2DE38; --lime-text: #2A3105;
-    --blue50: #EFEBFF; --blue100: #DCD4FB; --blue700: #5B48C2;
+    /* ══ Dei 디자인 시스템 — 아이시 민트 캔버스 + 블랙 크롬 + 파스텔 카드, 그린 affirmative ══ */
+    --accent: #2FB56B; --accent-press: #279B5B;
+    --lime: #7EE29B; --lime-deep: #5FD383; --lime-text: #123B23;
+    --blue50: #DFF5E9; --blue100: #BEEBD3; --blue700: #1F8A4C;
     --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
     --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
     --red400: #F2686C;
-    --base: #EFEEEA; --s1: #FFFFFF; --s2: #E9E7E1; --s3: #DEDCD4;
-    --tp: #17171A; --ts: #5F5F66; --tm: #93939B;
-    --hair: #E9E7E1; --dash: #B9B9C0; --drop-tint: #EFEBFF;
-    --shadow-card: 0 12px 28px rgba(42,33,80,.13);
-    --shadow-float: 0 16px 36px rgba(42,33,80,.18);
+    --base: #D9EDF2; --s1: #FFFFFF; --s2: #ECF4F6; --s3: #DEEAED;
+    --tp: #17171A; --ts: #5C6467; --tm: #93999C;
+    --hair: #E6EFF1; --dash: #B4C0C4; --drop-tint: #DFF5E9;
+    --shadow-card: 0 12px 28px rgba(20,60,70,.12);
+    --shadow-float: 0 16px 36px rgba(20,60,70,.16);
     /* 다크 크롬 패널 (레일·사이드바 — 라이트 테마에서도 검정) */
-    --panel: #101013; --panel2: #1B1B1F; --panel3: #26262B;
-    --grad-band: linear-gradient(105deg, #DFF460 0%, #CDE7EF 48%, #DCD2F9 100%);
+    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
+    --grad-band: linear-gradient(105deg, #CDEBF2 0%, #F4DCF1 50%, #CFF2D8 100%);
+    /* 주 CTA — 레퍼런스의 블랙 알약 */
+    --cta: #101013; --cta-press: #2A2A30; --cta-text: #FFFFFF;
 
     /* 파스텔 이벤트 블록 — 어두운 텍스트가 올라가는 저채도 면 */
-    --tag-purple: #6C57D6; --tag-purple-bg: #DCD4FB;
-    --tag-coral: #C74E86; --tag-coral-bg: #F8D9E8;
-    --tag-mint: #1F8A68; --tag-mint-bg: #D3EFE4;
-    --ev-mine: #BCAAF6; --ev-mine-text: #2A2150;
+    --tag-purple: #6C4BC4; --tag-purple-bg: #E4D6F8;
+    --tag-coral: #8A6410; --tag-coral-bg: #FBEBB0;
+    --tag-mint: #1F8A4C; --tag-mint-bg: #CBF1D2;
+    --ev-mine: #F5C9EF; --ev-mine-text: #571A4F;
 
     /* ══ motion tokens (animation-systems: Stripe×Linear×Apple×Vercel) ══
        숫자 자체보다 "어디에 어떤 대역을 쓰는지"가 일관성의 핵심 — 새 모션은
@@ -43,21 +45,22 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #A78BFF; --accent-press: #8B79E8;
-    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
+    --accent: #4ADE87; --accent-press: #2FB56B;
+    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
     --base: #0B0B0D; --s1: #17171A; --s2: #222226; --s3: #2D2D33;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #26262B; --dash: #55555C; --drop-tint: #2A2653;
+    --hair: #26262B; --dash: #55555C; --drop-tint: #143327;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
     --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
+    --cta: #F4F4F6; --cta-press: #DDE3E5; --cta-text: #17171A;
 
-    /* 다크에서도 파스텔 이벤트는 그대로 — 그라데이션·라임 하이라이트가 다크 위에서 더 도드라진다 */
-    --tag-purple: #CFC2FF; --tag-purple-bg: #39325F;
-    --tag-coral: #F9A8CC; --tag-coral-bg: #47263A;
-    --tag-mint: #6FDDB6; --tag-mint-bg: #14382C;
-    --ev-mine: #BCAAF6; --ev-mine-text: #2A2150;
+    /* 다크에서도 파스텔 이벤트는 그대로 — 그라데이션·민트 하이라이트가 다크 위에서 더 도드라진다 */
+    --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
+    --tag-coral: #F5D77E; --tag-coral-bg: #443A14;
+    --tag-mint: #7CE8A5; --tag-mint-bg: #14382C;
+    --ev-mine: #F5C9EF; --ev-mine-text: #571A4F;
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -108,6 +111,7 @@
   }
   .side-cta .ic { stroke: var(--lime-text); }
   .side-cta:hover { background: var(--lime-deep); }
+  /* 다크 사이드바 위에서 민트 CTA — 레퍼런스의 affirmative 그린 */
   .side-cta:active { transform: scale(.97); }
   /* 날짜를 고르면 링 펄스로 "다음 행동은 나" 라고 말하는 활성 상태 */
   .side-cta.armed { animation: armPulse 1.5s var(--ease-out) infinite; }
@@ -243,12 +247,12 @@
     --s1: var(--panel2); --s2: var(--panel3); --s3: #303036;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
     --hair: #2C2C31; --dash: #55555C;
-    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
+    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
-    --accent: #A78BFF; --accent-press: #8B79E8;
-    --tag-purple: #CFC2FF; --tag-purple-bg: #39325F;
-    --tag-coral: #F9A8CC; --tag-coral-bg: #47263A;
-    --tag-mint: #6FDDB6; --tag-mint-bg: #14382C;
+    --accent: #4ADE87; --accent-press: #2FB56B;
+    --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
+    --tag-coral: #F5D77E; --tag-coral-bg: #443A14;
+    --tag-mint: #7CE8A5; --tag-mint-bg: #14382C;
     --shadow-card: 0 12px 28px rgba(0,0,0,.4);
   }
   .aside::-webkit-scrollbar { width: 0; }
@@ -550,6 +554,12 @@
   }
   .cm-custom-dur input::-webkit-outer-spin-button, .cm-custom-dur input::-webkit-inner-spin-button { margin: 0; }
   .cm-custom-dur span { font-size: 13px; color: var(--ts); font-weight: 600; }
+  /* 오프라인 장소 입력 — 방식 세그먼트 밑에서 슬라이드로 열림 */
+  .cm-place { display: none; align-items: center; gap: 8px; margin-top: 8px; padding: 0 4px; animation: rise2 .28s ease; }
+  .cm-place.show { display: flex; }
+  .cm-place .ic { width: 15px; height: 15px; color: var(--accent); flex: none; }
+  .cm-place input { flex: 1; font: inherit; font-size: 13.5px; color: var(--tp); border: none; border-bottom: 1.5px solid var(--hair); background: none; padding: 8px 2px; outline: none; }
+  .cm-place input:focus { border-bottom-color: var(--accent); }
   .cmodal .invite { margin: 4px 0 8px; }
   .cmodal .invite-hint { margin-bottom: 18px; }
   .cm-cta {
@@ -770,7 +780,7 @@
 
 <!-- 회의 만들기 모달 — 레일 +, 빈 셀 +, 바텀 버튼이 전부 여길 연다 -->
 <div class="cscrim" id="createScrim" onclick="if(event.target===this)closeCreate()">
-  <div class="cmodal" id="createModal">
+  <div class="cmodal" id="createModal" role="dialog" aria-modal="true" aria-label="회의 만들기">
     <div class="cm-head">
       <input class="cm-title" id="mName" value="팀 킥오프" placeholder="회의 이름" />
       <button class="cm-x" onclick="closeCreate()" aria-label="닫기">✕</button>
@@ -794,6 +804,17 @@
       <input type="number" id="customDurInput" min="15" max="240" step="15" value="45" oninput="onCustomDur(this.value)" /><span>분</span>
     </div>
 
+    <!-- 온라인/오프라인 — 방식에 따라 장소 입력이 열린다 -->
+    <div class="cm-label" style="margin-top:14px">방식</div>
+    <div class="dur-seg" id="modeSeg" role="group" aria-label="회의 방식">
+      <button class="on" aria-pressed="true" onclick="setMode(this,'online')">온라인</button>
+      <button aria-pressed="false" onclick="setMode(this,'offline')">오프라인</button>
+    </div>
+    <div class="cm-place" id="placeWrap">
+      <svg class="ic sm"><use href="#i-pin"/></svg>
+      <input id="placeInput" value="강남역 오피스 3층" aria-label="만날 장소" />
+    </div>
+
     <div class="cm-label">참석자 · 톡하면 ‘꼭 참석’</div>
     <div class="invite" id="invite"></div>
     <p class="invite-hint">파란 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
@@ -806,7 +827,7 @@
 
 <!-- 팀원 추가 세로 피커 -->
 <div class="pscrim" id="pickerScrim" onclick="if(event.target===this)closePicker()">
-  <div class="prail">
+  <div class="prail" role="dialog" aria-modal="true" aria-label="팀원 추가">
     <button class="pr-x" onclick="closePicker()" aria-label="닫기">✕</button>
     <div class="pr-avs" id="prAvs"></div>
     <button class="pr-add" onclick="pickerAddMore()" aria-label="더 추가"><svg class="ic sm"><use href="#i-plus"/></svg></button>
@@ -908,12 +929,12 @@ HOURS.forEach(h=>{
 grid.innerHTML = g;
 
 /* ══ 카테고리 필터 칩 — 누르면 해당 카테고리 일정만 또렷하게 ══ */
-const CATS = [["전체",null],["기획","#C74E86"],["디자인","#6C57D6"],["개발","#1F8A68"],["데이터","#5B8DEF"],["CX","#E58BB4"],["전사","#8FA83B"]];
+const CATS = [["전체",null],["기획","#E0A72E"],["디자인","#6C57D6"],["개발","#1F8A68"],["데이터","#5B8DEF"],["CX","#E58BB4"],["전사","#8FA83B"]];
 document.getElementById("catbar").innerHTML = CATS.map(([c,col],i)=>
-  `<button class="catchip${i===0?" on":""}" onclick="filterCat('${c}',this)">${col?`<i style="background:${col}"></i>`:""}${c}</button>`).join("");
+  `<button class="catchip${i===0?" on":""}" aria-pressed="${i===0}" onclick="filterCat('${c}',this)">${col?`<i style="background:${col}" aria-hidden="true"></i>`:""}${c}</button>`).join("");
 function filterCat(cat, btn){
-  document.querySelectorAll(".catchip").forEach(b=>b.classList.remove("on"));
-  btn.classList.add("on");
+  document.querySelectorAll(".catchip").forEach(b=>{ b.classList.remove("on"); b.setAttribute("aria-pressed","false"); });
+  btn.classList.add("on"); btn.setAttribute("aria-pressed","true");
   document.querySelectorAll(".evt").forEach(e=>e.classList.toggle("dim", cat!=="전체" && e.dataset.cat!==cat));
 }
 
@@ -964,6 +985,18 @@ function setDur(b, min){
   else { custom.classList.remove("show"); currentDurMin = min; }
 }
 function onCustomDur(v){ currentDurMin = Math.max(15, +v || 45); }
+
+/* 온라인/오프라인 — 어느 방식으로 모일지. 오프라인이면 장소 입력이 열린다 */
+let meetingMode = "online";
+function setMode(b, m){
+  meetingMode = m;
+  document.querySelectorAll("#modeSeg button").forEach(x=>{ x.classList.remove("on"); x.setAttribute("aria-pressed","false"); });
+  b.classList.add("on"); b.setAttribute("aria-pressed","true");
+  document.getElementById("placeWrap").classList.toggle("show", m === "offline");
+}
+function placeVal(){ return document.getElementById("placeInput").value.trim() || "강남역 오피스 3층"; }
+/* 확정된 회의의 장소(오프라인일 때만) — 툴팁이 화상회의/장소 보기로 갈린다 */
+function meetLoc(){ return meetingMode === "offline" ? placeVal() : undefined; }
 function durLabel(){ return currentDurMin >= 60 ? (currentDurMin%60===0 ? `${currentDurMin/60}시간` : `${Math.floor(currentDurMin/60)}시간 ${currentDurMin%60}분`) : `${currentDurMin}분`; }
 
 /* ══ 회의 만들기 모달 — 레일 +, 빈 셀 +, 사이드바 버튼이 전부 이걸 연다 ══ */
@@ -1013,7 +1046,7 @@ function placeDirect(day, hour){
       if (k === attendees.length-1) directTimers.push(setTimeout(()=>{
         v.classList.add("confirmed");
         if (!cell.querySelector(".evtip")) {
-          cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:title, av:attendees, time:`${DAYS[day][0]} ${fmtH(hour)} · ${durLabel()}`, ag:"안건 요약은 시작 10분 전에 도착해요", cm:0, lk:0, mn:0, left:day>=3, up:hour>=15}));
+          cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:title, av:attendees, time:`${DAYS[day][0]} ${fmtH(hour)} · ${durLabel()}`, ag:"안건 요약은 시작 10분 전에 도착해요", loc:meetLoc(), cm:0, lk:0, mn:0, left:day>=3, up:hour>=15}));
           cell.classList.add("has-ev");
         }
         setBottomDone(`${title} 확정`);
@@ -1152,7 +1185,7 @@ function chatConfirm(rid){
   const r = RECOS[rid], b = document.getElementById("chBody");
   b.insertAdjacentHTML("beforeend", `
     <div class="cb-card">
-      <div class="cc-top"><span class="cc-ic">✓</span><div><div class="cc-t">회의가 확정됐어요</div><div class="cc-d">팀 킥오프 · ${r.label} 30분 · 1시간</div></div></div>
+      <div class="cc-top"><span class="cc-ic">✓</span><div><div class="cc-t">회의가 확정됐어요</div><div class="cc-d">팀 킥오프 · ${r.label} 30분 · 1시간 · ${meetingMode==="offline" ? "📍 "+placeVal() : "화상회의"}</div></div></div>
       <div class="cc-avs">${PEOPLE.map(p=>`<span class="cc-av">${avImg(p)}</span>`).join("")}<span class="cc-cnt">6명 전원</span></div>
       <button class="cc-btn" onclick="viewInCal(${rid})">캘린더에서 보기</button>
     </div>`);
@@ -1242,7 +1275,7 @@ function confirmCard(rid){
   /* 확정된 카드도 호버하면 화상회의 툴팁이 열린다 — 일정 잡기 → 회의 참여까지 한 흐름 */
   const r=RECOS[rid], cell=v.parentElement;
   if (cell && !cell.querySelector(".evtip")) {
-    cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:"팀 킥오프", av:[0,1,2,3,4,5], time:`${DAYS[r.d][0]} ${fmtH(r.h)} · 1시간`, ag:"목표 정렬 · 역할 분담 · 일정 합의", cm:3, lk:2, mn:1, left:r.d>=3, up:r.h>=15}));
+    cell.insertAdjacentHTML("beforeend", tipHtml({k:"프로덕트팀", t:"팀 킥오프", av:[0,1,2,3,4,5], time:`${DAYS[r.d][0]} ${fmtH(r.h)} · 1시간`, ag:"목표 정렬 · 역할 분담 · 일정 합의", loc:meetLoc(), cm:3, lk:2, mn:1, left:r.d>=3, up:r.h>=15}));
     cell.classList.add("has-ev");
   }
   setBottomDone("팀 킥오프 확정");
@@ -1284,6 +1317,14 @@ function sendOffset(){ document.getElementById("offset").classList.remove("show"
 const q = new URLSearchParams(location.search);
 function applyTheme(t){ document.body.setAttribute("data-theme", t==="dark"?"dark":"light"); }
 applyTheme(q.get("theme"));
+/* 접근성: Esc로 모든 오버레이 닫기 (WCAG 2.1.2 키보드 트랩 방지) */
+window.addEventListener("keydown", e=>{
+  if (e.key !== "Escape") return;
+  closeCreate(); closePicker(); chatHide();
+  document.getElementById("scrim")?.classList.remove("show");
+  document.getElementById("meetScrim")?.classList.remove("show");
+});
+
 window.addEventListener("message", e=>{
   if(e.data?.theme) applyTheme(e.data.theme);
   if(e.data?.openCreate) openCreate("search");
