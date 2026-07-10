@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>모임 챗 — 대화형 일정 조율</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<!-- lucide-react UMD는 소문자 `react` 전역을 참조하므로 shim 필요 -->
+<script>window.react = window.React;</script>
+<script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: { royal: "#2563EB" },
+      fontFamily: { sans: ["Pretendard Variable", "Pretendard", "-apple-system", "sans-serif"] },
+      keyframes: {
+        slidein: { "0%": { opacity: 0, transform: "translateY(18px) scale(.97)" }, "100%": { opacity: 1, transform: "none" } },
+        fadeup:  { "0%": { opacity: 0, transform: "translateY(8px)" }, "100%": { opacity: 1, transform: "none" } },
+        expand:  { "0%": { opacity: 0, maxHeight: "0px" }, "100%": { opacity: 1, maxHeight: "80px" } },
+      },
+      animation: {
+        slidein: "slidein .45s cubic-bezier(.16,1,.3,1) both",
+        fadeup: "fadeup .3s cubic-bezier(.16,1,.3,1) both",
+        expand: "expand .3s cubic-bezier(.16,1,.3,1) both",
+      },
+    }},
+  };
+</script>
+<style>
+  body { background: #EEF1F6; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="App.jsx"></script>
+</body>
+</html>
