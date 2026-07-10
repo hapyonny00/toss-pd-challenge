@@ -26,11 +26,13 @@
     width: 88px; flex: none; display: flex; flex-direction: column; align-items: center;
     padding: 16px 0 14px; gap: 4px; background: var(--base);
   }
+  /* Moim 지오메트릭 로고 — 사각(모이는 자리) + 원(사람)이 겹치는 마크 */
   .rail .logo {
-    width: 46px; height: 46px; border-radius: 16px; background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
-    margin-bottom: 12px; letter-spacing: -.5px;
+    width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
   }
+  .rail .logo svg { display: block; }
+  .rail .logo .lg-sq { fill: var(--accent); }
   .rail .fab {
     width: 50px; height: 50px; border-radius: 25px; background: var(--accent); color: #fff; border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
@@ -85,7 +87,9 @@
 
 <div class="shell">
   <nav class="rail">
-    <div class="logo">모임</div>
+    <div class="logo" role="img" aria-label="모임">
+      <svg width="38" height="38" viewBox="0 0 30 30"><rect class="lg-sq" x="2" y="2" width="17" height="17" rx="6"/><circle cx="20" cy="20" r="8" fill="#93C5FD" opacity=".9"/></svg>
+    </div>
     <button class="fab" onclick="quickCreate()" aria-label="회의 잡기"><svg class="ic"><use href="#n-plus"/></svg></button>
     <button class="item on" data-src="oneui/app-calendar.html" onclick="nav(this)"><svg class="ic"><use href="#n-cal"/></svg><span class="lb">캘린더</span></button>
     <button class="item" data-src="moim-chat/index.html" onclick="nav(this)"><svg class="ic"><use href="#n-chat"/></svg><span class="lb">모임 챗</span></button>
