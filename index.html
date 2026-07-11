@@ -7,62 +7,60 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    /* 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬, 라벤더 primary·그린 status */
-    --accent: #6C57D6; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #2FB56B;
-    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA;
-    --tp: #17171A; --ts: #5C5C67; --tm: #93939C; --hair: #EBE7F7;
-    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
+    /* 토스 디자인 시스템(TDS) — 클린 화이트/라이트그레이 + Toss Blue */
+    --accent: #3182F6; --accent-soft: #E8F3FF; --lime: #3182F6; --lime-text: #FFFFFF; --status: #00C471;
+    --base: #F9FAFB; --s1: #FFFFFF; --s2: #F2F4F6;
+    --tp: #191F28; --ts: #4E5968; --tm: #8B95A1; --hair: #E5E8EB;
+    --panel: #FFFFFF; --panel2: #F2F4F6; --panel3: #E5E8EB;
   }
   [data-theme="dark"] {
-    --accent: #A78BFF; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #4ADE87;
-    --base: #0B0B0D; --s1: #17171A; --s2: #222226;
-    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
-    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
+    --accent: #4593FC; --accent-soft: #17293F; --lime: #4593FC; --lime-text: #FFFFFF; --status: #22C55E;
+    --base: #17171A; --s1: #202126; --s2: #2A2C32;
+    --tp: #F4F5F6; --ts: #C0C6CE; --tm: #8B95A1; --hair: #33363D;
+    --panel: #202126; --panel2: #2A2C32; --panel3: #363940;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; background: var(--base); color: var(--tp); overflow: hidden; transition: background .3s, color .3s; }
-  /* 바깥 배경 — 은은한 라벤더 그라데이션 (레퍼런스의 부드러운 퍼플 앰비언트) */
-  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
   .shell { display: flex; height: 100vh; gap: 12px; padding: 12px; }
 
-  /* ══ Navigation Rail — 레퍼런스처럼 사방이 둥근 플로팅 다크 슬래브 ══ */
+  /* ══ Navigation Rail — 토스 클린 화이트 레일 (얇은 보더) ══ */
   .rail {
     width: 88px; flex: none; display: flex; flex-direction: column; align-items: center;
     padding: 16px 0 14px; gap: 4px; background: var(--panel);
-    border-radius: 28px;
+    border: 1px solid var(--hair); border-radius: 24px;
   }
-  /* Moim 지오메트릭 로고 — 사각(라벤더, 모이는 자리) + 원(라임, 사람) */
+  /* Moim 지오메트릭 로고 — 사각(핑크) + 원(그린) */
   .rail .logo {
     width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
     margin-bottom: 12px;
   }
   .rail .logo svg { display: block; }
-  .rail .logo .lg-sq { fill: var(--accent-soft); }
+  .rail .logo .lg-sq { fill: #F5C9EF; }
   .rail .logo .lg-dot { fill: var(--status); opacity: 1; }
   .rail .fab {
-    width: 50px; height: 50px; border-radius: 25px; background: var(--lime); color: var(--lime-text); border: none;
+    width: 50px; height: 50px; border-radius: 16px; background: var(--accent); color: #fff; border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
-    box-shadow: 0 6px 16px rgba(47,181,107,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
+    box-shadow: 0 6px 16px rgba(49,130,246,.3); transition: transform .14s cubic-bezier(.16,1,.3,1), background .14s;
   }
-  .rail .fab:hover { border-radius: 18px; }
+  .rail .fab:hover { background: var(--accent-press, #2272EB); }
   .rail .fab:active { transform: scale(.92); }
-  .rail .fab .ic { width: 24px; height: 24px; stroke: var(--lime-text); stroke-width: 2; fill: none; stroke-linecap: round; }
+  .rail .fab .ic { width: 24px; height: 24px; stroke: #fff; stroke-width: 2; fill: none; stroke-linecap: round; }
   .rail .item {
     width: 68px; padding: 9px 0 7px; border: none; background: none; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 20px;
-    color: #8E8E93; transition: background .18s, color .18s;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 16px;
+    color: var(--tm); transition: background .18s, color .18s;
   }
-  .rail .item:hover { background: var(--panel3); }
-  .rail .item.on { background: #2A2653; color: #CFC2FF; }
+  .rail .item:hover { background: var(--s2); }
+  .rail .item.on { background: var(--accent-soft); color: var(--accent); }
   .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
   .rail .sp { flex: 1; }
   .rail .foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--panel2); color: #B8B8BE; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--s2); color: var(--ts); border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .rail .fbtn:hover { background: var(--panel3); }
   .rail .fbtn .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#F5C9EF,#7EE29B); color: #123B23; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#4593FC,#3182F6); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
 
   /* ══ content ══ */
   .content { flex: 1; min-width: 0; }
