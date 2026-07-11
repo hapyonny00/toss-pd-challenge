@@ -558,7 +558,7 @@ function App() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-tr from-[#F9FAFB] via-[#F2F4F6] to-[#F9FAFB] flex gap-5 p-5 max-w-[1280px] mx-auto font-sans h-screen">
+    <main className="min-h-screen bg-[#F9FAFB] flex gap-5 p-5 max-w-[1280px] mx-auto font-sans h-screen">
       <LeftPanel members={members} onRemove={removeMember} onRestore={restoreMembers} onCompose={() => setCompose(true)} edit={editMembers} setEdit={setEditMembers} />
       <ChatPane
         room={room} feed={feeds[roomId]} liveCard={roomId === "team" ? liveCard : null}
