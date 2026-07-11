@@ -1,29 +1,104 @@
 <!DOCTYPE html>
-<!-- ══════════════════════════════════════════════════════════
-     캘린더 · 다크 모드
-     Figma html.to.design 임포트 / Cursor 편집용 static 스냅샷.
-     JS 실행 결과가 DOM에 구워져 있고 스크립트는 제거됨 (상호작용 없음).
-     원본 인터랙티브 소스: oneui/app-calendar.html · moim-chat/App.jsx
-════════════════════════════════════════════════════════════ -->
-<html lang="ko"><head>
+<!-- 캘린더 · 다크 모드 — Figma 임포트용 (네비게이션 레일 + 본문 flat, 스크립트 제거) -->
+<html lang="ko">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>회의 조율 — 캘린더</title>
+<title>캘린더 · 다크 모드</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
+
   :root {
-    /* ══ Dei 디자인 시스템 — 아이시 민트 캔버스 + 블랙 크롬 + 파스텔 카드, 그린 affirmative ══ */
-    --accent: #2FB56B; --accent-press: #279B5B;
-    --lime: #7EE29B; --lime-deep: #5FD383; --lime-text: #123B23;
-    --blue50: #DFF5E9; --blue100: #BEEBD3; --blue700: #1F8A4C;
+    /* 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬, 라벤더 primary·그린 status */
+    --accent: #6C57D6; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #2FB56B;
+    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA;
+    --tp: #17171A; --ts: #5C5C67; --tm: #93939C; --hair: #EBE7F7;
+    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
+  }
+  [data-theme="dark"] {
+    --accent: #A78BFF; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #4ADE87;
+    --base: #0B0B0D; --s1: #17171A; --s2: #222226;
+    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
+    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; background: var(--base); color: var(--tp); overflow: hidden; transition: background .3s, color .3s; }
+  /* 바깥 배경 — 은은한 라벤더 그라데이션 (레퍼런스의 부드러운 퍼플 앰비언트) */
+  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
+  .shell { display: flex; height: 100vh; gap: 12px; padding: 12px; }
+
+  /* ══ Navigation Rail — 레퍼런스처럼 사방이 둥근 플로팅 다크 슬래브 ══ */
+  .rail {
+    width: 88px; flex: none; display: flex; flex-direction: column; align-items: center;
+    padding: 16px 0 14px; gap: 4px; background: var(--panel);
+    border-radius: 28px;
+  }
+  /* Moim 지오메트릭 로고 — 사각(라벤더, 모이는 자리) + 원(라임, 사람) */
+  .rail .logo {
+    width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  .rail .logo svg { display: block; }
+  .rail .logo .lg-sq { fill: var(--accent-soft); }
+  .rail .logo .lg-dot { fill: var(--status); opacity: 1; }
+  .rail .fab {
+    width: 50px; height: 50px; border-radius: 25px; background: var(--lime); color: var(--lime-text); border: none;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
+    box-shadow: 0 6px 16px rgba(47,181,107,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
+  }
+  .rail .fab:hover { border-radius: 18px; }
+  .rail .fab:active { transform: scale(.92); }
+  .rail .fab .ic { width: 24px; height: 24px; stroke: var(--lime-text); stroke-width: 2; fill: none; stroke-linecap: round; }
+  .rail .item {
+    width: 68px; padding: 9px 0 7px; border: none; background: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 20px;
+    color: #8E8E93; transition: background .18s, color .18s;
+  }
+  .rail .item:hover { background: var(--panel3); }
+  .rail .item.on { background: #2A2653; color: #CFC2FF; }
+  .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
+  .rail .sp { flex: 1; }
+  .rail .foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--panel2); color: #B8B8BE; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .rail .fbtn:hover { background: var(--panel3); }
+  .rail .fbtn .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#F5C9EF,#7EE29B); color: #123B23; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+
+  /* ══ content ══ */
+  .content { flex: 1; min-width: 0; }
+  .viewcard { width: 100%; height: 100%; border-radius: 28px; overflow: hidden; background: var(--s1); position: relative; }
+  iframe { width: 100%; height: 100%; border: none; display: block; background: var(--base); }
+  .loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--tm); font-size: 14px; font-weight: 600; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .loading.show { opacity: 1; }
+
+  @media (max-width: 720px) {
+    .shell { padding: 0; gap: 0; }
+    .rail { width: 100%; height: 68px; flex-direction: row; padding: 0 10px; gap: 2px; position: fixed; bottom: 0; left: 0; z-index: 10; border-radius: 20px 20px 0 0; }
+    .rail .logo, .rail .foot { display: none; }
+    .rail .sp { flex: 0; }
+    .rail .item { flex: 1; width: auto; padding: 8px 0 6px; }
+    .shell { flex-direction: column; }
+    .content { padding: 0 0 68px; }
+    .viewcard { border-radius: 0; }
+  }
+
+  :root {
+    /* ══ 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬 + 파스텔 카드.
+       primary=라벤더(#6C57D6), highlight/CTA=라벤더 소프트, status=그린(체크·아바타·오늘) ══ */
+    --accent: #6C57D6; --accent-press: #5B45C0;
+    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* 하이라이트/CTA — 라벤더 소프트 */
+    --status: #2FB56B; --status-deep: #22A45D;                     /* 상태 그린 — 내 캘린더 체크·아바타·미니캘 오늘 */
+    --blue50: #EFEBFF; --blue100: #DCD4FB; --blue700: #5B45C0;
     --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
     --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
     --red400: #F2686C;
-    --base: #D9EDF2; --s1: #FFFFFF; --s2: #ECF4F6; --s3: #DEEAED;
-    --tp: #17171A; --ts: #5C6467; --tm: #93999C;
-    --hair: #E6EFF1; --dash: #B4C0C4; --drop-tint: #DFF5E9;
-    --shadow-card: 0 12px 28px rgba(20,60,70,.12);
-    --shadow-float: 0 16px 36px rgba(20,60,70,.16);
+    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA; --s3: #E5E0F5;
+    --tp: #17171A; --ts: #5C5C67; --tm: #93939C;
+    --hair: #EBE7F7; --dash: #BDB6D0; --drop-tint: #EFEBFF;
+    --shadow-card: 0 12px 28px rgba(42,33,80,.13);
+    --shadow-float: 0 16px 36px rgba(42,33,80,.18);
     /* 다크 크롬 패널 (레일·사이드바 — 라이트 테마에서도 검정) */
     --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
     --grad-band: linear-gradient(105deg, #CDEBF2 0%, #F4DCF1 50%, #CFF2D8 100%);
@@ -50,12 +125,14 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #4ADE87; --accent-press: #2FB56B;
-    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --lime: #322552; --lime-deep: #3E2E63; --lime-text: #CFC2FF;   /* 다크: 라벤더 소프트 칩 */
+    --status: #4ADE87; --status-deep: #34C173;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
     --base: #0B0B0D; --s1: #17171A; --s2: #222226; --s3: #2D2D33;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #26262B; --dash: #55555C; --drop-tint: #143327;
+    --hair: #26262B; --dash: #55555C; --drop-tint: #2A2653;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
     --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
@@ -81,6 +158,8 @@
     background: var(--base); color: var(--tp);
     -webkit-font-smoothing: antialiased; overflow: hidden; transition: background .3s, color .3s;
   }
+  /* 캘린더 캔버스 여백 — 셸과 같은 라벤더 앰비언트 (다크 제외) */
+  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
   .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .ic.sm { width: 18px; height: 18px; }
 
@@ -238,7 +317,7 @@
   .vcard .mini-dots i { width: 6px; height: 6px; border-radius: 50%; background: transparent; border: 1px solid var(--dash); }
   .vcard .mini-dots i.g { background: var(--green400); border-color: var(--green400); }
   .vcard .mini-dots i.a { background: var(--amber400); border-color: var(--amber400); }
-  .vcard.confirmed { background: var(--accent); border: 1.5px solid var(--accent); color: #fff; }
+  .vcard.confirmed { background: var(--status); border: 1.5px solid var(--status); color: #fff; }
   .vcard.confirmed .mini-dots i { background: rgba(255,255,255,.85); border-color: transparent; }
   .vcard .shift-tag { position: absolute; top: -9px; right: 6px; font-size: 10px; background: var(--amber50); color: var(--amber900); border-radius: 8px; padding: 2px 7px; font-weight: 700; }
   .flash { animation: flash .5s ease; }
@@ -252,9 +331,11 @@
     --s1: var(--panel2); --s2: var(--panel3); --s3: #303036;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
     --hair: #2C2C31; --dash: #55555C;
-    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
-    --accent: #4ADE87; --accent-press: #2FB56B;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* CTA는 검정 위 밝은 라벤더 알약 */
+    --status: #4ADE87; --status-deep: #34C173;
     --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
     --tag-coral: #F5D77E; --tag-coral-bg: #443A14;
     --tag-mint: #7CE8A5; --tag-mint-bg: #14382C;
@@ -280,7 +361,7 @@
   table.mini td { padding: 2px 0; }
   table.mini td span { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 500; }
   table.mini td.out span { color: var(--tm); opacity: .5; }
-  table.mini td.today span { background: var(--lime); color: var(--lime-text); font-weight: 700; }
+  table.mini td.today span { background: var(--status); color: #fff; font-weight: 700; }
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
   table.mini td:not(.out) { cursor: pointer; }
   table.mini td.picked span { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 50% !important; color: var(--accent); font-weight: 700; }
@@ -289,7 +370,7 @@
 
   /* 내 캘린더 (gcal-prototype에서 병합) */
   .mycal-row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; font-size: 13.5px; font-weight: 500; }
-  .mycal-row .cb { width: 15px; height: 15px; border-radius: 5px; background: var(--accent); position: relative; flex: none; }
+  .mycal-row .cb { width: 15px; height: 15px; border-radius: 5px; background: var(--status); position: relative; flex: none; }
   .mycal-row .cb.green { background: var(--green); }
   .mycal-row .cb.gray { background: var(--dash); }
   .mycal-row .cb::after { content: "✓"; color: #fff; font-size: 10px; font-weight: 700; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
@@ -306,7 +387,7 @@
     cursor: pointer; border: none; transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
   }
   .coldcard .acts button:active { transform: scale(.96); }
-  .coldcard .yes { background: var(--accent); color: #fff; }
+  .coldcard .yes { background: var(--blue100); color: var(--blue700); }
   .coldcard .no { background: var(--s1); color: var(--ts); }
   .coldcard .no:hover { background: var(--s2); }
 
@@ -647,11 +728,45 @@
     .main { min-height: 60vh; }
     .aside { width: 100%; }
   }
+
+/* figma-export: shell 레일 + 임베디드 앱 (iframe 없이 flat) */
+.viewcard .figma-embed { height: 100%; overflow: hidden; }
+.viewcard .figma-embed > .app { height: 100%; min-height: 0; }
+.viewcard .figma-embed #root,
+.viewcard .figma-embed #root > main { height: 100%; max-width: none !important; margin: 0 !important; }
+/* figma-export: 진입 애니메이션 최종 상태 고정 */
+.animate-slidein,.animate-fadeup,.animate-expand,.enter,.reco.enter{
+  animation:none!important;opacity:1!important;transform:none!important;max-height:none!important;}
+
 </style>
-<style>/* figma-export: 진입 애니메이션을 최종 상태로 고정 — Figma 캡처 타이밍과 무관하게 항상 보이게 */
-.animate-slidein,.animate-fadeup,.animate-expand,.enter,.reco.enter{animation:none!important;opacity:1!important;transform:none!important;max-height:none!important;}</style>
 </head>
 <body data-theme="dark">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="n-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="4"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/></symbol>
+  <symbol id="n-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="n-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></symbol>
+  <symbol id="n-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="n-user-plus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M4 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><path d="M18 8v4M16 10h4"/></symbol>
+  <symbol id="n-chat" viewBox="0 0 24 24"><path d="M21 12a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3.5 20.5l1.1-4.8A8.5 8.5 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14.2h4.5"/></symbol>
+</defs></svg>
+<div class="shell">
+  <nav class="rail">
+    <div class="logo" role="img" aria-label="모임">
+      <svg width="38" height="38" viewBox="0 0 30 30"><rect class="lg-sq" x="2" y="2" width="17" height="17" rx="6"/><circle class="lg-dot" cx="20" cy="20" r="8"/></svg>
+    </div>
+    <button class="fab" type="button" aria-label="회의 잡기"><svg class="ic"><use href="#n-plus"/></svg></button>
+    <button class="item on" type="button" aria-label="캘린더"><svg class="ic"><use href="#n-cal"/></svg><span class="lb">캘린더</span></button>
+    <button class="item" type="button" aria-label="모임 챗"><svg class="ic"><use href="#n-chat"/></svg><span class="lb">모임 챗</span></button>
+    <button class="item" type="button" aria-label="팀원 추가"><svg class="ic"><use href="#n-user-plus"/></svg><span class="lb">팀원 추가</span></button>
+    <span class="sp"></span>
+    <div class="foot">
+      <button class="fbtn" type="button" aria-label="라이트 모드"><svg class="ic"><use href="#n-sun"/></svg></button>
+      <div class="avatar">지</div>
+    </div>
+  </nav>
+  <div class="content">
+    <div class="viewcard">
+      <div class="figma-embed">
 <svg width="0" height="0" style="position:absolute"><defs>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="4"></rect><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"></path></symbol>
@@ -904,7 +1019,7 @@
 
     <div class="cm-label">참석자 · 톡하면 ‘꼭 참석’</div>
     <div class="invite" id="invite"><span class="iav req-on" id="iav-0" style="background:#387AFF" onclick="toggleReq(0)" title="김지민"><img src="https://i.pravatar.cc/96?img=12" alt="김지민" loading="lazy" onerror="this.remove()">지<span class="req">✓</span></span><span class="iav req-on" id="iav-1" style="background:#5A8DFF" onclick="toggleReq(1)" title="박준호"><img src="https://i.pravatar.cc/96?img=52" alt="박준호" loading="lazy" onerror="this.remove()">준<span class="req">✓</span></span><span class="iav req-on" id="iav-2" style="background:#7C6BF0" onclick="toggleReq(2)" title="이서연"><img src="https://i.pravatar.cc/96?img=47" alt="이서연" loading="lazy" onerror="this.remove()">서<span class="req">✓</span></span><span class="iav" id="iav-3" style="background:#4FB6A8" onclick="toggleReq(3)" title="최민지"><img src="https://i.pravatar.cc/96?img=25" alt="최민지" loading="lazy" onerror="this.remove()">민<span class="req">✓</span></span><span class="iav" id="iav-4" style="background:#E8927C" onclick="toggleReq(4)" title="정도윤"><img src="https://i.pravatar.cc/96?img=33" alt="정도윤" loading="lazy" onerror="this.remove()">도<span class="req">✓</span></span><span class="iav" id="iav-5" style="background:#D9A03C" onclick="toggleReq(5)" title="한하은"><img src="https://i.pravatar.cc/96?img=44" alt="한하은" loading="lazy" onerror="this.remove()">하<span class="req">✓</span></span><span class="iav add" onclick="openPicker()" title="팀원 추가"><svg class="ic sm"><use href="#i-plus"></use></svg></span></div>
-    <p class="invite-hint">파란 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
+    <p class="invite-hint">보라색 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
 
     <button class="cm-cta" id="cmCta" onclick="createMeeting()">
       <svg class="ic sm" style="stroke:#fff"><use href="#i-sparkle"></use></svg><span id="cmCtaTxt">되는 시간 찾기</span>
@@ -920,5 +1035,9 @@
     <button class="pr-add" onclick="pickerAddMore()" aria-label="더 추가"><svg class="ic sm"><use href="#i-plus"></use></svg></button>
   </div>
 </div>
-
-</body></html>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
