@@ -134,7 +134,7 @@ function LeftPanel({ members, onRemove, onRestore, onCompose, edit, setEdit }) {
           <span className="text-[11px] font-extrabold text-gray-400 flex-1">팀원 {members.length}명</span>
           <button
             onClick={() => setEdit(!edit)}
-            className={"flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 transition " + (edit ? "bg-[#7EE29B] text-[#123B23]" : "bg-white/10 text-gray-300 hover:bg-white/15")}
+            className={"flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 transition " + (edit ? "bg-[#DCD4FB] text-[#3D2C86]" : "bg-white/10 text-gray-300 hover:bg-white/15")}
           >
             {edit ? <Check size={10} strokeWidth={3} /> : <Pencil size={10} />} {edit ? "완료" : "팀원 수정"}
           </button>
@@ -172,7 +172,7 @@ function LeftPanel({ members, onRemove, onRestore, onCompose, edit, setEdit }) {
       {/* 회의 잡기 — 여기서도 온/오프라인을 고를 수 있다 */}
       <button
         onClick={onCompose}
-        className="flex-none h-11 rounded-full bg-[#7EE29B] text-[#123B23] text-[13px] font-extrabold flex items-center justify-center gap-1.5 active:scale-[.97] transition"
+        className="flex-none h-11 rounded-full bg-[#DCD4FB] text-[#3D2C86] text-[13px] font-extrabold flex items-center justify-center gap-1.5 active:scale-[.97] transition"
       >
         <Plus size={15} strokeWidth={2.5} /> 회의 잡기
       </button>
@@ -212,7 +212,7 @@ function MeetingCard({ card, live, onApprove, onAlt }) {
   return (
     <div className="animate-slidein bg-white border border-gray-200 rounded-[24px] p-4 shadow-[0_12px_40px_rgba(31,21,68,0.08)] max-w-[320px] self-start w-full">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-extrabold tracking-[.14em] text-[#1F8A4C]">MEETING</span>
+        <span className="text-[10px] font-extrabold tracking-[.14em] text-[#6C57D6]">MEETING</span>
         <span className="text-[10px] font-bold text-gray-400">{card.type === "offline" ? "오프라인" : "온라인"}</span>
       </div>
       <h4 className="text-[15px] font-extrabold text-gray-900 mb-1.5">{card.title}</h4>
@@ -221,17 +221,17 @@ function MeetingCard({ card, live, onApprove, onAlt }) {
         <span className="flex items-center gap-1"><Clock size={12} /> {card.time}</span>
       </div>
       {card.type === "offline" ? (
-        <div className="rounded-xl bg-[#E9F8EE] border border-[#CBEFD7] p-2.5 mb-2.5">
+        <div className="rounded-xl bg-[#EFEBFF] border border-[#DCD4FB] p-2.5 mb-2.5">
           <div className="flex items-center gap-1.5 text-[13px] font-bold text-gray-800">
-            <MapPin size={13} className="text-[#1F8A4C]" /> {card.place}
+            <MapPin size={13} className="text-[#6C57D6]" /> {card.place}
           </div>
           <div className="flex items-center gap-1 mt-1 text-[11px] font-semibold text-gray-500">
             <Footprints size={11} /> 전원 이동 시간 평균 12분 · 최대 18분
           </div>
         </div>
       ) : (
-        <div className="rounded-xl bg-[#E9F8EE] border border-[#CBEFD7] p-2.5 mb-2.5 flex items-center gap-1.5 text-[12px] font-bold text-gray-800">
-          <Video size={13} className="text-[#1F8A4C]" /> 화상회의 링크가 시작 10분 전에 도착해요
+        <div className="rounded-xl bg-[#EFEBFF] border border-[#DCD4FB] p-2.5 mb-2.5 flex items-center gap-1.5 text-[12px] font-bold text-gray-800">
+          <Video size={13} className="text-[#6C57D6]" /> 화상회의 링크가 시작 10분 전에 도착해요
         </div>
       )}
       <p className="text-[12.5px] leading-relaxed text-gray-600 mb-3">{copy}</p>
@@ -358,7 +358,7 @@ function RoomList({ activeId, unread, onPick, onCompose }) {
           <div className="text-[10.5px] font-semibold text-gray-500 mt-0.5">일정 조율은 대화가 시작되는 곳에서</div>
         </div>
         {/* 여기서도 회의 생성 + 온/오프라인 선택 */}
-        <button onClick={onCompose} aria-label="회의 잡기" title="회의 잡기 (온라인/오프라인)" className="w-9 h-9 rounded-full bg-[#7EE29B] text-[#123B23] flex items-center justify-center flex-none active:scale-90 transition">
+        <button onClick={onCompose} aria-label="회의 잡기" title="회의 잡기 (온라인/오프라인)" className="w-9 h-9 rounded-full bg-[#DCD4FB] text-[#3D2C86] flex items-center justify-center flex-none active:scale-90 transition">
           <Plus size={16} strokeWidth={2.5} />
         </button>
       </header>
@@ -389,7 +389,7 @@ function RoomList({ activeId, unread, onPick, onCompose }) {
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[11.5px] text-gray-400 truncate">{lastLine(r)}</span>
                   {unread[r.id] > 0 && (
-                    <span className="flex-none min-w-[18px] h-[18px] px-1 rounded-full bg-[#7EE29B] text-[#123B23] text-[10px] font-extrabold flex items-center justify-center">{unread[r.id]}</span>
+                    <span className="flex-none min-w-[18px] h-[18px] px-1 rounded-full bg-[#DCD4FB] text-[#3D2C86] text-[10px] font-extrabold flex items-center justify-center">{unread[r.id]}</span>
                   )}
                 </div>
               </div>
@@ -424,7 +424,7 @@ function ComposeModal({ open, onClose, onPost }) {
         </div>
         <input
           value={title} onChange={(e) => setTitle(e.target.value)} placeholder="회의 이름"
-          className="w-full border-b border-gray-200 focus:border-[#2FB56B] outline-none text-[13.5px] py-2.5 placeholder:text-gray-300 transition-colors font-semibold"
+          className="w-full border-b border-gray-200 focus:border-[#6C57D6] outline-none text-[13.5px] py-2.5 placeholder:text-gray-300 transition-colors font-semibold"
         />
         <div className="flex gap-4">
           <label className="flex-1 flex items-center gap-1.5 border-b border-gray-200 py-2.5 text-[13px] text-gray-700">
@@ -447,7 +447,7 @@ function ComposeModal({ open, onClose, onPost }) {
               onClick={() => setType(v)}
               className={
                 "flex-1 h-9 rounded-full text-[12.5px] font-bold transition-all " +
-                (type === v ? "bg-white text-[#1F8A4C] shadow-sm" : "text-gray-400")
+                (type === v ? "bg-white text-[#6C57D6] shadow-sm" : "text-gray-400")
               }
             >
               {label}
@@ -457,7 +457,7 @@ function ComposeModal({ open, onClose, onPost }) {
         {type === "offline" && (
           <div className="animate-expand overflow-hidden">
             <label className="flex items-center gap-1.5 border-b border-gray-200 py-2.5 mt-1">
-              <MapPin size={13} className="text-[#1F8A4C] flex-none" />
+              <MapPin size={13} className="text-[#6C57D6] flex-none" />
               <input
                 value={place} onChange={(e) => setPlace(e.target.value)} placeholder="만날 장소"
                 className="w-full outline-none text-[13px] text-gray-700 placeholder:text-gray-300"
@@ -558,7 +558,7 @@ function App() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-tr from-[#D9EDF2] via-[#EDF7F9] to-[#CDEDF4] flex gap-5 p-5 max-w-[1280px] mx-auto font-sans h-screen">
+    <main className="min-h-screen bg-gradient-to-tr from-[#F3F0FD] via-[#EDEAFB] to-[#E4DEF7] flex gap-5 p-5 max-w-[1280px] mx-auto font-sans h-screen">
       <LeftPanel members={members} onRemove={removeMember} onRestore={restoreMembers} onCompose={() => setCompose(true)} edit={editMembers} setEdit={setEditMembers} />
       <ChatPane
         room={room} feed={feeds[roomId]} liveCard={roomId === "team" ? liveCard : null}

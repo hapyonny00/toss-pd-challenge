@@ -7,18 +7,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    /* ══ Dei 디자인 시스템 — 아이시 민트 캔버스 + 블랙 크롬 + 파스텔 카드, 그린 affirmative ══ */
-    --accent: #2FB56B; --accent-press: #279B5B;
-    --lime: #7EE29B; --lime-deep: #5FD383; --lime-text: #123B23;
-    --blue50: #DFF5E9; --blue100: #BEEBD3; --blue700: #1F8A4C;
+    /* ══ 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬 + 파스텔 카드.
+       primary=라벤더(#6C57D6), highlight/CTA=라벤더 소프트, status=그린(체크·아바타·오늘) ══ */
+    --accent: #6C57D6; --accent-press: #5B45C0;
+    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* 하이라이트/CTA — 라벤더 소프트 */
+    --status: #2FB56B; --status-deep: #22A45D;                     /* 상태 그린 — 내 캘린더 체크·아바타·미니캘 오늘 */
+    --blue50: #EFEBFF; --blue100: #DCD4FB; --blue700: #5B45C0;
     --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
     --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
     --red400: #F2686C;
-    --base: #D9EDF2; --s1: #FFFFFF; --s2: #ECF4F6; --s3: #DEEAED;
-    --tp: #17171A; --ts: #5C6467; --tm: #93999C;
-    --hair: #E6EFF1; --dash: #B4C0C4; --drop-tint: #DFF5E9;
-    --shadow-card: 0 12px 28px rgba(20,60,70,.12);
-    --shadow-float: 0 16px 36px rgba(20,60,70,.16);
+    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA; --s3: #E5E0F5;
+    --tp: #17171A; --ts: #5C5C67; --tm: #93939C;
+    --hair: #EBE7F7; --dash: #BDB6D0; --drop-tint: #EFEBFF;
+    --shadow-card: 0 12px 28px rgba(42,33,80,.13);
+    --shadow-float: 0 16px 36px rgba(42,33,80,.18);
     /* 다크 크롬 패널 (레일·사이드바 — 라이트 테마에서도 검정) */
     --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
     --grad-band: linear-gradient(105deg, #CDEBF2 0%, #F4DCF1 50%, #CFF2D8 100%);
@@ -45,12 +47,14 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #4ADE87; --accent-press: #2FB56B;
-    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --lime: #322552; --lime-deep: #3E2E63; --lime-text: #CFC2FF;   /* 다크: 라벤더 소프트 칩 */
+    --status: #4ADE87; --status-deep: #34C173;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
     --base: #0B0B0D; --s1: #17171A; --s2: #222226; --s3: #2D2D33;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #26262B; --dash: #55555C; --drop-tint: #143327;
+    --hair: #26262B; --dash: #55555C; --drop-tint: #2A2653;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
     --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
@@ -76,6 +80,8 @@
     background: var(--base); color: var(--tp);
     -webkit-font-smoothing: antialiased; overflow: hidden; transition: background .3s, color .3s;
   }
+  /* 캘린더 캔버스 여백 — 셸과 같은 라벤더 앰비언트 (다크 제외) */
+  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
   .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .ic.sm { width: 18px; height: 18px; }
 
@@ -233,7 +239,7 @@
   .vcard .mini-dots i { width: 6px; height: 6px; border-radius: 50%; background: transparent; border: 1px solid var(--dash); }
   .vcard .mini-dots i.g { background: var(--green400); border-color: var(--green400); }
   .vcard .mini-dots i.a { background: var(--amber400); border-color: var(--amber400); }
-  .vcard.confirmed { background: var(--accent); border: 1.5px solid var(--accent); color: #fff; }
+  .vcard.confirmed { background: var(--status); border: 1.5px solid var(--status); color: #fff; }
   .vcard.confirmed .mini-dots i { background: rgba(255,255,255,.85); border-color: transparent; }
   .vcard .shift-tag { position: absolute; top: -9px; right: 6px; font-size: 10px; background: var(--amber50); color: var(--amber900); border-radius: 8px; padding: 2px 7px; font-weight: 700; }
   .flash { animation: flash .5s ease; }
@@ -247,9 +253,11 @@
     --s1: var(--panel2); --s2: var(--panel3); --s3: #303036;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
     --hair: #2C2C31; --dash: #55555C;
-    --blue50: #143327; --blue100: #1D4A36; --blue700: #A9F0C6;
+    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
-    --accent: #4ADE87; --accent-press: #2FB56B;
+    --accent: #A78BFF; --accent-press: #8B79E8;
+    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* CTA는 검정 위 밝은 라벤더 알약 */
+    --status: #4ADE87; --status-deep: #34C173;
     --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
     --tag-coral: #F5D77E; --tag-coral-bg: #443A14;
     --tag-mint: #7CE8A5; --tag-mint-bg: #14382C;
@@ -275,7 +283,7 @@
   table.mini td { padding: 2px 0; }
   table.mini td span { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 500; }
   table.mini td.out span { color: var(--tm); opacity: .5; }
-  table.mini td.today span { background: var(--lime); color: var(--lime-text); font-weight: 700; }
+  table.mini td.today span { background: var(--status); color: #fff; font-weight: 700; }
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
   table.mini td:not(.out) { cursor: pointer; }
   table.mini td.picked span { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 50% !important; color: var(--accent); font-weight: 700; }
@@ -284,7 +292,7 @@
 
   /* 내 캘린더 (gcal-prototype에서 병합) */
   .mycal-row { display: flex; align-items: center; gap: 10px; padding: 7px 2px; font-size: 13.5px; font-weight: 500; }
-  .mycal-row .cb { width: 15px; height: 15px; border-radius: 5px; background: var(--accent); position: relative; flex: none; }
+  .mycal-row .cb { width: 15px; height: 15px; border-radius: 5px; background: var(--status); position: relative; flex: none; }
   .mycal-row .cb.green { background: var(--green); }
   .mycal-row .cb.gray { background: var(--dash); }
   .mycal-row .cb::after { content: "✓"; color: #fff; font-size: 10px; font-weight: 700; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
@@ -301,7 +309,7 @@
     cursor: pointer; border: none; transition: transform var(--dur-micro) var(--ease-out), background var(--dur-micro) var(--ease-out);
   }
   .coldcard .acts button:active { transform: scale(.96); }
-  .coldcard .yes { background: var(--accent); color: #fff; }
+  .coldcard .yes { background: var(--blue100); color: var(--blue700); }
   .coldcard .no { background: var(--s1); color: var(--ts); }
   .coldcard .no:hover { background: var(--s2); }
 
@@ -817,7 +825,7 @@
 
     <div class="cm-label">참석자 · 톡하면 ‘꼭 참석’</div>
     <div class="invite" id="invite"></div>
-    <p class="invite-hint">파란 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
+    <p class="invite-hint">보라색 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
 
     <button class="cm-cta" id="cmCta" onclick="createMeeting()">
       <svg class="ic sm" style="stroke:#fff"><use href="#i-sparkle"/></svg><span id="cmCtaTxt">되는 시간 찾기</span>

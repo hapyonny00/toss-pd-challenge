@@ -7,14 +7,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root {
-    /* Dei 디자인 시스템 — 아이시 민트 캔버스 + 블랙 크롬, 핑크·민트 파스텔 액센트 */
-    --accent: #2FB56B; --accent-soft: #F5C9EF; --lime: #7EE29B; --lime-text: #123B23;
-    --base: #D9EDF2; --s1: #FFFFFF; --s2: #ECF4F6;
-    --tp: #17171A; --ts: #5C6467; --tm: #93999C; --hair: #E6EFF1;
+    /* 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬, 라벤더 primary·그린 status */
+    --accent: #6C57D6; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #2FB56B;
+    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA;
+    --tp: #17171A; --ts: #5C5C67; --tm: #93939C; --hair: #EBE7F7;
     --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
   }
   [data-theme="dark"] {
-    --accent: #4ADE87; --accent-soft: #F5C9EF;
+    --accent: #A78BFF; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #4ADE87;
     --base: #0B0B0D; --s1: #17171A; --s2: #222226;
     --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
     --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
@@ -22,6 +22,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; background: var(--base); color: var(--tp); overflow: hidden; transition: background .3s, color .3s; }
+  /* 바깥 배경 — 은은한 라벤더 그라데이션 (레퍼런스의 부드러운 퍼플 앰비언트) */
+  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
   .shell { display: flex; height: 100vh; gap: 12px; padding: 12px; }
 
   /* ══ Navigation Rail — 레퍼런스처럼 사방이 둥근 플로팅 다크 슬래브 ══ */
@@ -37,7 +39,7 @@
   }
   .rail .logo svg { display: block; }
   .rail .logo .lg-sq { fill: var(--accent-soft); }
-  .rail .logo .lg-dot { fill: var(--lime); opacity: 1; }
+  .rail .logo .lg-dot { fill: var(--status); opacity: 1; }
   .rail .fab {
     width: 50px; height: 50px; border-radius: 25px; background: var(--lime); color: var(--lime-text); border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
@@ -52,7 +54,7 @@
     color: #8E8E93; transition: background .18s, color .18s;
   }
   .rail .item:hover { background: var(--panel3); }
-  .rail .item.on { background: #143327; color: #A9F0C6; }
+  .rail .item.on { background: #2A2653; color: #CFC2FF; }
   .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
   .rail .sp { flex: 1; }
