@@ -9,62 +9,60 @@
 <style>
 
   :root {
-    /* 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬, 라벤더 primary·그린 status */
-    --accent: #6C57D6; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #2FB56B;
-    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA;
-    --tp: #17171A; --ts: #5C5C67; --tm: #93939C; --hair: #EBE7F7;
-    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
+    /* 토스 디자인 시스템(TDS) — 클린 화이트/라이트그레이 + Toss Blue */
+    --accent: #3182F6; --accent-soft: #E8F3FF; --lime: #3182F6; --lime-text: #FFFFFF; --status: #00C471;
+    --base: #F9FAFB; --s1: #FFFFFF; --s2: #F2F4F6;
+    --tp: #191F28; --ts: #4E5968; --tm: #8B95A1; --hair: #E5E8EB;
+    --panel: #FFFFFF; --panel2: #F2F4F6; --panel3: #E5E8EB;
   }
   [data-theme="dark"] {
-    --accent: #A78BFF; --accent-soft: #F5C9EF; --lime: #DCD4FB; --lime-text: #3D2C86; --status: #4ADE87;
-    --base: #0B0B0D; --s1: #17171A; --s2: #222226;
-    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93; --hair: #26262B;
-    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
+    --accent: #4593FC; --accent-soft: #17293F; --lime: #4593FC; --lime-text: #FFFFFF; --status: #22C55E;
+    --base: #17171A; --s1: #202126; --s2: #2A2C32;
+    --tp: #F4F5F6; --ts: #C0C6CE; --tm: #8B95A1; --hair: #33363D;
+    --panel: #202126; --panel2: #2A2C32; --panel3: #363940;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body { font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif; background: var(--base); color: var(--tp); overflow: hidden; transition: background .3s, color .3s; }
-  /* 바깥 배경 — 은은한 라벤더 그라데이션 (레퍼런스의 부드러운 퍼플 앰비언트) */
-  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
   .shell { display: flex; height: 100vh; gap: 12px; padding: 12px; }
 
-  /* ══ Navigation Rail — 레퍼런스처럼 사방이 둥근 플로팅 다크 슬래브 ══ */
+  /* ══ Navigation Rail — 토스 클린 화이트 레일 (얇은 보더) ══ */
   .rail {
     width: 88px; flex: none; display: flex; flex-direction: column; align-items: center;
     padding: 16px 0 14px; gap: 4px; background: var(--panel);
-    border-radius: 28px;
+    border: 1px solid var(--hair); border-radius: 24px;
   }
-  /* Moim 지오메트릭 로고 — 사각(라벤더, 모이는 자리) + 원(라임, 사람) */
+  /* Moim 지오메트릭 로고 — 사각(핑크) + 원(그린) */
   .rail .logo {
     width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
     margin-bottom: 12px;
   }
   .rail .logo svg { display: block; }
-  .rail .logo .lg-sq { fill: var(--accent-soft); }
+  .rail .logo .lg-sq { fill: #F5C9EF; }
   .rail .logo .lg-dot { fill: var(--status); opacity: 1; }
   .rail .fab {
-    width: 50px; height: 50px; border-radius: 25px; background: var(--lime); color: var(--lime-text); border: none;
+    width: 50px; height: 50px; border-radius: 16px; background: var(--accent); color: #fff; border: none;
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 10px;
-    box-shadow: 0 6px 16px rgba(47,181,107,.35); transition: transform .14s cubic-bezier(.16,1,.3,1), border-radius .14s;
+    box-shadow: 0 6px 16px rgba(49,130,246,.3); transition: transform .14s cubic-bezier(.16,1,.3,1), background .14s;
   }
-  .rail .fab:hover { border-radius: 18px; }
+  .rail .fab:hover { background: var(--accent-press, #2272EB); }
   .rail .fab:active { transform: scale(.92); }
-  .rail .fab .ic { width: 24px; height: 24px; stroke: var(--lime-text); stroke-width: 2; fill: none; stroke-linecap: round; }
+  .rail .fab .ic { width: 24px; height: 24px; stroke: #fff; stroke-width: 2; fill: none; stroke-linecap: round; }
   .rail .item {
     width: 68px; padding: 9px 0 7px; border: none; background: none; cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 20px;
-    color: #8E8E93; transition: background .18s, color .18s;
+    display: flex; flex-direction: column; align-items: center; gap: 5px; border-radius: 16px;
+    color: var(--tm); transition: background .18s, color .18s;
   }
-  .rail .item:hover { background: var(--panel3); }
-  .rail .item.on { background: #2A2653; color: #CFC2FF; }
+  .rail .item:hover { background: var(--s2); }
+  .rail .item.on { background: var(--accent-soft); color: var(--accent); }
   .rail .item .ic { width: 24px; height: 24px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .rail .item .lb { font-size: 11px; font-weight: 600; letter-spacing: -.2px; }
   .rail .sp { flex: 1; }
   .rail .foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--panel2); color: #B8B8BE; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .rail .fbtn { width: 46px; height: 46px; border: none; background: var(--s2); color: var(--ts); border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .rail .fbtn:hover { background: var(--panel3); }
   .rail .fbtn .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#F5C9EF,#7EE29B); color: #123B23; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+  .rail .avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg,#4593FC,#3182F6); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
 
   /* ══ content ══ */
   .content { flex: 1; min-width: 0; }
@@ -85,27 +83,27 @@
   }
 
   :root {
-    /* ══ 모임 Moim 디자인 시스템 — 라벤더 캔버스 + 블랙 크롬 + 파스텔 카드.
-       primary=라벤더(#6C57D6), highlight/CTA=라벤더 소프트, status=그린(체크·아바타·오늘) ══ */
-    --accent: #6C57D6; --accent-press: #5B45C0;
-    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* 하이라이트/CTA — 라벤더 소프트 */
-    --status: #2FB56B; --status-deep: #22A45D;                     /* 상태 그린 — 내 캘린더 체크·아바타·미니캘 오늘 */
-    --blue50: #EFEBFF; --blue100: #DCD4FB; --blue700: #5B45C0;
-    --green: #22A45D; --green400: #34C173; --green50: #E3F5EA;
-    --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #5A3600;
-    --red400: #F2686C;
-    --base: #EDEAFB; --s1: #FFFFFF; --s2: #F1EFFA; --s3: #E5E0F5;
-    --tp: #17171A; --ts: #5C5C67; --tm: #93939C;
-    --hair: #EBE7F7; --dash: #BDB6D0; --drop-tint: #EFEBFF;
-    --shadow-card: 0 12px 28px rgba(42,33,80,.13);
-    --shadow-float: 0 16px 36px rgba(42,33,80,.18);
-    /* 다크 크롬 패널 (레일·사이드바 — 라이트 테마에서도 검정) */
-    --panel: #0B0B0C; --panel2: #17171A; --panel3: #232327;
-    --grad-band: linear-gradient(105deg, #CDEBF2 0%, #F4DCF1 50%, #CFF2D8 100%);
-    /* 주 CTA — 레퍼런스의 블랙 알약 */
-    --cta: #101013; --cta-press: #2A2A30; --cta-text: #FFFFFF;
+    /* ══ 토스 디자인 시스템(TDS) — 클린 화이트/라이트그레이 표면 + Toss Blue.
+       primary=Toss Blue(#3182F6), status=Toss Green(#00C471). 이벤트 그리드·카테고리 칩은 파스텔 유지 ══ */
+    --accent: #3182F6; --accent-press: #2272EB;                    /* Toss Blue */
+    --lime: #3182F6; --lime-deep: #2272EB; --lime-text: #FFFFFF;   /* 주 CTA — 솔리드 토스 블루 */
+    --status: #00C471; --status-deep: #00B268;                     /* Toss Green — 내 캘린더 체크·아바타·오늘·확정 */
+    --blue50: #E8F3FF; --blue100: #C9E2FF; --blue700: #1B64DA;
+    --green: #00C471; --green400: #22C55E; --green50: #E4F8EF;
+    --amber: #E08A00; --amber400: #FFB43A; --amber50: #FFF3DC; --amber900: #7A5200;
+    --red400: #F04452;
+    --base: #F9FAFB; --s1: #FFFFFF; --s2: #F2F4F6; --s3: #E5E8EB;  /* TDS grey 50/100/200 */
+    --tp: #191F28; --ts: #4E5968; --tm: #8B95A1;                   /* TDS grey 900/700/500 */
+    --hair: #E5E8EB; --dash: #B0B8C1; --drop-tint: #E8F3FF;
+    --shadow-card: 0 6px 20px rgba(25,31,40,.08);
+    --shadow-float: 0 12px 32px rgba(25,31,40,.14);
+    /* 라이트 크롬 패널 (레일·사이드바 — 토스는 화이트/라이트그레이) */
+    --panel: #FFFFFF; --panel2: #F2F4F6; --panel3: #E5E8EB;
+    --grad-band: #FFFFFF;
+    /* 주 CTA는 Toss Blue */
+    --cta: #3182F6; --cta-press: #2272EB; --cta-text: #FFFFFF;
 
-    /* 파스텔 이벤트 블록 — 어두운 텍스트가 올라가는 저채도 면 */
+    /* 파스텔 이벤트 블록 — 사용자가 유지 요청한 부분 (그대로) */
     --tag-purple: #6C4BC4; --tag-purple-bg: #E4D6F8;
     --tag-coral: #8A6410; --tag-coral-bg: #FBEBB0;
     --tag-mint: #1F8A4C; --tag-mint-bg: #CBF1D2;
@@ -125,18 +123,19 @@
     --stagger: 55ms;
   }
   [data-theme="dark"] {
-    --accent: #A78BFF; --accent-press: #8B79E8;
-    --lime: #322552; --lime-deep: #3E2E63; --lime-text: #CFC2FF;   /* 다크: 라벤더 소프트 칩 */
-    --status: #4ADE87; --status-deep: #34C173;
-    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
+    --accent: #4593FC; --accent-press: #3182F6;
+    --lime: #4593FC; --lime-deep: #3182F6; --lime-text: #FFFFFF;
+    --status: #22C55E; --status-deep: #00C471;
+    --blue50: #17293F; --blue100: #1E3A5C; --blue700: #8EC0FF;
     --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
-    --base: #0B0B0D; --s1: #17171A; --s2: #222226; --s3: #2D2D33;
-    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #26262B; --dash: #55555C; --drop-tint: #2A2653;
+    --base: #17171A; --s1: #202126; --s2: #2A2C32; --s3: #363940;
+    --tp: #F4F5F6; --ts: #C0C6CE; --tm: #8B95A1;
+    --hair: #33363D; --dash: #55555C; --drop-tint: #17293F;
     --shadow-card: 0 12px 28px rgba(0,0,0,.45);
     --shadow-float: 0 16px 36px rgba(0,0,0,.55);
-    --panel: #0B0B0D; --panel2: #17171A; --panel3: #222226;
-    --cta: #F4F4F6; --cta-press: #DDE3E5; --cta-text: #17171A;
+    --panel: #202126; --panel2: #2A2C32; --panel3: #363940;
+    --grad-band: #202126;
+    --cta: #4593FC; --cta-press: #3182F6; --cta-text: #FFFFFF;
 
     /* 다크에서도 파스텔 이벤트는 그대로 — 그라데이션·민트 하이라이트가 다크 위에서 더 도드라진다 */
     --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
@@ -158,8 +157,7 @@
     background: var(--base); color: var(--tp);
     -webkit-font-smoothing: antialiased; overflow: hidden; transition: background .3s, color .3s;
   }
-  /* 캘린더 캔버스 여백 — 셸과 같은 라벤더 앰비언트 (다크 제외) */
-  body:not([data-theme="dark"]) { background: linear-gradient(135deg, #F3F0FD 0%, #EDEAFB 45%, #E4DEF7 100%); }
+  /* 캘린더 캔버스 여백 — 토스 grey50 클린 배경 */
   .ic { width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   .ic.sm { width: 18px; height: 18px; }
 
@@ -167,22 +165,22 @@
 
   /* ══ calendar (LEFT) ══ */
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  /* topbar — 그라데이션 밴드 위에 얹힘: 텍스트·버튼은 항상 어두운 톤 */
-  .topbar { display: flex; align-items: center; gap: 12px; padding: 18px 20px 16px; color: #17171A; }
+  /* topbar — 토스 클린 화이트 헤더 */
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 18px 20px 16px; color: var(--tp); }
   .topbar .titles h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
-  .topbar .titles .sub { font-size: 13px; color: rgba(23,23,26,.6); font-weight: 500; margin-top: 3px; }
+  .topbar .titles .sub { font-size: 13px; color: var(--ts); font-weight: 500; margin-top: 3px; }
   .topbar .sp { flex: 1; }
   .navbtns { display: flex; align-items: center; gap: 6px; }
   .navbtns button {
-    width: 40px; height: 40px; border: none; background: rgba(255,255,255,.55); color: #17171A;
-    border-radius: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border: none; background: var(--s2); color: var(--ts);
+    border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
   }
-  .navbtns button:hover { background: rgba(255,255,255,.85); }
+  .navbtns button:hover { background: var(--s3); }
   .navbtns button:active, .today-btn:active, .mini-h button:active { transform: scale(.94); }
-  /* '오늘' = 레퍼런스의 Today 검정 알약 */
-  .today-btn { font: inherit; font-size: 13px; font-weight: 700; height: 40px; padding: 0 18px; border: none; background: #17171A; color: #fff; border-radius: 20px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-  .today-btn:hover { background: #2A2A30; }
+  /* '오늘' = 토스 그레이 세컨더리 알약 */
+  .today-btn { font: inherit; font-size: 13px; font-weight: 700; height: 40px; padding: 0 18px; border: none; background: var(--s2); color: var(--ts); border-radius: 12px; cursor: pointer; transition: background var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+  .today-btn:hover { background: var(--s3); }
   .mini-h button:hover { background: var(--s2); }
 
   /* ══ 주 CTA — 미니 캘린더 카드 하단에 안착 (참고 이미지 Submit List 자리) ══ */
@@ -204,14 +202,13 @@
   .side-cta.done { background: var(--green); color: #fff; animation: none; }
   .side-cta.done .ic { stroke: #fff; }
 
-  /* gridcard: 상단 밴드(실제 요소)가 라임→라벤더 그라데이션, 아래는 표면색.
-     배경 멀티레이어 shorthand는 브라우저별로 어긋나서 밴드를 요소로 분리 */
-  .gridcard { flex: 1; min-height: 0; background: var(--s1); border-radius: 26px; display: flex; flex-direction: column; overflow: hidden; }
-  .band { background: var(--grad-band); flex: none; }
+  /* gridcard: 토스 클린 화이트 카드 + 얇은 보더 */
+  .gridcard { flex: 1; min-height: 0; background: var(--s1); border: 1px solid var(--hair); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+  .band { background: var(--grad-band); flex: none; border-bottom: 1px solid var(--hair); }
   .dayhead { display: grid; grid-template-columns: 56px repeat(5, 1fr); padding: 6px 16px 14px; gap: 8px; }
-  .dayhead .dh { text-align: center; background: rgba(255,255,255,.38); border-radius: 18px; padding: 8px 0 9px; color: #17171A; transition: background var(--dur-ui) var(--ease-out); }
-  .dayhead .dh.today { background: #FFFFFF; box-shadow: 0 6px 16px rgba(42,33,80,.14); }
-  .dayhead .dow { font-size: 11px; font-weight: 700; color: rgba(23,23,26,.55); letter-spacing: 1px; }
+  .dayhead .dh { text-align: center; background: var(--s2); border-radius: 14px; padding: 8px 0 9px; color: var(--tp); transition: background var(--dur-ui) var(--ease-out); }
+  .dayhead .dh.today { background: var(--blue50); }
+  .dayhead .dow { font-size: 11px; font-weight: 700; color: var(--tm); letter-spacing: 1px; }
   .dayhead .dnum { font-size: 18px; font-weight: 700; margin-top: 3px; width: 34px; height: 34px; line-height: 34px; border-radius: 50%; display: inline-block; font-variant-numeric: tabular-nums; transition: background var(--dur-ui) var(--ease-out), color var(--dur-ui) var(--ease-out); }
   .dayhead .dh.today .dnum { color: var(--accent); }
   .dayhead .dh.today .dow { color: var(--accent); }
@@ -323,23 +320,10 @@
   .flash { animation: flash .5s ease; }
   @keyframes flash { 0% { box-shadow: inset 0 0 0 3px var(--accent); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
 
-  /* ══ sidebar (RIGHT) — 레퍼런스의 다크 크롬 패널: 라이트 테마에서도 검정.
-     내부 토큰을 다크 값으로 재할당해 마크업·기능은 그대로, 표면만 뒤집는다 ══ */
+  /* ══ sidebar (RIGHT) — 토스 클린 라이트 패널 (grey50 배경 + 흰 블록) ══ */
   .aside {
     width: 372px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
-    background: var(--panel); border-radius: 28px; padding: 14px; color: var(--tp);
-    --s1: var(--panel2); --s2: var(--panel3); --s3: #303036;
-    --tp: #F4F4F6; --ts: #B8B8BE; --tm: #8E8E93;
-    --hair: #2C2C31; --dash: #55555C;
-    --blue50: #2A2653; --blue100: #39325F; --blue700: #CFC2FF;
-    --amber50: #3A2E14; --amber900: #FFC65C; --green50: #11321F;
-    --accent: #A78BFF; --accent-press: #8B79E8;
-    --lime: #DCD4FB; --lime-deep: #C9BCF5; --lime-text: #3D2C86;   /* CTA는 검정 위 밝은 라벤더 알약 */
-    --status: #4ADE87; --status-deep: #34C173;
-    --tag-purple: #D4C2FA; --tag-purple-bg: #322552;
-    --tag-coral: #F5D77E; --tag-coral-bg: #443A14;
-    --tag-mint: #7CE8A5; --tag-mint-bg: #14382C;
-    --shadow-card: 0 12px 28px rgba(0,0,0,.4);
+    background: var(--base); border: 1px solid var(--hair); border-radius: 20px; padding: 14px; color: var(--tp);
   }
   .aside::-webkit-scrollbar { width: 0; }
   .search {
@@ -361,7 +345,7 @@
   table.mini td { padding: 2px 0; }
   table.mini td span { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 500; }
   table.mini td.out span { color: var(--tm); opacity: .5; }
-  table.mini td.today span { background: var(--status); color: #fff; font-weight: 700; }
+  table.mini td.today span { background: var(--accent); color: #fff; font-weight: 700; }
   table.mini td.sel span { background: var(--blue50); color: var(--blue700); border-radius: 0; font-weight: 600; }
   table.mini td:not(.out) { cursor: pointer; }
   table.mini td.picked span { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 50% !important; color: var(--accent); font-weight: 700; }
@@ -1019,7 +1003,7 @@
 
     <div class="cm-label">참석자 · 톡하면 ‘꼭 참석’</div>
     <div class="invite" id="invite"><span class="iav req-on" id="iav-0" style="background:#387AFF" onclick="toggleReq(0)" title="김지민"><img src="https://i.pravatar.cc/96?img=12" alt="김지민" loading="lazy" onerror="this.remove()">지<span class="req">✓</span></span><span class="iav req-on" id="iav-1" style="background:#5A8DFF" onclick="toggleReq(1)" title="박준호"><img src="https://i.pravatar.cc/96?img=52" alt="박준호" loading="lazy" onerror="this.remove()">준<span class="req">✓</span></span><span class="iav req-on" id="iav-2" style="background:#7C6BF0" onclick="toggleReq(2)" title="이서연"><img src="https://i.pravatar.cc/96?img=47" alt="이서연" loading="lazy" onerror="this.remove()">서<span class="req">✓</span></span><span class="iav" id="iav-3" style="background:#4FB6A8" onclick="toggleReq(3)" title="최민지"><img src="https://i.pravatar.cc/96?img=25" alt="최민지" loading="lazy" onerror="this.remove()">민<span class="req">✓</span></span><span class="iav" id="iav-4" style="background:#E8927C" onclick="toggleReq(4)" title="정도윤"><img src="https://i.pravatar.cc/96?img=33" alt="정도윤" loading="lazy" onerror="this.remove()">도<span class="req">✓</span></span><span class="iav" id="iav-5" style="background:#D9A03C" onclick="toggleReq(5)" title="한하은"><img src="https://i.pravatar.cc/96?img=44" alt="한하은" loading="lazy" onerror="this.remove()">하<span class="req">✓</span></span><span class="iav add" onclick="openPicker()" title="팀원 추가"><svg class="ic sm"><use href="#i-plus"></use></svg></span></div>
-    <p class="invite-hint">보라색 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
+    <p class="invite-hint">파란 링이 있는 분은 ‘꼭 참석’이에요. 이분들이 되는 시간부터 찾아드릴게요.</p>
 
     <button class="cm-cta" id="cmCta" onclick="createMeeting()">
       <svg class="ic sm" style="stroke:#fff"><use href="#i-sparkle"></use></svg><span id="cmCtaTxt">되는 시간 찾기</span>
